@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p prompts/email prompts/code-review prompts/testing prompts/codebase-analysis prompts/project-management prompts/incident-management prompts/reporting)",
+      "Bash(mkdir -p agents/copilot agents/advanced-coding)",
+      "Bash(mkdir -p skills)"
+    ]
+  }
+}
