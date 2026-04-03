@@ -1,0 +1,97 @@
+# Ignore generated files (Python cache, compiled code)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE-specific files (user preferences, not repo standards)
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Local environment variables (secrets, credentials)
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE settings (personal, not shared)
+.claude/settings.local.json  # Personal user settings, not committed
+.vscode/settings.json
+.vscode/launch.json
+.idea/**/*.xml
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+*.pid
+
+# OS-specific
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Node modules (if used)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Coverage reports (generated)
+htmlcov/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+coverage.xml
+
+# SonarQube reports
+.sonarqube/
+.sonar/
+
+# Git-specific
+.git/
+.gitkeep
+
+# Keep these important files:
+# - skills/*.md (shared knowledge)
+# - agents/*/*.md (agent definitions)
+# - instructions/*.md (universal rules)
+# - prompts/*/*.md (prompt templates)
+# - .github/copilot-instructions.md (generated, commit it)
+# - .claude/skills_context.md (generated, commit it)
+# - .cursorrules (generated, commit it)
+# - .continue/config.json (generated, commit it)
+# - tools/output/openai_system_prompt.txt (generated, commit it)
+# - tools/*.py (scripts)
+# - README.md, CLAUDE.md, MEMORY.md (documentation)

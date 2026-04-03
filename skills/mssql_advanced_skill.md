@@ -21,7 +21,7 @@ Before writing any SQL, check what is installed:
 SELECT @@VERSION;
 SELECT SERVERPROPERTY('ProductVersion') AS [Version],
        SERVERPROPERTY('Edition')        AS [Edition];
-```
+```sql
 
 | Version | Key Features Available |
 |---------|----------------------|
@@ -56,11 +56,11 @@ This is one of the most misunderstood hints in T-SQL. Understand it before using
 -- Transaction B (with NOLOCK): reads order #99 and sees £200
 -- Transaction A: gets an error, rolls back — balance goes back to £500
 -- Transaction B now has a "fact" (£200) that was never true. It never committed.
-```
+```sql
 
 ### Decision Guide — NOLOCK or Not?
 
-```
+```sql
 Is this query used for financial calculations, balances, or totals?
   YES → ❌ Never use NOLOCK. Use RCSI instead.
 
@@ -72,7 +72,7 @@ Is this a dashboard or report where approximate counts are acceptable?
 
 Is this a development/debug query to inspect data quickly?
   YES → ✅ NOLOCK is fine. Don't commit this to production code.
-```
+```sql
 
 ### The Better Alternative: RCSI
 
@@ -95,11 +95,11 @@ WITH ROLLBACK IMMEDIATE;
 
 -- After this, READ COMMITTED queries will automatically use snapshots.
 -- You do NOT need to add NOLOCK hints anywhere.
-```
+```sql
 
 ### Isolation Level Summary
 
-```
+```sql
 READ UNCOMMITTED (= NOLOCK)
   Dirty reads: YES  |  Blocks writers: NO   |  Risk: HIGH
   → Only for non-critical dashboards or dev queries
@@ -119,7 +119,7 @@ SNAPSHOT ISOLATION
 SERIALIZABLE
   Dirty reads: NO   |  All anomalies: NO    |  Blocks heavily
   → Only for financial reconciliation or critical single-row operations.
-```
+```sql
 
 ---
 
@@ -176,7 +176,7 @@ BEGIN
         o.created_at DESC;
 
 END;
-```
+```sql
 
 ### Transactional Procedure (Write Operations)
 
@@ -248,7 +248,7 @@ BEGIN
     END CATCH;
 
 END;
-```
+```sql
 
 ---
 
@@ -291,7 +291,7 @@ FROM sys.dm_db_missing_index_group_stats AS migs
 JOIN sys.dm_db_missing_index_groups      AS mig ON migs.group_handle = mig.index_group_handle
 JOIN sys.dm_db_missing_index_details     AS mid ON mig.index_handle  = mid.index_handle
 ORDER BY estimated_benefit DESC;
-```
+```sql
 
 ---
 
@@ -320,7 +320,7 @@ EXEC sp_executesql
     @paramDef,
     @StatusParam     = @Status,       -- bound as a parameter, not code
     @CustomerIdParam = @CustomerId;
-```
+```sql
 
 ---
 
@@ -356,7 +356,7 @@ SELECT
     r.total_amount
 FROM recent_orders AS r
 WHERE r.order_rank = 1;  -- Only keep the most recent per customer
-```
+```sql
 
 ---
 
@@ -464,7 +464,7 @@ END CATCH;
 -- ── Cleanup: roll back ALL test data ──────────────────────────────────
 ROLLBACK TRANSACTION;
 PRINT '=== All test data rolled back. Database is unchanged. ===';
-```
+```sql
 
 ---
 

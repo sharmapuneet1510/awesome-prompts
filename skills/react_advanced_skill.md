@@ -20,7 +20,7 @@ Check what is installed before writing code:
 node -v
 cat package.json | grep '"react"'
 cat package.json | grep '"typescript"'
-```
+```jsx
 
 | React Version | Key Features |
 |--------------|-------------|
@@ -36,19 +36,19 @@ cat package.json | grep '"typescript"'
 
 Each component should do exactly one thing. If it does more, split it.
 
-```
+```jsx
 ❌ UserDashboard — renders layout, fetches data, shows charts, handles modals
 ✅ UserDashboard  — layout only
 ✅ useUserStats   — fetches the data (custom hook)
 ✅ StatsChart     — renders one chart
 ✅ UserModal      — one modal
-```
+```jsx
 
 ### Component File Structure
 
 Every non-trivial component lives in its own folder:
 
-```
+```jsx
 features/orders/
   components/
     OrderCard/
@@ -59,7 +59,7 @@ features/orders/
     useOrders.ts            ← TanStack Query hook
   types/
     order.types.ts          ← TypeScript types for orders
-```
+```jsx
 
 ---
 
@@ -105,7 +105,7 @@ interface OrderCardProps {
 export function OrderCard({ orderId, status, totalAmount, currency, onClick }: OrderCardProps) {
   // ...
 }
-```
+```jsx
 
 ### Type Aliases and Discriminated Unions
 
@@ -131,7 +131,7 @@ function renderState<T>(state: AsyncState<T>) {
     case 'error':   return <ErrorMessage error={state.error} />;
   }
 }
-```
+```jsx
 
 ---
 
@@ -195,7 +195,7 @@ export function useCreateOrder(customerId: number) {
     },
   });
 }
-```
+```jsx
 
 ### Custom State Hook
 
@@ -221,7 +221,7 @@ export function useModal() {
 
   return { isOpen, open, close };
 }
-```
+```jsx
 
 ---
 
@@ -271,7 +271,7 @@ export function OrderList({ customerId }: { customerId: number }) {
     </ul>
   );
 }
-```
+```jsx
 
 ---
 
@@ -354,7 +354,7 @@ export function CreateOrderForm({ onSuccess }: { onSuccess: () => void }) {
     </form>
   );
 }
-```
+```jsx
 
 ---
 
@@ -438,7 +438,7 @@ describe('OrderCard', () => {
     expect(screen.getByRole('button', { name: /order 42/i })).toBeInTheDocument();
   });
 });
-```
+```jsx
 
 ### Hook Tests
 
@@ -470,7 +470,7 @@ describe('useOrders', () => {
     expect(result.current.data).toHaveLength(1);
   });
 });
-```
+```jsx
 
 ---
 

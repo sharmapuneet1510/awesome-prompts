@@ -3,7 +3,15 @@
     "allow": [
       "Bash(mkdir -p prompts/email prompts/code-review prompts/testing prompts/codebase-analysis prompts/project-management prompts/incident-management prompts/reporting)",
       "Bash(mkdir -p agents/copilot agents/advanced-coding)",
-      "Bash(mkdir -p skills)"
+      "Bash(mkdir -p skills)",
+      "Bash(chmod +x /Users/puneetsharma/Workspace/projects/ai-lab/awesome-prompts/tools/skill_exporter.py)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(find . -type f -name *.pyc -o -name .DS_Store -o -name __pycache__)",
+      "Bash(find agents:*)",
+      "Bash(/tmp/summary.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(find skills:*)"
     ]
   }
 }

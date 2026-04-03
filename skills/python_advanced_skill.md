@@ -19,7 +19,7 @@ Before writing any Python code, check what is installed:
 ```bash
 python --version   # or: python3 --version
 pip --version
-```
+```python
 
 | Python Version | Features Available |
 |---------------|--------------------|
@@ -110,7 +110,7 @@ class BankAccount:
     def __repr__(self) -> str:
         """Returns a developer-friendly string for debugging."""
         return f"BankAccount(owner='{self._owner_name}', balance={self._balance:.2f})"
-```
+```python
 
 ### 2.2 Abstraction — ABC for Interfaces
 
@@ -176,7 +176,7 @@ class EmailNotificationSender(NotificationSender):
         """
         # SMTP sending logic here
         return True
-```
+```python
 
 ### 2.3 Inheritance — Shared Base, Specialised Subclasses
 
@@ -236,7 +236,7 @@ class CardPayment(Payment):
         """
         # Card gateway integration logic here
         return PaymentResult(success=True, transaction_id=self.reference_id)
-```
+```python
 
 ### 2.4 Polymorphism — Write Code to the Interface
 
@@ -263,7 +263,7 @@ def send_payment_confirmation(
 # This works with any sender — no code change needed in send_payment_confirmation
 send_payment_confirmation(EmailNotificationSender("smtp.example.com"), "alice@example.com", payment)
 send_payment_confirmation(SmsNotificationSender("+447700900000"), "+447700900000", payment)
-```
+```python
 
 ---
 
@@ -295,7 +295,7 @@ class OrderItem:
     def line_total(self) -> float:
         """The total cost for this line: quantity × unit price."""
         return self.quantity * self.unit_price
-```
+```python
 
 ### Pydantic v2 — API Request / Response Models
 
@@ -333,7 +333,7 @@ class OrderResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}  # allows creating from ORM objects
-```
+```python
 
 ---
 
@@ -392,7 +392,7 @@ class OrderService:
         if order is None:
             raise OrderNotFoundError(order_id)
         return OrderResponse.model_validate(order)
-```
+```python
 
 ---
 
@@ -427,7 +427,7 @@ class InvalidOrderError(AppError):
 
     Maps to HTTP 422 in the API exception handler.
     """
-```
+```python
 
 ---
 
@@ -459,7 +459,7 @@ def calculate_discount(original_price: float, discount_percent: float) -> float:
     if not 0 <= discount_percent <= 100:
         raise ValueError(f"Discount must be 0–100. Got: {discount_percent}")
     return original_price * (1 - discount_percent / 100)
-```
+```python
 
 ---
 
@@ -512,7 +512,7 @@ class TestBankAccount:
         account = BankAccount(owner_name="Alice", initial_balance=50.0)
         with pytest.raises(InsufficientFundsError):
             account.withdraw(100.0)
-```
+```python
 
 ### Async Tests (FastAPI / asyncio)
 
@@ -548,7 +548,7 @@ async def test_given_non_existent_id_when_get_order_then_raises_not_found() -> N
     # Act & Assert
     with pytest.raises(OrderNotFoundError):
         await service.get_order(order_id=999)
-```
+```python
 
 ---
 

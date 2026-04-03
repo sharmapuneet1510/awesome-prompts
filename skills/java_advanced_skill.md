@@ -19,7 +19,7 @@ Before writing any Java code, check what is installed:
 ```bash
 java -version
 mvn -version
-```
+```java
 
 Then match features to what is available:
 
@@ -92,7 +92,7 @@ public class BankAccount {
         return ownerName;
     }
 }
-```
+```java
 
 ### 2.2 Abstraction — Define WHAT, Not HOW
 
@@ -149,7 +149,7 @@ public class EmailNotificationSender implements NotificationSender {
         return true;
     }
 }
-```
+```java
 
 ### 2.3 Inheritance — Shared Behaviour, Specialised Differences
 
@@ -224,7 +224,7 @@ public class CardPayment extends Payment {
         return PaymentResult.success(referenceId);
     }
 }
-```
+```java
 
 ### 2.4 Polymorphism — Write Code to the Interface
 
@@ -246,7 +246,7 @@ public void sendConfirmation(NotificationSender sender, String recipient, Paymen
                                    payment.getAmount(), payment.getCurrency());
     sender.send(recipient, subject, message);
 }
-```
+```java
 
 ---
 
@@ -270,7 +270,7 @@ public record CreateOrderRequest(
     @NotNull Long customerId,
     @NotEmpty List<String> items
 ) {}
-```
+```java
 
 ### Sealed Classes (Java 17+) — Controlled Hierarchies
 
@@ -307,7 +307,7 @@ String message = switch (result) {
     case PaymentResult.Success s -> "Payment " + s.transactionId() + " succeeded";
     case PaymentResult.Failure f -> "Payment failed: " + f.reason();
 };
-```
+```java
 
 ### Virtual Threads (Java 21+) — Simple Concurrency
 
@@ -323,7 +323,7 @@ ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 Thread.ofVirtual()
       .name("order-processor")
       .start(() -> processOrder(orderId));
-```
+```java
 
 ---
 
@@ -331,14 +331,14 @@ Thread.ofVirtual()
 
 ### Layered Architecture (Always Follow This)
 
-```
+```java
 REST Controller   → Receives HTTP requests, calls Service, returns responses
 Service Interface → Defines the business operations (what)
 Service Impl      → Implements the business logic (how)
 Repository        → Data access (Spring Data JPA interface)
 Entity            → JPA entity (maps to a DB table)
 DTO               → What goes in/out of the API (not the entity)
-```
+```java
 
 ### Constructor Injection (Always)
 
@@ -357,7 +357,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository repository;  // injected via constructor
 }
-```
+```java
 
 ### application.yml Recommended Defaults
 
@@ -376,7 +376,7 @@ spring:
   threads:
     virtual:
       enabled: true
-```
+```java
 
 ---
 
@@ -407,7 +407,7 @@ public class YourClass {
      */
     public ReturnType methodName(ParamType paramName) { }
 }
-```
+```java
 
 ---
 
@@ -446,7 +446,7 @@ class OrderServiceImplTest {
         // Tests multiple bad inputs with one test method
     }
 }
-```
+```java
 
 ### Integration Tests — @SpringBootTest + Testcontainers
 
@@ -477,7 +477,7 @@ class OrderControllerIntegrationTest {
                .andExpect(jsonPath("$.status").value("PENDING"));
     }
 }
-```
+```java
 
 ---
 
