@@ -104,29 +104,47 @@ Skills in `skills/` are reusable coding standard modules referenced by agents. T
 | `prompts/incident-management/` | Production issue investigator (Detective) |
 | `prompts/reporting/` | HTML report generation prompt |
 
-## Tools — Skill Exporter
+## Tools — Exporter
 
-`tools/skill_exporter.py` is a Python utility that exports skills to instruction files for multiple AI platforms:
+`tools/exporter.py` is a Python utility that exports skills **and agent definitions** to platform-native instruction files. Writes one file per skill and one file per agent — no merging.
 
 ```bash
-# Export all skills to all platforms (GitHub Copilot, Claude, Cursor, etc.)
-python tools/skill_exporter.py
+# Export all skills and agents to all platforms
+python tools/exporter.py
 
-# Export specific skills to a specific platform
-python tools/skill_exporter.py --skills java,camel,spring --target copilot
+# Export specific skills/agents to specific platforms
+python tools/exporter.py --target copilot claude --skills java,spring --agents developer
 
-# List all available skills
-python tools/skill_exporter.py --list
+# List all available skills and agents
+python tools/exporter.py --list
+
+# Dry run — preview without writing
+python tools/exporter.py --dry-run
+
+# Remove all exported files
+python tools/exporter.py --clean
 ```
 
-**Supported targets:**
-- GitHub Copilot: `.github/copilot-instructions.md`
-- Claude Code: `.claude/skills_context.md`
-- Cursor IDE: `.cursorrules`
-- Continue.dev: `.continue/config.json`
-- OpenAI API: `tools/output/openai_system_prompt.txt`
+**Supported platforms:** copilot, claude, cursor, windsurf, gemini, continue, openai, aider
 
 See `tools/README.md` for full documentation.
+
+## Active Work — 2026-04-14
+
+**Building:** `tools/exporter.py` — unified agent & skill exporter (replaces `tools/skill_exporter.py`)
+
+**Design spec:** `docs/superpowers/specs/2026-04-14-unified-exporter-design.md`
+
+**Implementation plan:** `docs/superpowers/plans/2026-04-14-unified-exporter.md`
+
+**Status:** Implementation in progress — Task 1 of 10 starting now
+
+**Key decisions:**
+- One file per skill, one file per agent — no merged output files
+- 8 platforms: copilot, claude, cursor, windsurf, gemini, continue, openai, aider
+- Platform-native file locations and frontmatter per target
+- `BaseFile` → `SkillFile` / `AgentFile` data models share a common YAML frontmatter parser
+- TDD: tests written before implementation in each task
 
 ## All Agents Follow Master Rules
 
