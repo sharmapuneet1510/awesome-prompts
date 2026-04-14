@@ -194,3 +194,48 @@ class SkillFile(BaseFile):
             content=body,
             slug=path.stem,
         )
+
+
+@dataclass
+class AgentFile(BaseFile):
+    """Parsed representation of an agent .md file from agents/**/.
+
+    Attributes:
+        skills:          Slugs of skills this agent references.
+        instruction_set: Relative path to the master instruction set.
+        intake_form:     Relative path to the intake form.
+        role:            Derived from the parent directory name
+                         (developer, reviewer, writer, integration).
+    """
+
+    skills: list[str]
+    instruction_set: str
+    intake_form: str
+    role: str
+
+    @classmethod
+    def from_path(cls, path: Path) -> "AgentFile":
+        """Parses an agent markdown file.
+
+        Args:
+            path: Path to the agents/**/*.md file.
+
+        Returns:
+            A populated AgentFile instance.
+
+        Raises:
+            ValueError: If the file has no YAML frontmatter.
+        """
+        fm, body = cls._parse_frontmatter(path)
+        return cls(
+            path=path,
+            name=cls._extract_scalar(fm, "name", default=path.stem),
+            version=cls._extract_scalar(fm, "version", default="1.0"),
+            description=cls._extract_scalar(fm, "description"),
+            skills=cls._extract_list(fm, "skills"),
+            instruction_set=cls._extract_scalar(fm, "instruction_set"),
+            intake_form=cls._extract_scalar(fm, "intake_form"),
+            role=path.parent.name,
+            content=body,
+            slug=path.stem,
+        )
