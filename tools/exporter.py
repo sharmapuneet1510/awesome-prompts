@@ -79,7 +79,7 @@ class BaseFile:
         Raises:
             ValueError: If the file has no --- frontmatter block.
         """
-        raw = path.read_text(encoding="utf-8")
+        raw = path.read_text(encoding="utf-8-sig")
         match = cls._FRONTMATTER_RE.match(raw)
         if not match:
             raise ValueError(
@@ -150,7 +150,9 @@ class BaseFile:
                     break
                 stripped = line.lstrip()
                 if stripped.startswith("- "):
-                    items.append(stripped[2:].strip().strip("'\""))
+                    value = stripped[2:].strip().strip("'\"")
+                    if value:
+                        items.append(value)
             return items
 
         return []
