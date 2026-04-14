@@ -224,3 +224,70 @@ def test_agent_file_raises_on_missing_frontmatter(tmp_path):
     path = write_agent(tmp_path, "developer", "bad_agent.md", "# No frontmatter here")
     with pytest.raises(ValueError, match="missing YAML frontmatter"):
         AgentFile.from_path(path)
+
+
+# ── PlatformExporter base ─────────────────────────────────────────────────────
+
+def make_skill(tmp_path: Path) -> "SkillFile":
+    from tools.exporter import SkillFile
+    p = write_skill(tmp_path, "java_advanced_skill.md", SKILL_MD)
+    return SkillFile.from_path(p)
+
+
+def make_agent(tmp_path: Path, role: str = "developer") -> "AgentFile":
+    from tools.exporter import AgentFile
+    p = write_agent(tmp_path, role, "java_advanced_agent.md", AGENT_MD)
+    return AgentFile.from_path(p)
+
+
+def test_export_result_stores_fields(tmp_path):
+    from tools.exporter import ExportResult
+    result = ExportResult(
+        target="claude",
+        skill_files=[tmp_path / "skill.md"],
+        agent_files=[tmp_path / "agent.md"],
+        dry_run=False,
+    )
+    assert result.target == "claude"
+    assert len(result.skill_files) == 1
+    assert len(result.agent_files) == 1
+    assert result.dry_run is False
+
+
+def test_platform_exporter_export_writes_skill_file(tmp_path):
+    from tools.exporter import ClaudeExporter
+    skill = make_skill(tmp_path)
+    exporter = ClaudeExporter(repo_root=tmp_path)
+    exporter.export(skills=[skill], agents=[], dry_run=False)
+    out = tmp_path / ".claude" / "skills" / "java_advanced_skill.md"
+    assert out.exists()
+    assert "Java Advanced" in out.read_text()
+
+
+def test_platform_exporter_export_writes_agent_file(tmp_path):
+    from tools.exporter import ClaudeExporter
+    agent = make_agent(tmp_path)
+    exporter = ClaudeExporter(repo_root=tmp_path)
+    exporter.export(skills=[], agents=[agent], dry_run=False)
+    out = tmp_path / ".claude" / "agents" / "java_advanced_agent.md"
+    assert out.exists()
+
+
+def test_platform_exporter_dry_run_does_not_write(tmp_path):
+    from tools.exporter import ClaudeExporter
+    skill = make_skill(tmp_path)
+    exporter = ClaudeExporter(repo_root=tmp_path)
+    result = exporter.export(skills=[skill], agents=[], dry_run=True)
+    out = tmp_path / ".claude" / "skills" / "java_advanced_skill.md"
+    assert not out.exists()
+    assert result.dry_run is True
+
+
+def test_platform_exporter_returns_correct_file_paths(tmp_path):
+    from tools.exporter import ClaudeExporter
+    skill = make_skill(tmp_path)
+    agent = make_agent(tmp_path)
+    exporter = ClaudeExporter(repo_root=tmp_path)
+    result = exporter.export(skills=[skill], agents=[agent], dry_run=True)
+    assert any("java_advanced_skill" in str(p) for p in result.skill_files)
+    assert any("java_advanced_agent" in str(p) for p in result.agent_files)

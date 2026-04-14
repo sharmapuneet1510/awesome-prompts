@@ -239,3 +239,136 @@ class AgentFile(BaseFile):
             content=body,
             slug=path.stem,
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Export Result
+# ─────────────────────────────────────────────────────────────────────────────
+
+@dataclass
+class ExportResult:
+    """Result of one platform export run.
+
+    Attributes:
+        target:      Platform name (e.g. 'claude').
+        skill_files: Paths of written (or would-be-written) skill files.
+        agent_files: Paths of written (or would-be-written) agent files.
+        dry_run:     True if files were NOT actually written.
+    """
+
+    target: str
+    skill_files: list[Path]
+    agent_files: list[Path]
+    dry_run: bool
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Abstract Platform Exporter
+# ─────────────────────────────────────────────────────────────────────────────
+
+class PlatformExporter(ABC):
+    """Abstract base class for all platform exporters.
+
+    Each subclass knows its output directories, file naming convention,
+    and how to format skills and agents for its platform.
+
+    Subclasses must implement:
+        target_name, skill_output_dir, agent_output_dir,
+        format_skill, format_agent
+    """
+
+    def __init__(self, repo_root: Path) -> None:
+        self._repo_root = repo_root
+
+    @property
+    @abstractmethod
+    def target_name(self) -> str:
+        """Short platform identifier (e.g. 'copilot')."""
+
+    @abstractmethod
+    def skill_output_dir(self) -> Path:
+        """Directory where skill files are written."""
+
+    @abstractmethod
+    def agent_output_dir(self) -> Path:
+        """Directory where agent files are written."""
+
+    @abstractmethod
+    def format_skill(self, skill: SkillFile) -> str:
+        """Formats a skill for this platform."""
+
+    @abstractmethod
+    def format_agent(self, agent: AgentFile) -> str:
+        """Formats an agent for this platform."""
+
+    def skill_filename(self, skill: SkillFile) -> str:
+        """Output filename for a skill. Override for non-.md extensions."""
+        return f"{skill.slug}.md"
+
+    def agent_filename(self, agent: AgentFile) -> str:
+        """Output filename for an agent. Override for non-.md extensions."""
+        return f"{agent.slug}.md"
+
+    def export(
+        self,
+        skills: list[SkillFile],
+        agents: list[AgentFile],
+        dry_run: bool = False,
+    ) -> ExportResult:
+        """Writes one file per skill and one file per agent.
+
+        Args:
+            skills:  Skill files to export.
+            agents:  Agent files to export.
+            dry_run: If True, generate paths but do not write files.
+
+        Returns:
+            ExportResult with all written (or planned) file paths.
+        """
+        skill_paths: list[Path] = []
+        agent_paths: list[Path] = []
+
+        for skill in skills:
+            out = self.skill_output_dir() / self.skill_filename(skill)
+            skill_paths.append(out)
+            if not dry_run:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(self.format_skill(skill), encoding="utf-8")
+
+        for agent in agents:
+            out = self.agent_output_dir() / self.agent_filename(agent)
+            agent_paths.append(out)
+            if not dry_run:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(self.format_agent(agent), encoding="utf-8")
+
+        return ExportResult(
+            target=self.target_name,
+            skill_files=skill_paths,
+            agent_files=agent_paths,
+            dry_run=dry_run,
+        )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Platform Exporters — STUB (will be replaced in Task 4)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ClaudeExporter(PlatformExporter):
+    """Temporary stub — full implementation in Task 4."""
+
+    @property
+    def target_name(self) -> str:
+        return "claude"
+
+    def skill_output_dir(self) -> Path:
+        return self._repo_root / ".claude" / "skills"
+
+    def agent_output_dir(self) -> Path:
+        return self._repo_root / ".claude" / "agents"
+
+    def format_skill(self, skill: SkillFile) -> str:
+        return skill.content
+
+    def format_agent(self, agent: AgentFile) -> str:
+        return agent.content
