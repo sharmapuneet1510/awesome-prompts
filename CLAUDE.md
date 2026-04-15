@@ -129,22 +129,6 @@ python tools/exporter.py --clean
 
 See `tools/README.md` for full documentation.
 
-## Active Work — 2026-04-14
-
-**Building:** `tools/exporter.py` — unified agent & skill exporter (replaces `tools/skill_exporter.py`)
-
-**Design spec:** `docs/superpowers/specs/2026-04-14-unified-exporter-design.md`
-
-**Implementation plan:** `docs/superpowers/plans/2026-04-14-unified-exporter.md`
-
-**Status:** Implementation in progress — Task 1 of 10 starting now
-
-**Key decisions:**
-- One file per skill, one file per agent — no merged output files
-- 8 platforms: copilot, claude, cursor, windsurf, gemini, continue, openai, aider
-- Platform-native file locations and frontmatter per target
-- `BaseFile` → `SkillFile` / `AgentFile` data models share a common YAML frontmatter parser
-- TDD: tests written before implementation in each task
 
 ## All Agents Follow Master Rules
 
