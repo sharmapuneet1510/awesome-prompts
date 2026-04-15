@@ -83,15 +83,17 @@ coverage.xml
 .git/
 .gitkeep
 
-# Keep these important files:
-# - skills/*.md (shared knowledge)
-# - agents/*/*.md (agent definitions)
-# - instructions/*.md (universal rules)
-# - prompts/*/*.md (prompt templates)
-# - .github/copilot-instructions.md (generated, commit it)
-# - .claude/skills_context.md (generated, commit it)
-# - .cursorrules (generated, commit it)
-# - .continue/config.json (generated, commit it)
-# - tools/output/openai_system_prompt.txt (generated, commit it)
-# - tools/*.py (scripts)
-# - README.md, CLAUDE.md, MEMORY.md (documentation)
+# Generated exporter output — written by tools/exporter.py, not committed
+.github/instructions/
+.github/copilot/
+.claude/skills/
+.claude/agents/
+.cursor/
+.windsurf/
+.gemini/
+.continue/prompts/
+.aider/
+tools/output/openai/
+
+# Superpowers plans and specs
+docs/superpowers/
