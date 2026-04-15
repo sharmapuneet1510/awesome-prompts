@@ -1,8 +1,8 @@
 # Awesome Prompts — Enterprise-Grade AI Coding Assistant Repository
 
-A comprehensive, production-ready collection of **AI agent definitions**, **coding skills**, and **prompt templates** for software engineering workflows. Compatible with GitHub Copilot, Claude, Cursor IDE, Continue.dev, and OpenAI API.
+A comprehensive, production-ready collection of **AI agent definitions**, **coding skills**, and **prompt templates** for software engineering workflows. Compatible with GitHub Copilot, Claude, Cursor, Windsurf, Gemini CLI, Continue.dev, OpenAI API, and Aider.
 
-**Status:** ✅ Complete & Shareable | 18 Skills | 4 Agent Roles | 5 Platform Exports | Zero Dependencies
+**Version:** 3.0.0 | **Status:** ✅ Production Ready | 26 Skills | 8 Agents | 8 Platform Exports
 
 ---
 
@@ -27,124 +27,108 @@ This repository provides **shareable, git-friendly instructions** for AI coding 
 
 ## 📦 What's Included
 
-### Skills (18 total, 312 KB)
-
-Advanced knowledge modules covering:
+### Skills (26 total)
 
 **API & Backend:**
 - `rest_api_java_skill.md` — Spring Boot REST patterns
 - `rest_api_python_skill.md` — FastAPI patterns
 - `spring_advanced_skill.md` — Spring Framework internals
-- `apache_camel_skill.md` — Integration & routing
+- `spring_camel_integration_skill.md` — Spring + Camel integration
+- `apache_camel_skill.md` — Integration & EIP routing
+- `camel_exception_handling_skill.md` — Camel error routes
+- `camel_pulsar_integration_skill.md` — Camel + Pulsar integration
 - `apache_pulsar_skill.md` — Messaging & streaming
 
 **Language Standards:**
 - `java_advanced_skill.md` — Java 17+ patterns
+- `java17_skill.md` — Java 17 modern features
+- `java11_skill.md` — Java 11 LTS features
 - `python_advanced_skill.md` — Python 3.11+ patterns
-- `react_advanced_skill.md` — React 18+ patterns
+- `react_advanced_skill.md` — React 18+ / TypeScript patterns
 - `mssql_advanced_skill.md` — T-SQL & indexing
+- `oop_skill.md` — OOP principles & patterns
+- `lombok_skill.md` — Project Lombok
 
 **Testing & Quality:**
 - `testing_junit5_skill.md` — JUnit5 with Mockito
 - `testing_pytest_skill.md` — pytest with fixtures
 - `testing_react_skill.md` — React Testing Library
 - `code_health_skill.md` — Quality inspection taxonomy
+- `sonarqube_vulnerability_skill.md` — Security & OWASP Top 10
 
 **Code Standards:**
 - `error_handling_skill.md` — Exception patterns
-- `camel_exception_handling_skill.md` — Camel error routes
 - `code_formatting_skill.md` — Formatting standards
 - `documentation_skill.md` — Javadoc/docstrings/JSDoc
-- `sonarqube_vulnerability_skill.md` — Security & OWASP Top 10
+- `logger_skill.md` — Logging best practices
+- `opentelemetry_skill.md` — Distributed tracing & observability
 
-### Agents (11 total, organized by role)
+### Agents (8 total, organized by role)
 
-**Developer Agents** (agents/developer/)
-- `java_advanced_agent.md` (Jarvis)
-- `python_advanced_agent.md` (Pyra)
-- `react_advanced_agent.md` (Rexa)
-- `mssql_advanced_agent.md` (Sigma)
-- `jira_implementation_agent.md`
+**Developer Agents** (`agents/developer/`)
+- `java_advanced_agent.md` — Jarvis (Java 17+ / Spring Boot)
+- `python_advanced_agent.md` — Pyra (Python 3.11+ / FastAPI)
+- `react_advanced_agent.md` — Rexa (React 18+ / TypeScript)
+- `mssql_advanced_agent.md` — Sigma (SQL Server DBA)
+- `jira_implementation_agent.md` — Task breakdown & tracking
 
-**Reviewer Agents** (agents/reviewer/)
-- `code_health_inspector_agent.md` (Sherlock)
-- `code_review_agent.md`
-- `git-review-2.md`
+**Reviewer Agents** (`agents/reviewer/`)
+- `code_health_inspector_agent.md` — Sherlock (6-phase code scan)
+- `code_review_agent.md` — Pattern & design review
 
-**Writer Agents** (agents/writer/)
-- `jira_documentation_agent.md`
+**Writer Agents** (`agents/writer/`)
+- `jira_documentation_agent.md` — Technical documentation
 
-**Integration Agents** (agents/integration/)
-- `jira_mr_sync_review.agent.md`
+**Integration Agents** (`agents/integration/`)
+- `jira_mr_sync_review.agent.md` — CI/CD pipeline orchestration
 
 ### Instructions (3 files)
 
-Universal rules all agents follow:
-- `instructions/master_instruction_set.md` — 9 non-negotiable rules
-- `instructions/java_project_intake.md` — 33-question Java/Spring intake
+- `instructions/master_instruction_set.md` — Universal rules all agents follow
+- `instructions/java_project_intake.md` — 33-question Java/Spring intake form
 - `instructions/python_project_intake.md` — Python project setup guide
-
-### Tools
-
-**Skill Exporter** (`tools/skill_exporter.py`)
-- Exports all skills to 5 platforms in one command
-- Validates skills before export
-- Supports filtering by skill/target
-
-**Skill Validator** (`tools/skill_validator.py`)
-- Enforces YAML frontmatter correctness
-- Checks required fields, markdown structure, naming
-- Guard rail for code quality
-
-**Code Block Fixer** (`tools/fix_code_blocks.py`)
-- Adds language tags to code blocks
-- Infers language intelligently
-- Ensures markdown compliance
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Export Skills to Your Platform
+### 1. Export to Your Platform
 
 ```bash
-# Export all 18 skills to all 5 platforms
-python3 tools/skill_exporter.py
+# Export all 26 skills + 8 agents to all 8 platforms
+python3 tools/exporter.py
 
-# Or to one platform
-python3 tools/skill_exporter.py --target copilot claude cursor
+# Specific platforms only
+python3 tools/exporter.py --target copilot claude cursor
+
+# Filter by skill/agent
+python3 tools/exporter.py --skills java,spring --agents developer
+
+# Preview without writing
+python3 tools/exporter.py --dry-run
+
+# List everything discovered
+python3 tools/exporter.py --list
 ```
 
-This generates:
-- `.github/copilot-instructions.md` (GitHub Copilot)
-- `.claude/skills_context.md` (Claude)
-- `.cursorrules` (Cursor IDE)
-- `.continue/config.json` (Continue.dev)
-- `tools/output/openai_system_prompt.txt` (OpenAI API)
+### 2. Platform Output Locations
 
-### 2. Use with Your AI Assistant
-
-**GitHub Copilot** — Automatically reads `.github/copilot-instructions.md`
-
-**Claude** — Reference in conversation: "Use the skills from `.claude/skills_context.md`"
-
-**Cursor** — Automatically loads `.cursorrules`
-
-**Continue.dev** — Automatically reads `.continue/config.json`
-
-**OpenAI API** — Copy `tools/output/openai_system_prompt.txt` to API calls
+| Platform | Skills | Agents |
+|----------|--------|--------|
+| GitHub Copilot | `.github/instructions/<slug>.instructions.md` | `.github/copilot/agents/<slug>.md` |
+| Claude Code | `.claude/skills/<slug>.md` | `.claude/agents/<slug>.md` |
+| Cursor IDE | `.cursor/rules/<slug>.mdc` | `.cursor/rules/agents/<slug>.mdc` |
+| Windsurf | `.windsurf/rules/<slug>.md` | `.windsurf/rules/agents/<slug>.md` |
+| Gemini CLI | `.gemini/skills/<slug>.md` | `.gemini/agents/<slug>.md` |
+| Continue.dev | `.continue/prompts/<slug>.prompt` | `.continue/prompts/agents/<slug>.prompt` |
+| OpenAI API | `tools/output/openai/skills/<slug>.txt` | `tools/output/openai/agents/<slug>.txt` |
+| Aider | `.aider/skills/<slug>.md` | `.aider/agents/<slug>.md` |
 
 ### 3. Ask for Code
 
 ```
 "Use Jarvis to create a Spring Boot REST API for orders with proper error handling"
-→ Generates code with:
-  - Spring Boot 3.x patterns
-  - Constructor injection
-  - DTO validation
-  - Global error handler
-  - JUnit5 tests
-  - Javadoc docs
+→ Generates: Spring Boot 3.x controller, service, JPA entities, JUnit5 tests, Javadoc
 ```
 
 ---
@@ -154,26 +138,18 @@ This generates:
 ```
 awesome-prompts/
 ├── agents/                           ← AI agents organized by role
-│   ├── developer/                    ← Code generation (Jarvis, Pyra, Rexa, Sigma)
-│   ├── reviewer/                     ← Code quality (Sherlock, Code Reviewer)
-│   ├── writer/                       ← Documentation (Documentarian)
-│   ├── integration/                  ← CI/CD (Orchestrator)
-│   └── README.md                     ← Agent guide
+│   ├── developer/                    ← Jarvis, Pyra, Rexa, Sigma
+│   ├── reviewer/                     ← Sherlock, Code Reviewer
+│   ├── writer/                       ← Documentarian
+│   ├── integration/                  ← CI/CD Orchestrator
+│   └── README.md
 │
-├── skills/                           ← Reusable knowledge modules (18 total)
-│   ├── rest_api_java_skill.md
-│   ├── rest_api_python_skill.md
-│   ├── error_handling_skill.md
-│   ├── testing_*.md                  ← 3 testing skills
-│   ├── code_formatting_skill.md
-│   ├── documentation_skill.md
-│   ├── sonarqube_vulnerability_skill.md
-│   └── ... (more skills)
+├── skills/                           ← Reusable knowledge modules (26 total)
 │
 ├── instructions/                     ← Universal rules & intake forms
-│   ├── master_instruction_set.md     ← 9 rules all agents follow
-│   ├── java_project_intake.md        ← 33-question intake form
-│   └── python_project_intake.md      ← Python intake form
+│   ├── master_instruction_set.md
+│   ├── java_project_intake.md
+│   └── python_project_intake.md
 │
 ├── prompts/                          ← Reusable prompt templates
 │   ├── code-review/
@@ -184,70 +160,50 @@ awesome-prompts/
 │   └── email/
 │
 ├── tools/                            ← Python utilities
-│   ├── skill_exporter.py             ← Export to 5 platforms
-│   ├── skill_validator.py            ← Validate skills
-│   ├── fix_code_blocks.py            ← Fix markdown
-│   └── output/                       ← Generated files
+│   ├── exporter.py                   ← Export to 8 platforms (v3.0)
+│   ├── skill_validator.py            ← Validate skill frontmatter
+│   ├── fix_code_blocks.py            ← Fix markdown code blocks
+│   └── README.md
 │
-├── .github/copilot-instructions.md   ← (Generated by exporter)
-├── .claude/skills_context.md         ← (Generated by exporter)
-├── .cursorrules                      ← (Generated by exporter)
-├── .continue/config.json             ← (Generated by exporter)
+├── tests/                            ← Test suite for tools
+│   └── tools/
+│       └── test_exporter.py          ← 79 tests, all passing
 │
-├── CLAUDE.md                         ← This repo's own instructions
-├── .gitignore                        ← Git exclusions
-└── README.md                         ← This file
+├── CLAUDE.md                         ← Claude Code instructions
+├── .gitignore
+└── README.md
 ```
 
 ---
 
 ## 🎓 Agent Usage Examples
 
-### Ask Jarvis (Java Developer)
+### Jarvis (Java Developer)
 
 ```
 "Create a Spring Boot service that processes orders asynchronously"
-
-Jarvis will generate:
-✓ Spring Boot 3.x REST controller
-✓ Service layer with Spring transactions
-✓ JPA/Hibernate entity mappings
-✓ Constructor injection (no autowired fields)
-✓ @Valid request validation
-✓ Global error handler
-✓ Async @Transactional methods
-✓ JUnit5 tests with Mockito
-✓ Full Javadoc documentation
+✓ Spring Boot 3.x REST controller + service layer
+✓ JPA/Hibernate entities, constructor injection
+✓ @Valid request validation, global error handler
+✓ JUnit5 + Mockito tests, full Javadoc
 ```
 
-### Ask Sherlock (Code Inspector)
+### Sherlock (Code Inspector)
 
 ```
 "Scan this service for performance issues"
-
-Sherlock will:
-✓ Analyze 6 phases: structure → performance → errors → delays → memory/sec/reliability
-✓ Identify N+1 queries, blocking calls, missing indexes
-✓ Find swallowed exceptions, missing error handlers
-✓ Detect async bottlenecks
-✓ Generate P0-P3 severity report
-✓ Suggest fixes with code examples
+✓ 6-phase analysis: structure → performance → errors → delays → memory → security
+✓ N+1 queries, blocking calls, swallowed exceptions
+✓ P0–P3 severity report with fix examples
 ```
 
-### Ask Pyra (Python Developer)
+### Pyra (Python Developer)
 
 ```
 "Build a FastAPI endpoint with async database access"
-
-Pyra will generate:
-✓ FastAPI app with dependency injection
-✓ Pydantic request/response schemas
-✓ Async SQLAlchemy with selectinload
-✓ Error handling with custom exceptions
-✓ Input validation with field constraints
-✓ pytest tests with fixtures
-✓ Type hints throughout
-✓ Docstrings in Google style
+✓ FastAPI + Pydantic schemas, async SQLAlchemy
+✓ Dependency injection, custom exceptions
+✓ pytest fixtures, type hints, Google-style docstrings
 ```
 
 ---
@@ -255,8 +211,6 @@ Pyra will generate:
 ## ✨ Key Features
 
 ### All Agents Follow Master Rules
-
-Every agent applies these 9 principles:
 
 1. **Version Check First** — Check environment before coding
 2. **Test Generation** — Every feature gets tests (AAA pattern)
@@ -270,71 +224,28 @@ Every agent applies these 9 principles:
 
 ### Multi-Language Support
 
-- **Java** — Spring Boot 3.x, JUnit5, Maven/Gradle
+- **Java** — Spring Boot 3.x, JUnit5, Maven/Gradle, Lombok
 - **Python** — FastAPI, pytest, asyncio, Pydantic v2
 - **React** — React 18+, TypeScript, TanStack Query
 - **SQL Server** — T-SQL, DMVs, indexing strategies
-- **Apache** — Camel, Pulsar, Kafka patterns
-
-### Platform Compatibility
-
-| Platform | Format | Auto-Load | File |
-|----------|--------|-----------|------|
-| GitHub Copilot | Markdown | ✅ Yes | `.github/copilot-instructions.md` |
-| Claude Code | Markdown | ⚠️ Manual ref | `.claude/skills_context.md` |
-| Cursor IDE | Markdown | ✅ Yes | `.cursorrules` |
-| Continue.dev | JSON | ✅ Yes | `.continue/config.json` |
-| OpenAI API | Plain text | Manual | `tools/output/openai_system_prompt.txt` |
+- **Apache** — Camel EIP patterns, Pulsar messaging
 
 ---
 
-## 🔒 Git-Ready & Shareable
-
-✅ **No secrets** — All examples use safe patterns
-✅ **No generated code** — Skills are templates, not output
-✅ **Small footprint** — 312 KB of knowledge, not build artifacts
-✅ **Clean .gitignore** — Excludes only cache, IDE settings, secrets
-✅ **Documented structure** — Every directory has README.md
-✅ **Validated** — skill_validator.py ensures quality
-✅ **No external dependencies** — Pure Python tools, no npm/pip install needed
+## 🛠 Tools
 
 ```bash
-# Clone and use immediately
-git clone <repo>
-cd awesome-prompts
-python3 tools/skill_exporter.py
-# Done! Ready to commit
-```
+# Export all skills + agents to all platforms
+python3 tools/exporter.py
 
----
-
-## 🛠 Tools Usage
-
-### Validate All Skills
-
-```bash
+# Validate all skills
 python3 tools/skill_validator.py
-# Output: 18 valid ✓ | 0 errors | 0 warnings
-```
 
-### Export to Specific Platforms
-
-```bash
-# Just Copilot and Claude
-python3 tools/skill_exporter.py --target copilot claude
-
-# Just Java and Spring skills
-python3 tools/skill_exporter.py --skills java,spring
-
-# Dry run (no write)
-python3 tools/skill_exporter.py --dry-run
-```
-
-### Fix Code Blocks
-
-```bash
+# Fix code block language tags
 python3 tools/fix_code_blocks.py
-# Automatically adds language tags to all code blocks
+
+# Run tests
+python3 -m pytest tests/ -v
 ```
 
 ---
@@ -343,47 +254,67 @@ python3 tools/fix_code_blocks.py
 
 | Metric | Value |
 |--------|-------|
-| Skills | 18 |
-| Agents | 11 |
-| Agent Roles | 4 (Developer, Reviewer, Writer, Integration) |
-| Platform Exports | 5 |
-| Code Examples | 200+ |
-| Total Knowledge | 312 KB (skills) |
-| Total Exports | 908.6 KB |
-| Validation Status | ✅ 18/18 valid |
-| Lines of Code in Tools | 1000+ |
-| Dependencies | 0 |
-
----
-
-## 🚀 Next Steps
-
-1. **Clone the repo** — `git clone <repo>`
-2. **Export to your platform** — `python3 tools/skill_exporter.py`
-3. **Commit & push** — Everything is git-ready
-4. **Share with your team** — Send them this README
-5. **Ask your AI assistant** for code — It will apply the skills
-6. **Update skills** — Edit `.md` files and re-export anytime
+| Skills | 26 |
+| Agents | 8 |
+| Agent Roles | 4 |
+| Platform Exports | 8 |
+| Test Coverage | 79 tests passing |
+| Dependencies | 0 (stdlib only) |
 
 ---
 
 ## 📖 Documentation
 
 - **[CLAUDE.md](CLAUDE.md)** — Repository instructions for Claude Code
-- **[agents/README.md](agents/README.md)** — Detailed agent guide
+- **[agents/README.md](agents/README.md)** — Agent role guide
+- **[tools/README.md](tools/README.md)** — Exporter documentation
 - **[instructions/master_instruction_set.md](instructions/master_instruction_set.md)** — Universal rules
-- **[tools/README.md](tools/README.md)** — Skill exporter documentation
-- **[tools/QUICK_START.md](tools/QUICK_START.md)** — Quick reference guide
 
 ---
 
-## 💡 Tips
+## 📋 Changelog
 
-1. **Start with agents/README.md** — Understand each agent's role
-2. **Read skills you'll use** — Skills are learning resources, not just for AI
-3. **Validate before committing** — `python3 tools/skill_validator.py`
-4. **Re-export after updates** — Edit skills, then `python3 tools/skill_exporter.py`
-5. **Add to CI/CD** — Run validation in GitHub Actions before merge
+### v3.0.0 — 2026-04-15
+
+**Breaking changes:**
+- `tools/skill_exporter.py` removed — replaced by `tools/exporter.py`
+- Platform output format changed from merged single files to one file per skill/agent
+- Output directories changed (see Platform Output Locations above)
+
+**New:**
+- `tools/exporter.py` — unified exporter replacing `skill_exporter.py`
+- Agent export support — all 8 agents now exported alongside skills
+- 3 new platform targets: Windsurf, Gemini CLI, Aider
+- One file per skill, one file per agent — no merging
+- `--agents` CLI flag to filter agents by slug/role
+- `--clean` CLI flag to remove all exported files
+- 79 automated tests (`tests/tools/test_exporter.py`)
+- Platform-native frontmatter per target (Copilot `applyTo`, Cursor `description/globs/alwaysApply`, Continue.dev `name/description`)
+
+**Skills added (8 new):**
+- `java11_skill.md`, `java17_skill.md`
+- `logger_skill.md`, `opentelemetry_skill.md`
+- `lombok_skill.md`, `oop_skill.md`
+- `spring_camel_integration_skill.md`, `camel_pulsar_integration_skill.md`
+
+---
+
+### v2.0.0 — 2026-04-03
+
+**New:**
+- 8 new skills: Camel, Spring, logging, observability
+- `tools/skill_exporter.py` — export to 5 platforms
+- `tools/skill_validator.py`, `tools/fix_code_blocks.py`
+- Agent definitions for all 4 roles
+- Instructions directory with master rule set and intake forms
+
+---
+
+### v1.0.0 — Initial release
+
+- Core prompt templates (email, code review, testing, project management)
+- Python field derivation parser
+- Basic agent and skill structure
 
 ---
 
@@ -393,20 +324,4 @@ This repository is **sharable**, **reusable**, and **open for teams**.
 
 ---
 
-## 🎉 Credits
-
-**Built for:** Enterprise software engineering teams using AI coding assistants
-
-**Tested with:**
-- GitHub Copilot (VSCode, GitHub.com)
-- Claude (claude.ai, extensions)
-- Cursor IDE
-- Continue.dev
-- OpenAI API (gpt-4, gpt-4-turbo)
-
----
-
-**Version:** 2.0 Complete
-**Last Updated:** 2026-04-03
-**Status:** ✅ Production Ready
-
+**Tested with:** GitHub Copilot, Claude Code, Cursor IDE, Windsurf, Gemini CLI, Continue.dev, OpenAI API, Aider
