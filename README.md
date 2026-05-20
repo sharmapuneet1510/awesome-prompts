@@ -116,7 +116,13 @@ python3 tools/exporter.py --interactive
 # 1. Project root directory?
 # 2. Target platforms? (select multiple)
 # 3. Ready to export?
+# Result: Creates folder structure in your project and copies files there
 ```
+
+**What it does:**
+- Creates platform-specific folders (`.github/instructions`, `.github/copilot/agents`, etc.)
+- Copies skills and agents to your target project
+- Ready to use immediately in your IDE
 
 ### **Option 2: In Claude Code / Copilot**
 
@@ -377,14 +383,14 @@ Output:
 
 ---
 
-## 🔧 Installation
+## 🔧 Installation & Setup
 
 ### Requirements
 - Python 3.9+
 - Node.js 16+ (for JavaScript projects)
 - Java 17+ (for Java projects)
 
-### Setup
+### Quick Start
 
 ```bash
 # Clone
@@ -394,9 +400,33 @@ cd awesome-prompts
 # Install
 pip install -r requirements.txt
 
-# Export to platform
+# Interactive setup (recommended)
+# Creates folder structure in your project, copies files there
 python3 tools/exporter.py --interactive
 ```
+
+### Alternative: Direct Export
+
+```bash
+# Export to specific project directory with platform choice
+python3 tools/exporter.py --target-project /path/to/your/project --target copilot
+
+# Export to Claude Code (creates .claude/skills/, .claude/agents/)
+python3 tools/exporter.py --target-project /path/to/your/project --target claude
+
+# Export to all platforms
+python3 tools/exporter.py --target-project /path/to/your/project --target copilot claude cursor windsurf
+```
+
+**Platform Options:**
+- `claude` → `.claude/skills/`, `.claude/agents/`
+- `copilot` → `.github/instructions/`, `.github/copilot/agents/`
+- `cursor` → `.cursor/rules/`, `.cursor/rules/agents/`
+- `windsurf` → `.windsurf/rules/`, `.windsurf/rules/agents/`
+- `gemini` → `.gemini/skills/`, `.gemini/agents/`
+- `continue` → `.continue/prompts/`, `.continue/prompts/agents/`
+- `openai` → `tools/output/openai/skills/`, `tools/output/openai/agents/`
+- `aider` → `.aider/skills/`, `.aider/agents/`
 
 ---
 
