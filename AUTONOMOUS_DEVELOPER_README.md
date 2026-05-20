@@ -377,7 +377,9 @@ python3 tools/exporter.py --interactive
 # ✅ Setup complete!
 ```
 
-### 2. **Create Your Requirement File**
+### 2. **Provide Requirements (Multiple Ways)**
+
+**Option A: Create a requirement file**
 
 ```bash
 cat > requirement.txt << 'EOF'
@@ -400,6 +402,42 @@ Timeline: 2 weeks
 Team: 1 (autonomous agent)
 EOF
 ```
+
+**Option B: Use free text input**
+
+The agent will ask for requirements interactively:
+```
+Agent: "How would you like to provide requirements?"
+  a) Free text description
+  b) JIRA ticket/story
+  c) Requirement file
+  d) Auto-detect from project
+
+You: "a) Free text"
+
+Agent: "Describe what you want to build..."
+```
+
+**Option C: Use JIRA ticket**
+
+```
+Agent: "Provide JIRA ticket link or key (e.g., PROJ-123)"
+
+You: "PROJ-123"
+
+Agent: (Fetches JIRA details via MCP integration)
+```
+
+**Option D: Let agent auto-detect**
+
+If requirements.md or requirements.txt exists in project root:
+```
+Agent: "Auto-detect from project"
+
+Agent: (Finds and loads requirements automatically)
+```
+
+**For detailed information, see:** [`docs/requirement_input_guide.md`](./docs/requirement_input_guide.md)
 
 ### 3. **Invoke the Agent**
 
