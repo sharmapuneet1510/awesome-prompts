@@ -867,6 +867,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
                         help="Interactive setup mode - asks for project root and platforms.")
     parser.add_argument("--repo-root", type=Path, default=None,
                         help="Repository root. Auto-detected if omitted.")
+    parser.add_argument("--target-project", type=Path, default=None,
+                        help="Target project directory. If provided, copies agents/skills there instead of awesome-prompts repo.")
     return parser
 
 
@@ -880,6 +882,66 @@ def resolve_repo_root(provided: Path | None) -> Path:
         print("Run from the repository root or use --repo-root.")
         sys.exit(1)
     return root
+
+
+def copy_to_target_project(
+    skills: list[SkillFile],
+    agents: list[AgentFile],
+    target_project: Path,
+    platforms: list[str],
+) -> None:
+    """Copy exported files to a target project directory.
+
+    Args:
+        skills: List of skill files to copy
+        agents: List of agent files to copy
+        target_project: Path to target project directory
+        platforms: List of platform targets (determines folder structure)
+    """
+    target_project = target_project.resolve()
+    target_project.mkdir(parents=True, exist_ok=True)
+
+    # Map platforms to their folder structures
+    platform_dirs = {
+        "claude": (".claude/skills", ".claude/agents"),
+        "copilot": (".github/instructions", ".github/copilot/agents"),
+        "cursor": (".cursor/rules", ".cursor/rules/agents"),
+        "windsurf": (".windsurf/rules", ".windsurf/rules/agents"),
+        "gemini": (".gemini/skills", ".gemini/agents"),
+        "continue": (".continue/prompts", ".continue/prompts/agents"),
+        "openai": ("tools/output/openai/skills", "tools/output/openai/agents"),
+        "aider": (".aider/skills", ".aider/agents"),
+    }
+
+    # Determine which folders to create based on platforms
+    skill_dirs = set()
+    agent_dirs = set()
+
+    for platform in platforms:
+        if platform in platform_dirs:
+            skill_dir, agent_dir = platform_dirs[platform]
+            skill_dirs.add(skill_dir)
+            agent_dirs.add(agent_dir)
+
+    # Create skill directories and copy files
+    for skill in skills:
+        for skill_dir in skill_dirs:
+            target_skill_dir = target_project / skill_dir
+            target_skill_dir.mkdir(parents=True, exist_ok=True)
+            target_file = target_skill_dir / skill.path.name
+            shutil.copy2(skill.path, target_file)
+            print(f"  Copied skill: {skill_dir}/{skill.path.name}")
+
+    # Create agent directories and copy files
+    for agent in agents:
+        for agent_dir in agent_dirs:
+            target_agent_dir = target_project / agent_dir
+            target_agent_dir.mkdir(parents=True, exist_ok=True)
+            target_file = target_agent_dir / agent.path.name
+            shutil.copy2(agent.path, target_file)
+            print(f"  Copied agent: {agent_dir}/{agent.path.name}")
+
+    print(f"\n✓ Files copied to: {target_project}")
 
 
 def main() -> None:
@@ -933,6 +995,18 @@ def main() -> None:
         return
 
     try:
+        # If target project is specified, copy files there instead of exporting normally
+        if args.target_project:
+            all_skills = orchestrator.discover_skills()
+            all_agents = orchestrator.discover_agents()
+            skills = orchestrator.filter_skills(all_skills, args.skills)
+            agents = orchestrator.filter_agents(all_agents, args.agents)
+
+            print(f"\nCopying {len(skills)} skill(s), {len(agents)} agent(s) to {args.target_project}\n")
+            copy_to_target_project(skills, agents, args.target_project, args.target)
+            return
+
+        # Otherwise, use the normal export flow
         orchestrator.run(
             targets      = args.target,
             skill_filter = args.skills,

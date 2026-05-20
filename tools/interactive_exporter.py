@@ -154,17 +154,18 @@ def confirm_setup(project_root: Path, platforms: list[str], skills: list[str], a
     return input().lower() == 'y'
 
 
-def run_exporter(platforms: list[str], skills: list[str], agents: list[str]) -> bool:
+def run_exporter(project_root: Path, platforms: list[str], skills: list[str], agents: list[str]) -> bool:
     """Run the exporter tool."""
     print(f"\n{Colors.BOLD}Running export...{Colors.ENDC}\n")
 
-    # Build command
+    # Build command with target-project parameter
     cmd = [
         "python3",
         "tools/exporter.py",
-        "--target", " ".join(platforms),
+        "--target", *platforms,
         "--skills", ",".join(skills),
         "--agents", ",".join(agents),
+        "--target-project", str(project_root),
     ]
 
     try:
@@ -227,7 +228,7 @@ def main():
             return
 
         # Step 5: Run exporter
-        if not run_exporter(platforms, skills, agents):
+        if not run_exporter(project_root, platforms, skills, agents):
             print(f"\n{Colors.FAIL}Export failed. Please check the errors above.{Colors.ENDC}\n")
             return
 
