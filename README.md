@@ -3,7 +3,7 @@
 > **Enterprise-grade AI agents + reusable skills for autonomous code generation, comprehensive testing, and auto-documentation across Java, Python, React, and TypeScript.**
 
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=flat-square)]()
-[![Version](https://img.shields.io/badge/Version-4.1.0-blueviolet?style=flat-square)]()
+[![Version](https://img.shields.io/badge/Version-4.2.0-blueviolet?style=flat-square)]()
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)]()
 [![Last Updated](https://img.shields.io/badge/Updated-May%202026-blueviolet?style=flat-square)]()
 
