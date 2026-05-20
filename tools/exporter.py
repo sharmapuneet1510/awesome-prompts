@@ -15,6 +15,11 @@ Usage:
     python tools/exporter.py --clean                  # remove all exported files
     python tools/exporter.py --interactive            # interactive setup (recommended)
 
+Auto-Update:
+    python tools/update_checker.py --check            # check for updates
+    python tools/update_checker.py --apply            # download and apply updates
+    python tools/update_checker.py --version          # show current version
+
 Interactive Mode:
     Asks for project root and target platforms, then exports skills/agents.
     Great for first-time setup!
@@ -880,6 +885,18 @@ def resolve_repo_root(provided: Path | None) -> Path:
 def main() -> None:
     parser       = build_argument_parser()
     args         = parser.parse_args()
+
+    # Check for updates (unless explicitly skipped with --no-update-check)
+    if not getattr(args, 'no_update_check', False):
+        try:
+            from update_checker import VersionChecker
+            checker = VersionChecker()
+            if checker.check_for_updates():
+                print("\n💡 Tip: Run 'python tools/update_checker.py --apply' to get the latest features\n")
+        except ImportError:
+            pass  # update_checker not available
+        except Exception:
+            pass  # Silently ignore update check errors
 
     # Handle interactive mode by delegating to interactive_exporter.py
     if args.interactive:

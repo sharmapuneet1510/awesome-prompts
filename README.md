@@ -469,6 +469,59 @@ Invoke with autonomous agent or directly:
 
 ---
 
+#### Git Review Agent (git-review-2.md)
+**What it does:** Git history and PR reviewer. Analyzes commits, branching strategy, code organization, and pull request structure.
+
+**When to use it:**
+- Review commit quality and messages
+- Check PR organization and structure
+- Analyze branching strategy
+- Ensure git best practices
+
+**How to use it:**
+```
+"Review this branch for commit quality and PR structure"
+→ Outputs: Commit message feedback, branching suggestions, PR structure analysis
+```
+
+---
+
+### 📋 Integration & Orchestration Agents
+
+#### JIRA Implementation Agent (jira_implementation_agent.md)
+**What it does:** Task breakdown and tracking agent. Converts user stories and requirements into actionable implementation tasks with subtasks and acceptance criteria.
+
+**When to use it:**
+- Breaking down user stories into tasks
+- Creating sprint planning from requirements
+- Generating acceptance criteria
+- Need structured task hierarchy
+
+**How to use it:**
+```
+"Break down this user story into implementation tasks"
+→ Outputs: Main task, subtasks, acceptance criteria, story points estimation
+```
+
+---
+
+#### CI/CD Orchestrator (jira_mr_sync_review.agent.md)
+**What it does:** Pipeline automation agent. Orchestrates CI/CD workflows, syncs JIRA with merge requests, and automates release processes.
+
+**When to use it:**
+- Setting up CI/CD pipelines
+- Automating JIRA ↔ MR sync
+- Creating release automation
+- Building deployment pipelines
+
+**How to use it:**
+```
+"Create a CI/CD pipeline that syncs JIRA tasks with merge requests"
+→ Outputs: Pipeline config, webhook setup, automation rules, release flow
+```
+
+---
+
 ### ✍️ Supporting Skills by Category
 
 #### **Integration & Messaging:**
@@ -537,18 +590,113 @@ Invoke with autonomous agent or directly:
 
 ## 🛠 Tools
 
+### Exporter
 ```bash
 # Export all skills + agents to all platforms
 python3 tools/exporter.py
 
-# Validate all skills
+# Interactive setup (recommended)
+python3 tools/exporter.py --interactive
+
+# Export to specific platform
+python3 tools/exporter.py --target claude
+
+# List all available skills and agents
+python3 tools/exporter.py --list
+
+# Preview without writing
+python3 tools/exporter.py --dry-run
+
+# Remove all exported files
+python3 tools/exporter.py --clean
+```
+
+### Auto-Update Checker
+```bash
+# Check for available updates
+python3 tools/update_checker.py --check
+
+# Download and apply latest version
+python3 tools/update_checker.py --apply
+
+# Show current version
+python3 tools/update_checker.py --version
+```
+
+### Other Tools
+```bash
+# Validate all skills have proper frontmatter
 python3 tools/skill_validator.py
 
-# Fix code block language tags
+# Fix code block language tags in markdown
 python3 tools/fix_code_blocks.py
 
-# Run tests
+# Run test suite
 python3 -m pytest tests/ -v
+```
+
+---
+
+## 📖 Getting Started Workflows
+
+### Workflow 1: First-Time Setup (Recommended)
+
+```bash
+# Step 1: Check for latest version
+python3 tools/update_checker.py --check
+
+# Step 2: If update available, apply it
+python3 tools/update_checker.py --apply
+
+# Step 3: Run interactive setup
+python3 tools/exporter.py --interactive
+
+# Follow prompts to select:
+# - Project root directory
+# - Target platforms (Claude, Copilot, Cursor, etc.)
+# - Skills and agents to export
+```
+
+### Workflow 2: Manual Setup
+
+```bash
+# Step 1: Check and apply updates
+python3 tools/update_checker.py --apply
+
+# Step 2: Export to Claude Code
+python3 tools/exporter.py --target claude
+
+# Step 3: List what's available
+python3 tools/exporter.py --list
+
+# Step 4: Export specific skills
+python3 tools/exporter.py --target claude --skills java,spring,testing
+
+# Step 5: Export specific agents
+python3 tools/exporter.py --target claude --agents developer
+```
+
+### Workflow 3: Multi-Platform Setup
+
+```bash
+# Export to multiple platforms at once
+python3 tools/exporter.py --target claude copilot cursor windsurf
+
+# Or export to all platforms
+python3 tools/exporter.py
+```
+
+### Workflow 4: Keeping Updated
+
+```bash
+# Daily: Check for updates
+python3 tools/update_checker.py --check
+
+# When update available: Apply it
+python3 tools/update_checker.py --apply
+
+# Then re-export: Ensure latest skills are in your IDE
+python3 tools/exporter.py
 ```
 
 ---
