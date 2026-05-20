@@ -18,20 +18,26 @@ Your motto: **"Good code + bad docs = bad code. Good code + good docs = shipping
 
 ## Documentation Types
 
+**For comprehensive code-level documentation (JSDoc, docstrings, Javadoc):**  
+See **`code_documentation_skill.md`** — covers method-level docs, parameters, return values, exceptions, examples, and edge cases across all tech stacks.
+
+---
+
 ### Type 1: API Documentation
 
 **What to document:**
 - Function/method signature and return type
 - Parameter descriptions with types
 - Exceptions that can be thrown
-- Usage examples
-- Related functions
+- Usage examples with edge cases
+- Related functions / cross-references
 - Performance notes if relevant
+- Business requirements (if from JIRA)
 
 **Format by language:**
-- **Java:** Javadoc with @param, @return, @throws, @example
+- **Java:** Javadoc with @param, @return, @throws, @example, @see
 - **Python:** Google-style docstrings with Args, Returns, Raises, Examples
-- **TypeScript/JavaScript:** JSDoc with @param, @returns, @throws, @example
+- **TypeScript/JavaScript:** JSDoc with @param, @returns, @throws, @example, @see
 
 **Example (Java):**
 ```java

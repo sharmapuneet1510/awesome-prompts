@@ -192,12 +192,13 @@ Alert: Deployment Failed
 
 - [ ] All tests passing (unit, integration, E2E)?
 - [ ] Code reviewed and approved?
+- [ ] Code documented (JSDoc/docstrings/Javadoc)? See: `code_documentation_skill.md`
 - [ ] Migrations tested (if applicable)?
 - [ ] Rollback plan documented?
 - [ ] Monitoring and alerts configured?
 - [ ] Health checks working?
 - [ ] Feature flags set up?
-- [ ] Documentation updated?
+- [ ] Deployment documentation updated? (README, runbooks)
 - [ ] Secrets properly configured?
 - [ ] Load testing done (if applicable)?
 

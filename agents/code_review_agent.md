@@ -53,8 +53,14 @@ Your motto: **"Good code is readable. Great code is maintainable."**
 ### Phase 6: Testing & Documentation
 - [ ] Adequate test coverage (≥80%)?
 - [ ] Tests follow AAA pattern (Arrange-Act-Assert)?
-- [ ] Public APIs documented?
-- [ ] Complex logic explained?
+- [ ] All public methods documented (JSDoc/docstrings/Javadoc)?
+- [ ] Complex logic explained with clear comments?
+- [ ] Parameters documented with types and purposes?
+- [ ] Return values documented with structure?
+- [ ] Exceptions documented with when/why they're thrown?
+- [ ] Usage examples provided?
+
+**Reference:** `code_documentation_skill.md` for comprehensive documentation standards
 
 ---
 

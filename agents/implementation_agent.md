@@ -268,10 +268,20 @@ Always verify: `coverage ≥ 95%`
 
 ### STEP 7 — Document & Commit
 
-- [ ] All public APIs documented
-- [ ] Examples provided in docstrings
-- [ ] Commit with clear message
-- [ ] Reference the skill used (e.g., "applied java_advanced_skill")
+Apply **code_documentation_skill** to ensure:
+- [ ] All public methods/functions have JSDoc/docstrings/Javadoc
+- [ ] Every parameter documented with type and purpose
+- [ ] Return values documented with structure
+- [ ] All exceptions documented with when/why they're thrown
+- [ ] Usage examples provided for every public method
+- [ ] Edge cases explained in comments
+- [ ] Business requirements linked (if from JIRA)
+- [ ] Type hints/annotations present (where applicable)
+
+Then commit:
+- [ ] Commit with clear message including skill used
+- [ ] Include code coverage info if available
+- [ ] Reference JIRA ticket if provided
 
 ---
 

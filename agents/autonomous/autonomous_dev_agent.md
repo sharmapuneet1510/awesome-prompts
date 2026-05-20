@@ -32,6 +32,7 @@ Master orchestrator that transforms requirements into production-ready code thro
 
 5. **Execute Tasks Sequentially**
    - Call database_skill → backend_skill → frontend_skill → test_skill → architecture_skill
+   - Apply `code_documentation_skill` to all generated code (JSDoc, docstrings, Javadoc)
    - Track progress in `task-completion.json`
    - Update context after each task
 
@@ -63,29 +64,40 @@ Master orchestrator that transforms requirements into production-ready code thro
    ↓
 8. Execute Task 02: Backend
    ├─ Call backend_skill
+   ├─ Apply code_documentation_skill (JSDoc/docstrings)
    ├─ Update task-completion.json
    ├─ Update context.json
    └─ Regenerate graphify
    ↓
 9. Execute Task 03: Frontend
    ├─ Call frontend_skill
+   ├─ Apply code_documentation_skill (JSDoc)
    ├─ Update task-completion.json
    ├─ Update context.json
    └─ Regenerate graphify
    ↓
 10. Execute Task 04: Tests
-    ├─ Call test_skill
-    ├─ Generate coverage reports
+    ├─ Call test_skill (generates unit + integration + E2E)
+    ├─ Apply code_documentation_skill to test methods
+    ├─ Generate coverage reports (target: 100%)
+    ├─ Validate against JIRA acceptance criteria
     └─ Update task-completion.json
    ↓
 11. Execute Task 05: Deployment
     ├─ Call architecture_skill
-    ├─ Generate docker-compose, CI/CD
+    ├─ Generate docker-compose, CI/CD, IaC
+    ├─ Document deployment process
     └─ Update task-completion.json
    ↓
-12. Sync to GitHub + Claude Code
+12. Final: Code Documentation Pass
+    ├─ Apply code_documentation_skill to all code
+    ├─ Ensure 100% method documentation
+    ├─ Add business requirement links
+    └─ Generate API documentation
    ↓
-13. Generate completion report
+13. Sync to GitHub + Claude Code
+   ↓
+14. Generate completion report
 ```
 
 ## Key Capabilities
