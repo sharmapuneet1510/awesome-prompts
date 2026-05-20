@@ -9,12 +9,12 @@ This directory contains **simplified, role-based AI agents** that focus on workf
 **Agents = Roles + Workflows**  
 **Skills = Tech-Specific Implementation Details**
 
-Instead of separate agents for Java, Python, React developers, we have **ONE developer agent** that:
-1. Detects your tech stack
-2. Loads the appropriate skill
-3. Applies best practices for that tech
+Instead of separate agents for Java, Python, React developers, we have **ONE implementation agent** that:
+1. Takes your requirement
+2. Detects your tech stack
+3. Builds complete feature: code + tests + documentation
 
-This eliminates duplication and makes skills reusable.
+This eliminates duplication and ensures every feature is fully delivered.
 
 ---
 
@@ -22,15 +22,16 @@ This eliminates duplication and makes skills reusable.
 
 ```
 agents/
-├── developer_agent.md           ← Write code (any tech)
+├── implementation_agent.md       ← Build features end-to-end (any tech)
 ├── code_review_agent.md         ← Review code (any tech)
 ├── writer_agent.md              ← Write documentation
 ├── integration_agent.md          ← CI/CD & automation
+├── context/
+│   └── context_builder_agent.md ← Build architecture context
 ├── autonomous/
-│   └── autonomous_dev_agent.md  ← End-to-end generation
-├── developer/
-│   └── jira_implementation_agent.md  ← Task breakdown
+│   └── autonomous_dev_agent.md  ← Orchestrate full projects
 ├── _deprecated/                 ← Old agents (archived)
+│   ├── developer_agent.md (renamed to implementation_agent)
 │   ├── java_advanced_agent.md
 │   ├── python_advanced_agent.md
 │   ├── react_advanced_agent.md
@@ -42,32 +43,40 @@ agents/
 
 ## 🚀 The 5 Agents
 
-### 1️⃣ Developer Agent
+### 1️⃣ Implementation Agent
 
-**File:** `developer_agent.md`
+**File:** `implementation_agent.md`
 
-**What it does:** Writes production-ready code in any tech stack (Java, Python, React, TypeScript, SQL, etc.)
+**What it does:** Complete end-to-end feature implementation. Takes requirement → Creates code → Tests → Documents → Commits
 
-**How it works:**
-1. You tell it your tech stack (or it detects from files)
-2. It loads the appropriate skill (java_advanced_skill, python_advanced_skill, etc.)
-3. It applies that skill's best practices to generate code
+**Full Lifecycle:**
+1. Gathers requirement (free text, JIRA, file, or auto-detect)
+2. Detects tech stack (auto or from project)
+3. Plans implementation
+4. Generates production-ready code
+5. Creates comprehensive tests (≥95% coverage)
+6. Auto-generates documentation
+7. Commits with clear messages
 
 **When to use:**
-- Building new features
-- Writing backend services
-- Creating frontend components
-- Writing database queries
-- Implementing business logic
+- Building new features with complete delivery
+- Need code + tests + documentation together
+- Want auto-updated project context
+- Requirements in free text, JIRA, or files
+- Rapid feature implementation
 
 **Example:**
 ```
-User: "Build a Spring Boot REST API for orders"
+User: "Implement user registration with email validation"
 
 Agent:
-1. Detects: Java + Spring Boot
-2. Loads: java_advanced_skill.md
-3. Generates: Controller, Service, JPA Entity, JUnit5 tests, Javadoc
+1. Gathers requirement
+2. Detects: Python + FastAPI
+3. Plans: Models, Routes, Email Service
+4. Creates: Routes, Pydantic schemas, email sending
+5. Tests: pytest with ≥95% coverage
+6. Docs: Auto-generated docstrings
+7. Commits: Feature branch + commit
 ```
 
 ---
@@ -229,10 +238,10 @@ Generate code/docs
 
 | Tech Stack | Skill | Used By |
 |-----------|-------|---------|
-| **Java** | `java_advanced_skill.md` | developer_agent |
-| **Python** | `python_advanced_skill.md` | developer_agent |
-| **React/TypeScript** | `react_advanced_skill.md` | developer_agent |
-| **SQL Server** | `mssql_advanced_skill.md` | developer_agent |
+| **Java** | `java_advanced_skill.md` | implementation_agent |
+| **Python** | `python_advanced_skill.md` | implementation_agent |
+| **React/TypeScript** | `react_advanced_skill.md` | implementation_agent |
+| **SQL Server** | `mssql_advanced_skill.md` | implementation_agent |
 | **Code Review** | `code_health_skill.md` | code_review_agent |
 | **All Agents** | `master_instruction_set.md` | (universal) |
 
@@ -253,12 +262,13 @@ Problem: 90% duplicate code, maintenance nightmare
 
 ### After (New: Role-Based Agents)
 ```
-Developer Agent: (6 KB)
+Implementation Agent: (8 KB)
+- Gathers requirements
 - Detects tech stack
-- References appropriate skill
+- Full lifecycle: code + tests + docs
 - 1 agent, infinite tech stacks
 
-Result: DRY, maintainable, scalable
+Result: DRY, complete delivery, maintainable
 ```
 
 ---
@@ -268,10 +278,10 @@ Result: DRY, maintainable, scalable
 ### 1. Direct Invocation (Claude Code, Copilot)
 
 ```bash
-# Developer agent (any tech)
-"Build a Spring Boot REST API for users"
-"Create a FastAPI async endpoint"
-"Write a React login form"
+# Implementation agent (any tech, complete feature)
+"Implement user registration with email validation"
+"Build a Spring Boot order API endpoint with tests"
+"Create a React dashboard with data fetching"
 
 # Code Review agent
 "Review this code for design issues"
@@ -292,35 +302,41 @@ Result: DRY, maintainable, scalable
 ### 2. Chaining Workflows
 
 ```
-Step 1: Use Developer Agent
-→ "Build a user authentication service"
+Step 1: Use Implementation Agent
+→ "Implement user registration with email verification"
+→ Returns: Code + tests + docs + commit
 
-Step 2: Use Code Review Agent  
+Step 2: Use Code Review Agent (if needed)
 → "Review the generated code for quality"
+→ Returns: Issues and recommendations
 
-Step 3: Use Writer Agent
-→ "Add Javadoc to the reviewed code"
+Step 3: Use Writer Agent (for additional docs)
+→ "Generate API documentation from comments"
+→ Returns: OpenAPI spec, Swagger UI
 
 Step 4: Use Integration Agent
 → "Create a CI/CD pipeline for deployment"
+→ Returns: GitHub Actions workflow
 ```
 
 ---
 
 ## 🔄 Migration from Old Agents
 
-**Old way (tech-specific):**
+**Old way (tech-specific agents):**
 ```
 "Use Jarvis to build a Java service"
-→ Loads java_advanced_agent.md
+→ Loads java_advanced_agent.md (15 KB, duplicate code)
+→ Returns only code, no tests/docs
 ```
 
-**New way (generic):**
+**New way (role-based with full lifecycle):**
 ```
-"Build a Java service"
-→ Developer agent detects Java
-→ Loads java_advanced_skill.md
-→ Same result, less duplication
+"Implement user registration in Java"
+→ Implementation Agent (8 KB)
+→ Detects Java + Spring Boot
+→ Returns: Code + tests + docs + commit
+→ Includes context generation
 ```
 
 Old agents are archived in `_deprecated/` for reference but not exported.
@@ -340,11 +356,11 @@ Old agents are archived in `_deprecated/` for reference but not exported.
 
 | Agent | Purpose | Input | Output |
 |-------|---------|-------|--------|
-| **Developer** | Write code | "Build X in Y tech" | Code + tests + docs |
-| **Code Review** | Inspect quality | "Review this code" | Issues + fixes |
-| **Writer** | Document | "Write docs for this" | Javadoc/docstrings/README |
-| **Integration** | CI/CD & DevOps | "Create pipeline for X" | CI/CD config + IaC |
-| **Autonomous** | Full projects | "Build Y from Z requirements" | Complete project |
+| **Implementation** | Build features end-to-end | "Implement X feature" | Code + tests + docs + context + commit |
+| **Code Review** | Inspect quality | "Review this code" | Issues + severity + fixes |
+| **Writer** | Document code | "Write docs for this" | Javadoc/docstrings/README/API specs |
+| **Integration** | CI/CD & DevOps | "Create pipeline for X" | CI/CD workflow + IaC + monitoring |
+| **Autonomous** | Full projects | "Build Y from Z requirements" | Complete system (DB + backend + frontend + tests) |
 
 ---
 

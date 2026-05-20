@@ -1,8 +1,8 @@
-# Developer Agent: Requirement Input Guide
+# Implementation Agent: Requirement Input Guide
 
 ## Overview
 
-The updated **Developer Agent** (v3.1) now includes a **STEP 0: Gather Requirements** that intelligently accepts requirements from multiple sources:
+The updated **Implementation Agent** (v3.1) now includes a **STEP 0: Gather Requirements** that intelligently accepts requirements from multiple sources:
 
 1. **Free Text** — Describe what you want to build
 2. **JIRA Ticket** — Link or reference to JIRA (requires MCP)
@@ -18,7 +18,7 @@ The updated **Developer Agent** (v3.1) now includes a **STEP 0: Gather Requireme
 **Fastest for small features:**
 
 ```
-Developer Agent: "How would you like to provide requirements?"
+Implementation Agent: "How would you like to provide requirements?"
 
 User: "a) Free text"
 
@@ -145,7 +145,7 @@ POST /api/auth/reset-password
 **Usage:**
 
 ```
-Developer Agent: "How would you like to provide requirements?"
+Implementation Agent: "How would you like to provide requirements?"
 
 User: "c) Requirement file"
 
@@ -166,7 +166,7 @@ Agent: (Reads and parses file)
 **Fastest for ongoing projects:**
 
 ```
-Developer Agent: "How would you like to provide requirements?"
+Implementation Agent: "How would you like to provide requirements?"
 
 User: "d) Auto-detect from project"
 
@@ -325,7 +325,7 @@ To enable automatic JIRA parsing:
 
 1. Install MCP server with JIRA support
 2. Configure JIRA credentials in `.env`
-3. Developer Agent will automatically use MCP to fetch JIRA details
+3. Implementation Agent will automatically use MCP to fetch JIRA details
 
 Example `.env`:
 

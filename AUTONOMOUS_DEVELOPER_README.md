@@ -16,7 +16,7 @@ The Autonomous Developer System is a fully autonomous AI-driven development plat
 ```
 requirement.txt (plain text)
         ↓
-    [Autonomous Developer Agent]
+    [Autonomous Developer Orchestrator]
         ↓
 ┌───────┴───────┬───────────┬───────────┬──────────┐
 ↓               ↓           ↓           ↓          ↓

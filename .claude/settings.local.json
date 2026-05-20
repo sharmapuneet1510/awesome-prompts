@@ -19,7 +19,12 @@
       "Bash(gpg --list-secret-keys --keyid-format LONG)",
       "Skill(graphify)",
       "Bash(git *)",
-      "Bash(chmod +x tools/interactive_exporter.py)"
+      "Bash(chmod +x tools/interactive_exporter.py)",
+      "Bash(mkdir -p _deprecated)",
+      "Bash(mv developer/java_advanced_agent.md developer/python_advanced_agent.md developer/react_advanced_agent.md developer/mssql_advanced_agent.md _deprecated/)",
+      "Bash(mv reviewer/code_health_inspector_agent.md reviewer/git-review-2.md _deprecated/)",
+      "Bash(mv writer/* _deprecated/)",
+      "Bash(mv integration/* _deprecated/)"
     ]
   }
 }
