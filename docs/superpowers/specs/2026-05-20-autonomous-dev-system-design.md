@@ -693,7 +693,7 @@ Generated: 2026-05-20T14:30:00Z
 
 ### 8.2 Claude Code / Copilot Integration
 
-1. Export all generated skills to `.claude/skills/` and `.copilot/skills/`
+1. Export all generated skills to `.claude/skills/` and `.github/instructions/`
 2. Export agent to `.claude/agents/autonomous_dev_agent.md`
 3. Sync `task-completion.json` to `.claude/` folder
 4. Update `AGENTS.md` with agent description

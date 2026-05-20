@@ -71,11 +71,11 @@ Performs methodical, step-by-step code health scans:
 A Python utility that exports all skills to instruction formats for 5 AI platforms:
 
 ```
-GitHub Copilot    → .github/copilot-instructions.md
-Claude Code       → .claude/skills_context.md
-Cursor IDE        → .cursorrules
-Continue.dev      → .continue/config.json
-OpenAI API        → tools/output/openai_system_prompt.txt
+GitHub Copilot    → .github/instructions/
+Claude Code       → .claude/skills/ and .claude/agents/
+Cursor IDE        → .cursor/rules/
+Continue.dev      → .continue/prompts/
+OpenAI API        → tools/output/openai/
 ```
 
 **Features:**
@@ -159,11 +159,13 @@ python tools/skill_exporter.py --target copilot claude cursor
 ```
 
 This creates:
-- `.github/copilot-instructions.md` for GitHub Copilot
-- `.claude/skills_context.md` for Claude Code
-- `.cursorrules` for Cursor IDE
-- `.continue/config.json` for Continue.dev
-- `tools/output/openai_system_prompt.txt` for OpenAI API
+- `.github/instructions/` for GitHub Copilot skills
+- `.github/agents/` for GitHub Copilot agents
+- `.claude/skills/` for Claude Code skills
+- `.claude/agents/` for Claude Code agents
+- `.cursor/rules/` for Cursor IDE
+- `.continue/prompts/` for Continue.dev
+- `tools/output/openai/` for OpenAI API
 
 ### 2. Use the Code Health Inspector
 
@@ -291,8 +293,8 @@ The Sherlock agent will:
 
 ## ✅ Checklist — What to Do Next
 
-- [ ] Run `python tools/skill_exporter.py` to generate instruction files
-- [ ] Commit generated files (`.github/copilot-instructions.md`, `.cursorrules`, etc.) to Git
+- [ ] Run `python tools/exporter.py` to generate instruction files
+- [ ] Commit generated files (`.github/instructions/`, `.github/agents/`, `.cursorrules`, etc.) to Git
 - [ ] Test: ask GitHub Copilot to write Java code and see if it applies Spring patterns
 - [ ] Test: ask Claude to review your Python code and see if it catches async issues
 - [ ] Test: ask Sherlock to scan a slow endpoint for performance issues

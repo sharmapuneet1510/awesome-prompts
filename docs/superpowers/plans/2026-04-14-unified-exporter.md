@@ -191,7 +191,7 @@ Usage:
     python tools/exporter.py --clean                  # remove all exported files
 
 Supported targets:
-    copilot   → .github/instructions/ + .github/copilot/agents/
+    copilot   → .github/instructions/ + .github/agents/
     claude    → .claude/skills/ + .claude/agents/
     cursor    → .cursor/rules/ + .cursor/rules/agents/
     windsurf  → .windsurf/rules/ + .windsurf/rules/agents/
@@ -897,7 +897,7 @@ Replace the stub `ClaudeExporter` with:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class CopilotExporter(PlatformExporter):
-    """GitHub Copilot — .github/instructions/ and .github/copilot/agents/
+    """GitHub Copilot — .github/instructions/ and .github/agents/
 
     Skills use the .instructions.md suffix and applyTo: '**' frontmatter
     so Copilot picks them up automatically in agent mode.
@@ -1761,7 +1761,7 @@ class ExportOrchestrator:
     # Directories cleaned by --clean, one entry per platform skill/agent dir pair
     _CLEAN_DIRS: ClassVar[list[tuple[str, str]]] = [
         (".github/instructions",       "copilot skills"),
-        (".github/copilot/agents",     "copilot agents"),
+        (".github/agents",             "copilot agents"),
         (".claude/skills",             "claude skills"),
         (".claude/agents",             "claude agents"),
         (".cursor/rules",              "cursor rules"),
@@ -2300,7 +2300,7 @@ instruction files. Writes **one file per skill and one file per agent** — no m
 
 | Target | Skills output | Agents output | Format |
 |--------|---------------|---------------|--------|
-| `copilot` | `.github/instructions/<slug>.instructions.md` | `.github/copilot/agents/<slug>.md` | `applyTo: '**'` frontmatter |
+| `copilot` | `.github/instructions/<slug>.instructions.md` | `.github/agents/<slug>.md` | `applyTo: '**'` frontmatter |
 | `claude` | `.claude/skills/<slug>.md` | `.claude/agents/<slug>.md` | Clean markdown |
 | `cursor` | `.cursor/rules/<slug>.mdc` | `.cursor/rules/agents/<slug>.mdc` | `description/globs/alwaysApply` frontmatter |
 | `windsurf` | `.windsurf/rules/<slug>.md` | `.windsurf/rules/agents/<slug>.md` | Clean markdown |
@@ -2416,7 +2416,7 @@ python tools/skill_exporter.py --list
 ```
 
 **Supported targets:**
-- GitHub Copilot: `.github/copilot-instructions.md`
+- GitHub Copilot: `.github/instructions/` and `.github/agents/`
 - Claude Code: `.claude/skills_context.md`
 - Cursor IDE: `.cursorrules`
 - Continue.dev: `.continue/config.json`

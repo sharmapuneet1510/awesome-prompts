@@ -103,20 +103,20 @@ Complete, step-by-step guides for building production applications.
 
 ## How to Use Prompts
 
-### Step 1: Export Skills
-First, export the awesome-prompts skills to your AI tool:
+### Step 1: Export Skills and Agents
+First, export the awesome-prompts skills and agents to your AI tool:
 
 ```bash
 cd awesome-prompts
-python3 tools/skill_exporter.py
+python tools/exporter.py
 ```
 
 This generates instruction files for:
-- GitHub Copilot (`.github/copilot-instructions.md`)
-- Claude Code (`.claude/skills_context.md`)
-- Cursor IDE (`.cursorrules`)
-- Continue.dev (`.continue/config.json`)
-- OpenAI API (`.openai/system_prompt.txt`)
+- GitHub Copilot (`.github/instructions/` and `.github/agents/`)
+- Claude Code (`.claude/skills/` and `.claude/agents/`)
+- Cursor IDE (`.cursor/rules/`)
+- Continue.dev (`.continue/prompts/`)
+- OpenAI API (`tools/output/openai/`)
 
 ### Step 2: Choose a Prompt
 Select a prompt file that matches your task:

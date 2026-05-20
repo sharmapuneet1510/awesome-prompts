@@ -313,7 +313,7 @@ def test_copilot_skill_output_dir(tmp_path):
 
 def test_copilot_agent_output_dir(tmp_path):
     from tools.exporter import CopilotExporter
-    assert CopilotExporter(repo_root=tmp_path).agent_output_dir() == tmp_path / ".github" / "copilot" / "agents"
+    assert CopilotExporter(repo_root=tmp_path).agent_output_dir() == tmp_path / ".github" / "agents"
 
 
 def test_copilot_agent_format_has_name_in_frontmatter(tmp_path):

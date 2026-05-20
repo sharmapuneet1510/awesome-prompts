@@ -670,7 +670,7 @@ class ExportOrchestrator:
 
     _CLEAN_DIRS: ClassVar[list[str]] = [
         ".github/instructions",
-        ".github/copilot/agents",
+        ".github/agents",
         ".claude/skills",
         ".claude/agents",
         ".cursor/rules",

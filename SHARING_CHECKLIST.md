@@ -37,7 +37,7 @@ This repository is **production-ready, git-friendly, and shareable** with your t
 - [x] All `.md` agent files (source of truth)
 - [x] All `.md` instruction files (source of truth)
 - [x] All `.md` prompt files (reusable templates)
-- [x] Generated exports (`.github/`, `.claude/`, `.cursorrules`)
+- [x] Generated exports (`.github/instructions/`, `.github/agents/`, `.claude/`, `.cursorrules`)
 - [x] Python tools (no external dependencies)
 - [x] Documentation (README.md, CLAUDE.md, agents/README.md)
 - [x] .gitignore (tells git what to exclude)
@@ -93,8 +93,9 @@ This repository is **production-ready, git-friendly, and shareable** with your t
 # - New: agents/README.md
 # - New: README.md
 # - New: .gitignore
-# - New: .github/copilot-instructions.md (generated)
-# - New: .claude/skills_context.md (generated)
+# - New: .github/instructions/ (generated)
+# - New: .github/agents/ (generated)
+# - New: .claude/skills/, .claude/agents/ (generated)
 # - New: .cursorrules (generated)
 # - New: .continue/config.json (generated)
 ```

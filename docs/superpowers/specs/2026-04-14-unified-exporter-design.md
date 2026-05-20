@@ -91,7 +91,7 @@ class ExportResult:
 | Item | Output path | Format |
 |---|---|---|
 | Skill | `.github/instructions/<slug>.instructions.md` | YAML frontmatter: `applyTo: '**'` + markdown body |
-| Agent | `.github/copilot/agents/<slug>.md` | YAML frontmatter: `name`, `description` + markdown body |
+| Agent | `.github/agents/<slug>.md` | YAML frontmatter: `name`, `description` + markdown body |
 
 Copilot reads `.github/instructions/*.instructions.md` automatically in agent mode.
 

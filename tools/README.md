@@ -8,7 +8,7 @@ Exports skills and agent definitions to platform-native instruction files. One f
 
 | Target | Skills | Agents | Format |
 |--------|--------|--------|--------|
-| `copilot` | `.github/instructions/<slug>.instructions.md` | `.github/copilot/agents/<slug>.md` | `applyTo: '**'` frontmatter |
+| `copilot` | `.github/instructions/<slug>.instructions.md` | `.github/agents/<slug>.md` | `applyTo: '**'` frontmatter |
 | `claude` | `.claude/skills/<slug>.md` | `.claude/agents/<slug>.md` | Clean markdown |
 | `cursor` | `.cursor/rules/<slug>.mdc` | `.cursor/rules/agents/<slug>.mdc` | `description/globs/alwaysApply` frontmatter |
 | `windsurf` | `.windsurf/rules/<slug>.md` | `.windsurf/rules/agents/<slug>.md` | Clean markdown |

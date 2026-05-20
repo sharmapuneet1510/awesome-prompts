@@ -360,7 +360,7 @@ requirement.txt    ───→  requirement.md     ────→  docs/
 
 ```bash
 # Run interactive setup
-python3 tools/exporter.py --interactive
+python tools/exporter.py --interactive
 
 # Answer the prompts:
 # 1. Enter your project root directory: /path/to/your/project
@@ -372,8 +372,8 @@ python3 tools/exporter.py --interactive
 # 3. Confirm and copy
 
 # Result:
-# ✅ Skills copied to .claude/skills/, .copilot/skills/, etc.
-# ✅ Agent copied to .claude/agents/, .copilot/agents/, etc.
+# ✅ Skills copied to .claude/skills/, .github/instructions/, etc.
+# ✅ Agents copied to .claude/agents/, .github/agents/, etc.
 # ✅ Setup complete!
 ```
 

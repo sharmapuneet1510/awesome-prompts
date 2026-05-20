@@ -24,7 +24,10 @@
       "Bash(mv developer/java_advanced_agent.md developer/python_advanced_agent.md developer/react_advanced_agent.md developer/mssql_advanced_agent.md _deprecated/)",
       "Bash(mv reviewer/code_health_inspector_agent.md reviewer/git-review-2.md _deprecated/)",
       "Bash(mv writer/* _deprecated/)",
-      "Bash(mv integration/* _deprecated/)"
+      "Bash(mv integration/* _deprecated/)",
+      "Bash(2>&1)",
+      "Bash(grep -v \"Step 1\\\\|Step 2\\\\|Step 3\\\\|Enter\\\\|platform\\\\|Select\\\\|emoji\\\\|Running\\\\|Setup\\\\|Create\\\\|Invoke\\\\|Monitor\\\\|Review\\\\|Full\\\\|Ready\\\\|^$\")",
+      "Bash(chmod +x *)"
     ]
   }
 }

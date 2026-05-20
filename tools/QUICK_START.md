@@ -27,49 +27,49 @@ python tools/skill_exporter.py
 ```
 
 **What it does:**
-- Exports all 8 skills to 5 platforms
-- Updates `.github/copilot-instructions.md`, `.claude/skills_context.md`, `.cursorrules`, etc.
-- Creates `tools/output/openai_system_prompt.txt` for API use
+- Exports all skills and agents to 8 platforms
+- Updates `.github/instructions/`, `.github/agents/`, `.claude/skills/`, `.claude/agents/`, etc.
+- Creates files in `tools/output/openai/` for API use
 
 ### 2. Export for GitHub Copilot Only
 
 ```bash
-python tools/skill_exporter.py --target copilot
+python tools/exporter.py --target copilot
 ```
 
-**Output:** `.github/copilot-instructions.md`
+**Output:** `.github/instructions/` and `.github/agents/`
 
-Use this when Copilot in VSCode or GitHub Web needs the latest skills.
+Use this when Copilot in VSCode or GitHub Web needs the latest skills and agents.
 
 ### 3. Export for Claude Code
 
 ```bash
-python tools/skill_exporter.py --target claude
+python tools/exporter.py --target claude
 ```
 
-**Output:** `.claude/skills_context.md`
+**Output:** `.claude/skills/` and `.claude/agents/`
 
-Claude Code will use this file automatically.
+Claude Code will use these files automatically.
 
 ### 4. Export for Cursor IDE
 
 ```bash
-python tools/skill_exporter.py --target cursor
+python tools/exporter.py --target cursor
 ```
 
-**Output:** `.cursorrules`
+**Output:** `.cursor/rules/`
 
-Cursor automatically loads this file from the repo root.
+Cursor automatically loads rules from this folder.
 
 ### 5. Export for OpenAI API / ChatGPT
 
 ```bash
-python tools/skill_exporter.py --target openai
+python tools/exporter.py --target openai
 ```
 
 **Output:**
-- `tools/output/openai_system_prompt.txt` (copy-paste into API calls)
-- `tools/output/openai_system_prompt.json` (structured metadata)
+- `tools/output/openai/skills/` (skill files)
+- `tools/output/openai/agents/` (agent files)
 
 ### 6. Export Only Certain Skills
 
@@ -116,28 +116,28 @@ After running the exporter, each platform automatically uses the output:
 
 ### GitHub Copilot
 
-✅ Automatic — Copilot reads `.github/copilot-instructions.md` on every suggestion.
+✅ Automatic — Copilot reads `.github/instructions/` and `.github/agents/` on every suggestion.
 
-No additional setup needed. Just run the exporter and Copilot will start applying the skills.
+No additional setup needed. Just run the exporter and Copilot will start applying the skills and agents.
 
 ### Claude Code (Claude.ai + Extensions)
 
 ✅ Semi-automatic — Claude reads from `.claude/` folder context.
 
 To ensure Claude uses the skills:
-1. Run the exporter: `python tools/skill_exporter.py --target claude`
-2. Reference in conversation: "Apply the skills from `.claude/skills_context.md`"
-3. Or add a link in CLAUDE.md pointing to the generated file
+1. Run the exporter: `python tools/exporter.py --target claude`
+2. Reference in conversation: "Apply the skills from `.claude/skills/` and agents from `.claude/agents/`"
+3. Or add a link in CLAUDE.md pointing to the generated folders
 
 ### Cursor IDE
 
-✅ Automatic — Cursor reads `.cursorrules` from the repo root on startup.
+✅ Automatic — Cursor reads `.cursor/rules/` on startup.
 
 Just run the exporter and restart Cursor.
 
 ### Continue.dev
 
-✅ Automatic — Continue reads `.continue/config.json` and loads the system message.
+✅ Automatic — Continue reads `.continue/prompts/` for skills and agents.
 
 Just run the exporter and restart Continue.
 
@@ -152,7 +152,7 @@ response = client.chat.completions.create(
     messages=[
         {
             "role": "system",
-            "content": open("tools/output/openai_system_prompt.txt").read()
+            "content": open("tools/output/openai/skills/<skill>.txt").read()
         },
         {
             "role": "user",
@@ -163,8 +163,8 @@ response = client.chat.completions.create(
 ```
 
 **For Custom GPTs:**
-1. Run: `python tools/skill_exporter.py --target openai`
-2. Copy the contents of `tools/output/openai_system_prompt.txt`
+1. Run: `python tools/exporter.py --target openai`
+2. Copy the contents of skill/agent files from `tools/output/openai/`
 3. Paste into your Custom GPT's "Instructions" field
 
 ## Troubleshooting
@@ -173,7 +173,7 @@ response = client.chat.completions.create(
 
 Use `python3` instead:
 ```bash
-python3 tools/skill_exporter.py
+python3 tools/exporter.py
 ```
 
 ### "No such file or directory: skills/"
@@ -181,7 +181,7 @@ python3 tools/skill_exporter.py
 Run from the repository root:
 ```bash
 cd /path/to/awesome-prompts
-python tools/skill_exporter.py
+python tools/exporter.py
 ```
 
 ### "No skills matched the filter"
@@ -196,20 +196,20 @@ Then use the exact slug shown. Example:
 python tools/skill_exporter.py --skills apache_camel_skill
 ```
 
-### "WARNING: .cursorrules is large"
+### "Files are too large"
 
-Cursor has a ~50KB file size limit. Export fewer skills:
+Export fewer skills to keep file sizes manageable:
 ```bash
-python tools/skill_exporter.py --skills java,spring --target cursor
+python tools/exporter.py --skills java,spring --target cursor
 ```
 
 ### Files not being read by my platform
 
-**Copilot:** Verify `.github/copilot-instructions.md` exists and is committed to Git.
+**Copilot:** Verify `.github/instructions/` and `.github/agents/` exist and are committed to Git.
 
-**Claude Code:** The file goes in `.claude/skills_context.md` — double-check the path.
+**Claude Code:** The files go in `.claude/skills/` and `.claude/agents/` — double-check the paths.
 
-**Cursor:** The file must be named exactly `.cursorrules` (no `.md`) in the repo root.
+**Cursor:** The files go in `.cursor/rules/` — verify this folder exists.
 
 **Continue.dev:** Restart Continue after running the exporter.
 
@@ -236,20 +236,20 @@ python tools/skill_exporter.py --repo-root /path/to/another/repo
 ### Run From Anywhere
 
 ```bash
-cd ~ && python /full/path/to/awesome-prompts/tools/skill_exporter.py
+cd ~ && python /full/path/to/awesome-prompts/tools/exporter.py
 ```
 
 ## Tips
 
-1. **Commit the exporter output** — `.github/copilot-instructions.md`, `.cursorrules`, etc. should be committed to Git. This ensures all team members and CI/CD get the same skills.
+1. **Commit the exporter output** — `.github/instructions/`, `.github/agents/`, `.cursor/rules/`, etc. should be committed to Git. This ensures all team members and CI/CD get the same skills and agents.
 
-2. **Re-export after updates** — Whenever you modify a skill `.md` file, run the exporter again to update all platforms.
+2. **Re-export after updates** — Whenever you modify a skill or agent `.md` file, run the exporter again to update all platforms.
 
-3. **Keep skills in sync** — The exporter is the single source of truth. Don't manually edit `.cursorrules` or `.copilot-instructions.md` — always change the source skill file and re-export.
+3. **Keep skills in sync** — The exporter is the single source of truth. Don't manually edit platform-specific files — always change the source skill/agent file and re-export.
 
 4. **Use dry-run before committing** — Run with `--dry-run` to preview changes:
    ```bash
-   python tools/skill_exporter.py --dry-run > /tmp/export_preview.txt
+   python tools/exporter.py --dry-run > /tmp/export_preview.txt
    cat /tmp/export_preview.txt
    ```
 
@@ -265,24 +265,24 @@ cd ~ && python /full/path/to/awesome-prompts/tools/skill_exporter.py
 
 ```bash
 # Export everything to everywhere
-python tools/skill_exporter.py
+python tools/exporter.py
 
-# Export specific skills to specific targets
-python tools/skill_exporter.py \
+# Export specific skills/agents to specific targets
+python tools/exporter.py \
   --skills java,spring,camel \
   --target copilot claude cursor
 
 # Dry run with fewer skills
-python tools/skill_exporter.py --skills java --dry-run
+python tools/exporter.py --skills java --dry-run
 
-# List skills only
-python tools/skill_exporter.py --list
+# List all skills and agents
+python tools/exporter.py --list
 
 # Export from outside the repo
-python tools/skill_exporter.py --repo-root /path/to/awesome-prompts
+python tools/exporter.py --repo-root /path/to/awesome-prompts
 
 # All at once
-python tools/skill_exporter.py -s java,spring -t copilot -n
+python tools/exporter.py -s java,spring -t copilot -n
 ```
 
 ## Support
@@ -290,5 +290,6 @@ python tools/skill_exporter.py -s java,spring -t copilot -n
 For issues or questions, refer to:
 - `tools/README.md` — Full technical documentation
 - `skills/*.md` — Source skill files with YAML frontmatter format
+- `agents/` — Source agent files
 - `CLAUDE.md` — Project structure and agent definitions
 

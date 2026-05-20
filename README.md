@@ -120,7 +120,7 @@ python tools/exporter.py --interactive
 ```
 
 **What it does:**
-- Creates platform-specific folders (`.github/instructions`, `.github/copilot/agents`, etc.)
+- Creates platform-specific folders (`.github/instructions`, `.github/agents`, `.claude/skills`, `.claude/agents`, etc.)
 - Copies skills and agents to your target project
 - Ready to use immediately in your IDE
 
