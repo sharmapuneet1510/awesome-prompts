@@ -11,7 +11,13 @@
       "Bash(find agents:*)",
       "Bash(/tmp/summary.txt:*)",
       "Read(//tmp/**)",
-      "Bash(find skills:*)"
+      "Bash(find skills:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)",
+      "Bash(git config:*)",
+      "Bash(gpg --list-secret-keys --keyid-format LONG)",
+      "Skill(graphify)"
     ]
   }
 }
