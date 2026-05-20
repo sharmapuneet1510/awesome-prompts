@@ -1,17 +1,21 @@
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 import re
+import json
+from pathlib import Path
 
 
 class RequirementParser:
-    """Parse plain-text requirements into structured format."""
+    """Parse requirements from multiple sources (free text, JIRA, file) into structured format."""
 
-    def __init__(self, requirement_text: str):
+    def __init__(self, requirement_text: str, source: str = "free_text"):
         self.raw_text = requirement_text
+        self.source = source  # free_text | jira | file
         self.parsed_data: Dict[str, Any] = {}
+        self.requirement_object: Dict[str, Any] = {}
 
     def parse(self) -> Dict[str, Any]:
-        """Extract structured data from plain text."""
+        """Extract structured data from raw text."""
         self.parsed_data = {
             'project_name': self._extract_project_name(),
             'vision': self._extract_vision(),
@@ -22,6 +26,81 @@ class RequirementParser:
             'constraints': self._extract_constraints(),
         }
         return self.parsed_data
+
+    def get_requirement_object(self) -> Dict[str, Any]:
+        """Return structured requirement object for developer_agent consumption."""
+        if not self.parsed_data:
+            self.parse()
+
+        self.requirement_object = {
+            "source": self.source,
+            "title": self.parsed_data['project_name'],
+            "description": self.parsed_data['vision'],
+            "features": self.parsed_data['features'],
+            "constraints": self.parsed_data['constraints'],
+            "acceptance_criteria": self.parsed_data['success_criteria'],
+            "priority": "high",  # Default priority
+            "parsed_at": datetime.now().isoformat(),
+            "raw_text": self.raw_text[:500] + "..." if len(self.raw_text) > 500 else self.raw_text,
+        }
+        return self.requirement_object
+
+    @classmethod
+    def from_free_text(cls, requirement_text: str) -> 'RequirementParser':
+        """Parse from free text description."""
+        parser = cls(requirement_text, source="free_text")
+        return parser
+
+    @classmethod
+    def from_file(cls, file_path: str) -> 'RequirementParser':
+        """Parse from requirement file (txt, md, yaml)."""
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Requirement file not found: {file_path}")
+
+        content = path.read_text(encoding='utf-8')
+        parser = cls(content, source="file")
+        parser.source_file = str(file_path)
+        return parser
+
+    @classmethod
+    def from_jira(cls, jira_data: Dict[str, Any]) -> 'RequirementParser':
+        """Parse from JIRA ticket data (obtained via MCP)."""
+        # Build text representation from JIRA fields
+        text_parts = [
+            f"Project: {jira_data.get('project', 'Unknown')}",
+            f"Summary: {jira_data.get('summary', '')}",
+            f"Description: {jira_data.get('description', '')}",
+        ]
+
+        # Add acceptance criteria if present
+        if 'acceptance_criteria' in jira_data:
+            text_parts.append(f"Acceptance Criteria: {' '.join(jira_data['acceptance_criteria'])}")
+
+        requirement_text = "\n".join(text_parts)
+        parser = cls(requirement_text, source="jira")
+        parser.jira_key = jira_data.get('key', '')
+        parser.jira_status = jira_data.get('status', '')
+        parser.jira_assignee = jira_data.get('assignee', '')
+        return parser
+
+    @classmethod
+    def from_project_file(cls, project_root: str) -> Optional['RequirementParser']:
+        """Auto-detect and parse requirement file from project root."""
+        project_path = Path(project_root)
+        candidate_files = [
+            project_path / 'requirements.md',
+            project_path / 'requirements.txt',
+            project_path / 'REQUIREMENTS.md',
+            project_path / 'spec.md',
+            project_path / '.requirements',
+        ]
+
+        for candidate in candidate_files:
+            if candidate.exists():
+                return cls.from_file(str(candidate))
+
+        return None
 
     def _extract_project_name(self) -> str:
         """Extract or infer project name."""
@@ -155,3 +234,101 @@ generated_at: {datetime.now().isoformat()}
         md += "\n## Architecture Overview\n[Auto-generated after codebase scan]\n"
 
         return md
+
+
+# CLI and helper functions
+def parse_requirement_interactive() -> Dict[str, Any]:
+    """Interactive CLI for requirement input."""
+    print("\n" + "=" * 60)
+    print("REQUIREMENT PARSER")
+    print("=" * 60)
+    print("\nHow would you like to provide requirements?\n")
+    print("  a) Free text description (describe what you want to build)")
+    print("  b) JIRA ticket/story (link or ticket key)")
+    print("  c) Requirement file (path to requirements.txt, .md, etc.)")
+    print("  d) Auto-detect from project (searches project root)")
+    print("\nChoice [a/b/c/d]: ", end='')
+
+    choice = input().strip().lower()
+
+    if choice == 'a':
+        print("\nDescribe what you want to build (press Enter twice to finish):\n")
+        lines = []
+        empty_lines = 0
+        while empty_lines < 1:
+            line = input()
+            if line:
+                lines.append(line)
+                empty_lines = 0
+            else:
+                empty_lines += 1
+        requirement_text = '\n'.join(lines)
+        parser = RequirementParser.from_free_text(requirement_text)
+
+    elif choice == 'b':
+        print("\nEnter JIRA ticket (key like PROJ-123 or full link): ", end='')
+        jira_key = input().strip()
+        print("\nNote: JIRA parsing requires MCP integration.")
+        print("For now, paste JIRA details as free text or use a requirement file.")
+        requirement_text = f"JIRA Ticket: {jira_key}\n(Note: Install MCP for automatic JIRA parsing)"
+        parser = RequirementParser.from_free_text(requirement_text)
+        parser.source = "jira_manual"
+
+    elif choice == 'c':
+        print("\nEnter path to requirement file: ", end='')
+        file_path = input().strip()
+        try:
+            parser = RequirementParser.from_file(file_path)
+        except FileNotFoundError as e:
+            print(f"\nError: {e}")
+            return {}
+
+    elif choice == 'd':
+        print("\nSearching for requirement file in project root...")
+        parser = RequirementParser.from_project_file('.')
+        if parser:
+            print(f"Found: {parser.source_file if hasattr(parser, 'source_file') else 'requirement file'}")
+        else:
+            print("No requirement file found. Using free text instead.")
+            print("\nDescribe your project: ", end='')
+            requirement_text = input().strip()
+            parser = RequirementParser.from_free_text(requirement_text)
+
+    else:
+        print("Invalid choice. Defaulting to free text input.")
+        requirement_text = input("\nDescribe your project: ").strip()
+        parser = RequirementParser.from_free_text(requirement_text)
+
+    # Parse and return requirement object
+    parser.parse()
+    requirement_obj = parser.get_requirement_object()
+
+    print("\n" + "-" * 60)
+    print("PARSED REQUIREMENT")
+    print("-" * 60)
+    print(f"Title: {requirement_obj['title']}")
+    print(f"Source: {requirement_obj['source']}")
+    print(f"Features: {', '.join(requirement_obj['features']) if requirement_obj['features'] else 'None detected'}")
+    print("-" * 60 + "\n")
+
+    return requirement_obj
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) > 1:
+        # Command-line usage: python requirement_parser.py <file_path_or_text>
+        arg = sys.argv[1]
+        if Path(arg).exists():
+            parser = RequirementParser.from_file(arg)
+        else:
+            parser = RequirementParser.from_free_text(arg)
+
+        parser.parse()
+        print(json.dumps(parser.get_requirement_object(), indent=2))
+    else:
+        # Interactive mode
+        requirement = parse_requirement_interactive()
+        print("\nRequirement object:")
+        print(json.dumps(requirement, indent=2))
