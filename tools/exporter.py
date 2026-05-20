@@ -13,6 +13,11 @@ Usage:
     python tools/exporter.py --list                   # list all items
     python tools/exporter.py --dry-run                # preview without writing
     python tools/exporter.py --clean                  # remove all exported files
+    python tools/exporter.py --interactive            # interactive setup (recommended)
+
+Interactive Mode:
+    Asks for project root and target platforms, then exports skills/agents.
+    Great for first-time setup!
 
 Supported targets:
     copilot   → .github/instructions/ + .github/copilot/agents/
@@ -853,6 +858,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
                         help="Preview without writing files.")
     parser.add_argument("--clean", action="store_true",
                         help="Remove all exported platform directories and exit.")
+    parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Interactive setup mode - asks for project root and platforms.")
     parser.add_argument("--repo-root", type=Path, default=None,
                         help="Repository root. Auto-detected if omitted.")
     return parser
@@ -873,6 +880,17 @@ def resolve_repo_root(provided: Path | None) -> Path:
 def main() -> None:
     parser       = build_argument_parser()
     args         = parser.parse_args()
+
+    # Handle interactive mode by delegating to interactive_exporter.py
+    if args.interactive:
+        try:
+            import subprocess
+            result = subprocess.run([sys.executable, "tools/interactive_exporter.py"], cwd=Path.cwd())
+            sys.exit(result.returncode)
+        except Exception as e:
+            print(f"Error running interactive setup: {e}")
+            sys.exit(1)
+
     repo_root    = resolve_repo_root(args.repo_root)
     orchestrator = ExportOrchestrator(repo_root)
 
