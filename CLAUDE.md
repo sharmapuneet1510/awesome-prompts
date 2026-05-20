@@ -24,24 +24,26 @@ awesome-prompts/
 │   ├── incident-management/          ← Production issue investigation
 │   └── reporting/                    ← HTML report generation
 │
-├── agents/                           ← Full agent definitions (organized by role)
-│   ├── developer/                    ← Code generation & implementation agents
-│   │   ├── java_advanced_agent.md    ← "Jarvis" — Java 17+ / Spring Boot developer
-│   │   ├── python_advanced_agent.md  ← "Pyra" — Python 3.11+ / FastAPI developer
-│   │   ├── react_advanced_agent.md   ← "Rexa" — React 18+ / TypeScript developer
-│   │   ├── mssql_advanced_agent.md   ← "Sigma" — SQL Server DBA & T-SQL
-│   │   └── jira_implementation_agent.md ← Implementation task breakdown & tracking
-│   ├── reviewer/                     ← Code review & quality inspection agents
-│   │   ├── code_health_inspector_agent.md ← "Sherlock" — 6-phase code health scan
-│   │   ├── code_review_agent.md      ← Pattern & design review
-│   │   └── git-review-2.md           ← Git / PR review
-│   ├── writer/                       ← Documentation & comment generation agents
-│   │   └── jira_documentation_agent.md ← Technical documentation writer
-│   ├── integration/                  ← CI/CD & automation agents
-│   │   └── jira_mr_sync_review.agent.md ← Pipeline orchestration
+├── agents/                           ← Full agent definitions (role-based architecture)
+│   ├── implementation_agent.md       ← Full-lifecycle feature builder (code + tests + docs)
+│   ├── code_review_agent.md          ← Design patterns, SOLID, performance, security
+│   ├── writer_agent.md               ← API docs, README, changelog auto-generation
+│   ├── integration_agent.md          ← CI/CD pipelines, deployment, IaC, monitoring
+│   ├── context/
+│   │   └── context_builder_agent.md  ← Interactive project analysis & architecture
+│   ├── autonomous/
+│   │   ├── autonomous_dev_agent.md   ← Full-stack orchestrator (DB + API + UI + tests)
+│   │   └── README.md                 ← Autonomous development guide
+│   ├── test_case_generator_agent.md  ← 100% coverage tests with JIRA validation
 │   └── README.md                     ← Agent role guide
 │
-├── skills/                           ← Reusable skill modules (consumed by agents)
+├── skills/                           ← Reusable implementation skill modules
+│   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
+│   ├── database_skill.md             ← SQL schema + migrations (PostgreSQL/MySQL/MongoDB)
+│   ├── backend_skill.md              ← REST API generation (FastAPI/Spring Boot)
+│   ├── frontend_skill.md             ← React component generation + hooks
+│   ├── test_skill.md                 ← Test generation (JUnit5/pytest/Jest)
+│   ├── context_builder_skill.md      ← Project architecture & tech stack analysis
 │   ├── java_advanced_skill.md        ← Java 17+ coding standards & patterns
 │   ├── python_advanced_skill.md      ← Python 3.11+ coding standards & patterns
 │   ├── react_advanced_skill.md       ← React 18+ / TypeScript coding standards
@@ -57,52 +59,137 @@ awesome-prompts/
 
 ## Agents by Role
 
-Agents are organized by responsibility. See `agents/README.md` for detailed descriptions.
+Agents are organized by responsibility using a role-based generic architecture. See `agents/README.md` for detailed descriptions.
 
-### Developer Agents (Code Generation)
+### Core Agents (v4.1.0)
 
-| Agent | File | Role | Technologies |
-|-------|------|------|---------------|
-| **Jarvis** | `agents/developer/java_advanced_agent.md` | Java/Spring Boot | Java 17+, Spring Boot 3.x, JPA, Maven, Gradle |
-| **Pyra** | `agents/developer/python_advanced_agent.md` | Python/FastAPI | Python 3.11+, FastAPI, SQLAlchemy 2.x, asyncio |
-| **Rexa** | `agents/developer/react_advanced_agent.md` | React/Frontend | React 18+, TypeScript, TanStack Query, Zustand |
-| **Sigma** | `agents/developer/mssql_advanced_agent.md` | SQL Server DBA | SQL Server 2019/2022, T-SQL, indexing, DMVs |
+| Role | Agent | File | Purpose | Tech-Agnostic |
+|------|-------|------|---------|---------------|
+| **Implementation** | Implementation Agent | `agents/implementation_agent.md` | Full-lifecycle feature builder (code + tests + docs) | ✅ Yes (delegates to skills) |
+| **Code Review** | Code Review Agent | `agents/code_review_agent.md` | Design patterns, SOLID principles, performance, security | ✅ Yes |
+| **Documentation** | Writer Agent | `agents/writer_agent.md` | Auto-generate API docs, README updates, changelogs | ✅ Yes |
+| **DevOps/CI-CD** | Integration Agent | `agents/integration_agent.md` | CI/CD pipelines, deployment automation, IaC, monitoring | ✅ Yes |
+| **Orchestration** | Autonomous Dev Agent | `agents/autonomous/autonomous_dev_agent.md` | Full-stack project generation (DB + API + UI + tests) | ✅ Yes |
 
-### Reviewer Agents (Code Quality & Inspection)
+### Specialized Agents (Support)
 
-| Agent | File | Role | Focus |
-|-------|------|------|-------|
-| **Sherlock** | `agents/reviewer/code_health_inspector_agent.md` | Code Health Inspector | Performance, error handling, delays, security, reliability |
-| **Code Reviewer** | `agents/reviewer/code_review_agent.md` | Design Reviewer | Patterns, architecture, best practices |
-| **Git Reviewer** | `agents/reviewer/git-review-2.md` | PR Reviewer | Commits, structure, conflicts |
+| Role | Agent | File | Purpose |
+|------|-------|------|---------|
+| **Context Analysis** | Context Builder Agent | `agents/context/context_builder_agent.md` | Interactive project analysis, architecture discovery |
+| **Test Generation** | Test Case Generator Agent | `agents/test_case_generator_agent.md` | 100% code coverage tests with JIRA validation |
 
-### Writer Agents (Documentation)
+### Skill-Based Architecture
 
-| Agent | File | Role |
-|-------|------|------|
-| **Documentarian** | `agents/writer/jira_documentation_agent.md` | Technical Writer |
+Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **generic role-based agents** that delegate to **reusable skills**:
 
-### Integration Agents (CI/CD & Automation)
+```
+implementation_agent (generic)
+    ↓
+    Detects tech stack
+    ↓
+    Applies appropriate skill:
+    • java_advanced_skill (for Java/Spring Boot)
+    • python_advanced_skill (for Python/FastAPI)
+    • react_advanced_skill (for React/TypeScript)
+    • mssql_advanced_skill (for SQL Server/T-SQL)
+    • database_skill (for database design)
+    • backend_skill (for REST API generation)
+    • frontend_skill (for UI component generation)
+    • code_documentation_skill (for JSDoc/docstrings/Javadoc)
+    ✓ Generates complete code + tests + documentation
+```
 
-| Agent | File | Role |
-|-------|------|------|
-| **CI/CD Orchestrator** | `agents/integration/jira_mr_sync_review.agent.md` | Pipeline Automation |
+**Benefits:**
+- ✅ Less duplication (one agent per role, not per tech)
+- ✅ Easier to maintain (update skill, all agents benefit)
+- ✅ Simpler to extend (add new skill = all agents can use it)
+- ✅ Clear separation of concerns (agent = orchestration, skill = implementation)
 
 ## Skills
 
 Skills in `skills/` are reusable coding standard modules referenced by agents. They define language idioms, patterns, quality rules, and output format expectations.
 
-## Prompt Categories
+## Key Tools
 
-| Category | Contents |
-|----------|---------|
-| `prompts/email/` | SHORT, LONG, and AGENT variants of the email review prompt |
-| `prompts/code-review/` | Conversational MCP-enabled code review agent |
-| `prompts/testing/` | Conversational test case generator |
-| `prompts/codebase-analysis/` | Codebase cartographer, regulatory code auditor, field tracing agent |
-| `prompts/project-management/` | User story generator (Ajita), workflow mapper, Jira reader |
-| `prompts/incident-management/` | Production issue investigator (Detective) |
-| `prompts/reporting/` | HTML report generation prompt |
+| Tool | Purpose |
+|------|---------|
+| `tools/exporter.py` | Export agents & skills to 8 platforms (Claude, Copilot, Cursor, Windsurf, VS Code, Gemini, Continue, OpenAI, Aider) |
+| `tools/requirement_parser.py` | Parse requirements from free text, JIRA, files, or auto-detect from project |
+| `tools/context_builder.py` | Scan projects, generate architecture.md, tech-stack.md, context.json, design.html |
+| `tools/generate_design_html.py` | Create interactive HTML visualization (4 tabs: architecture, tech stack, file tree, API endpoints) |
+| `tools/task_generator.py` | Break down requirements into bite-sized task specifications |
+| `tools/graphify_integrator.py` | Generate knowledge graphs with token caching |
+| `tools/github_sync.py` | Create GitHub PRs with generated code |
+
+## Project Structure & Artifacts
+
+When **implementation_agent** or **autonomous_dev_agent** runs, they generate:
+
+```
+project-root/
+├── docs/context/                    ← Project architecture documentation
+│   ├── context.json                 ← Machine-readable project metadata
+│   ├── architecture.md              ← Mermaid diagram + design narrative
+│   ├── tech-stack.md                ← Technology reference table
+│   └── design.html                  ← Interactive visualization (4 tabs)
+├── requirements.md                  ← Parsed requirement specification
+└── [generated code, tests, docs]
+```
+
+## Workflow Examples
+
+### Workflow 1: Feature Implementation (Free Text → Code + Tests + Docs)
+```
+User: "Build user registration with email validation"
+         ↓
+implementation_agent (STEP 0-7)
+  1. Gather requirement (free text parsing)
+  2. Load context (check docs/context/)
+  3. Confirm requirements
+  4. Plan implementation
+  5. Apply skill (e.g., backend_skill)
+  6. Generate code + tests
+  7. Auto-document (code_documentation_skill)
+         ↓
+Output: routes/register.py, models/user.py, tests/test_register.py (100% docs)
+```
+
+### Workflow 2: Test Generation (JIRA → 100% Coverage Tests + Validation)
+```
+User: "Generate tests for AUTH-789"
+         ↓
+test_case_generator_agent (STEP 0-10)
+  1. Fetch JIRA ticket AUTH-789
+  2. Extract acceptance criteria
+  3. Analyze code context
+  4. Plan test cases
+  5. Generate tests (unit + integration)
+  6. Auto-document test methods
+  7. Validate all criteria covered ✓
+  8. Run tests (100% coverage)
+         ↓
+Output: tests/test_login.py (8 tests, 100% coverage, all criteria validated)
+```
+
+### Workflow 3: Full-Stack Generation (Requirement → Complete System)
+```
+User: "Build e-commerce shopping cart with checkout"
+         ↓
+autonomous_dev_agent (14 steps)
+  1. Parse requirement
+  2. Build context (architecture.md, context.json)
+  3. Generate task specs (01-05)
+  4. Execute tasks sequentially:
+     • Task 01: Database (schema.sql)
+     • Task 02: Backend API (FastAPI routes)
+     • Task 03: Frontend UI (React components)
+     • Task 04: Tests (100% coverage)
+     • Task 05: Deployment (docker-compose)
+  5. Final documentation pass
+  6. Create GitHub PR
+         ↓
+Output: Complete system with code, tests, docs, PR ready for review
+```
 
 ## Tools — Exporter
 
