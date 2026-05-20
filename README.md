@@ -186,6 +186,7 @@ python3 tools/exporter.py --list
 ```
 awesome-prompts/
 ├── agents/                           ← AI agents organized by role
+│   ├── autonomous/                   ← 🤖 autonomous_dev_agent (end-to-end generation)
 │   ├── developer/                    ← Jarvis, Pyra, Rexa, Sigma
 │   ├── reviewer/                     ← Sherlock, Code Reviewer
 │   ├── writer/                       ← Documentarian
@@ -253,6 +254,260 @@ awesome-prompts/
 ✓ Dependency injection, custom exceptions
 ✓ pytest fixtures, type hints, Google-style docstrings
 ```
+
+---
+
+## 📚 Detailed Skill & Agent Guide
+
+### 🤖 Autonomous Developer System
+
+#### autonomous_dev_agent.md
+**What it does:** End-to-end code generation orchestrator. Reads plain-text requirements and automatically generates production-ready code across 5 phases: database schema, backend API, frontend UI, tests, and deployment.
+
+**When to use it:**
+- Building new projects from requirements
+- Rapid prototyping with database + backend + frontend
+- Need complete project with tests and GitHub PR
+- Want test-driven development (TDD) throughout
+
+**How to use it:**
+```bash
+# 1. Interactive setup
+python3 tools/exporter.py --interactive
+
+# 2. Create requirements file
+cat > requirement.txt << 'EOF'
+We need a user authentication system.
+Use React 18+ for frontend, Python FastAPI for backend, PostgreSQL for database.
+Features: User registration, login with JWT, profile management.
+Timeline: 2 weeks
+EOF
+
+# 3. In Claude Code, invoke agent
+/autonomous-developer
+
+# 4. Monitor progress
+cat task-completion.json | jq '.summary'
+```
+
+See **[AUTONOMOUS_DEVELOPER_README.md](AUTONOMOUS_DEVELOPER_README.md)** and **[SETUP_GUIDE.md](SETUP_GUIDE.md)** for complete documentation.
+
+---
+
+#### database_skill.md
+**What it does:** Generates SQL database schemas with proper indexing, constraints, and migrations. Supports PostgreSQL, MySQL, and SQL Server.
+
+**When to use it:**
+- Need schema for new database
+- Creating migrations for schema changes
+- Want proper indexes and constraints
+- Need to convert requirements to DDL
+
+**How to use it:**
+```
+Invoke with autonomous agent or directly:
+"Generate a PostgreSQL schema for a user authentication system with email validation and JWT token storage"
+→ Outputs: schema.sql, migration files, indexes, constraints
+```
+
+---
+
+#### backend_skill.md
+**What it does:** Generates REST API routes, models, services, and error handling for FastAPI (Python) or Spring Boot (Java).
+
+**When to use it:**
+- Building backend API from requirements
+- Need CRUD endpoints with validation
+- Want service layer + repository pattern
+- Need error handling and logging
+
+**How to use it:**
+```
+"Create FastAPI endpoints for user registration and login with JWT token handling"
+→ Outputs: routes.py, models.py, services.py, JWT middleware, input validation
+```
+
+---
+
+#### frontend_skill.md
+**What it does:** Generates React components with TypeScript, hooks, form validation, and responsive design using Tailwind CSS.
+
+**When to use it:**
+- Building React UI from requirements
+- Need form components (login, registration, profiles)
+- Want proper accessibility and responsive design
+- Need type-safe React with TypeScript
+
+**How to use it:**
+```
+"Create a login form component with email/password validation and error handling"
+→ Outputs: LoginForm.tsx, useAuth hook, styled components, accessibility attributes
+```
+
+---
+
+#### test_skill.md
+**What it does:** Generates comprehensive test suites including unit tests (pytest for Python), component tests (Jest for React), and E2E tests (Playwright).
+
+**When to use it:**
+- Need tests for generated code
+- Want ≥95% code coverage
+- Need unit + integration + E2E tests
+- Want test data factories and fixtures
+
+**How to use it:**
+```
+"Generate tests for the user authentication endpoints with coverage report"
+→ Outputs: test_auth.py (pytest), test_auth.tsx (Jest), e2e_auth.spec.ts (Playwright)
+```
+
+---
+
+### 👨‍💻 Developer Agents
+
+#### Jarvis (java_advanced_agent.md)
+**What it does:** Expert Java 17+ developer. Generates Spring Boot 3.x services with JPA, Maven/Gradle, dependency injection, and comprehensive JUnit5 tests.
+
+**When to use it:**
+- Building Java microservices
+- Spring Boot REST APIs
+- Enterprise applications with Spring ecosystem
+- Need constructor injection and immutability
+
+**How to use it:**
+```
+"Create a Spring Boot service for processing payment orders with async job handling"
+→ Generates: Spring Boot controller, service layer, JPA entities, JUnit5 tests, Javadoc
+```
+
+---
+
+#### Pyra (python_advanced_agent.md)
+**What it does:** Expert Python 3.11+ developer. Generates FastAPI APIs with async/await, SQLAlchemy 2.x, Pydantic validation, and pytest fixtures.
+
+**When to use it:**
+- Building async Python APIs
+- FastAPI with modern Python features
+- Need type hints and validation
+- Want async database access
+
+**How to use it:**
+```
+"Create a FastAPI endpoint for fetching paginated user profiles with caching"
+→ Generates: async routes, SQLAlchemy queries, Pydantic schemas, pytest tests, type hints
+```
+
+---
+
+#### Rexa (react_advanced_agent.md)
+**What it does:** Expert React 18+ developer. Generates TypeScript React components with hooks, TanStack Query, Zustand state management, and React Testing Library.
+
+**When to use it:**
+- Building modern React frontends
+- Need complex state management
+- Want type-safe React with TypeScript
+- Need data fetching and caching
+
+**How to use it:**
+```
+"Create a product listing component with filtering, sorting, and pagination"
+→ Generates: React component, hooks, TanStack Query, Zustand store, RTL tests
+```
+
+---
+
+#### Sigma (mssql_advanced_agent.md)
+**What it does:** SQL Server DBA expert. Generates T-SQL queries, indexing strategies, query optimization, and DMV-based monitoring.
+
+**When to use it:**
+- Optimizing SQL Server performance
+- Creating complex queries with CTEs
+- Need index strategies and execution plans
+- Want stored procedures with error handling
+
+**How to use it:**
+```
+"Optimize a slow product search query returning 100K rows"
+→ Generates: optimized T-SQL, index recommendations, execution plan analysis, DMV queries
+```
+
+---
+
+### 🔍 Reviewer Agents
+
+#### Sherlock (code_health_inspector_agent.md)
+**What it does:** Code health scanner. Performs 6-phase analysis: structure, performance, error handling, delayed operations, memory leaks, and security vulnerabilities.
+
+**When to use it:**
+- Need code quality audit
+- Looking for performance bottlenecks
+- Want security vulnerability scan
+- Need structured quality report
+
+**How to use it:**
+```
+"Scan this service for performance and security issues"
+→ Outputs: P0-P3 severity issues, N+1 queries, blocking calls, missing error handling, fixes
+```
+
+---
+
+#### Code Review Agent (code_review_agent.md)
+**What it does:** Design and pattern reviewer. Checks architecture, SOLID principles, naming conventions, and design patterns.
+
+**When to use it:**
+- Code quality and design review
+- Need architectural feedback
+- Want SOLID principles enforcement
+- Check pattern usage
+
+**How to use it:**
+```
+"Review this REST API for design quality and SOLID principles"
+→ Outputs: Pattern recommendations, SOLID violations, naming feedback, architectural suggestions
+```
+
+---
+
+### ✍️ Supporting Skills by Category
+
+#### **Integration & Messaging:**
+- **apache_camel_skill.md** — Enterprise Integration Patterns (EIP) and routing
+- **apache_pulsar_skill.md** — Pulsar messaging and stream processing
+- **camel_exception_handling_skill.md** — Camel error routes and Dead Letter queues
+- **camel_pulsar_integration_skill.md** — Camel + Pulsar integration patterns
+
+#### **Code Quality & Standards:**
+- **code_health_skill.md** — Quality inspection taxonomy and severity scale
+- **sonarqube_vulnerability_skill.md** — OWASP Top 10, SonarQube rules, security scanning
+- **error_handling_skill.md** — Exception patterns, try-catch strategies, recovery
+- **code_formatting_skill.md** — Formatting standards, naming conventions, style guides
+
+#### **Testing & Observability:**
+- **testing_junit5_skill.md** — JUnit5, Mockito, parameterized tests
+- **testing_pytest_skill.md** — pytest, fixtures, parametrization, coverage
+- **testing_react_skill.md** — React Testing Library, user-centric testing
+- **logger_skill.md** — Logging patterns, log levels, structured logging
+- **opentelemetry_skill.md** — Distributed tracing, metrics, observability
+
+#### **Language & Framework Standards:**
+- **java_advanced_skill.md** — Java 17+ records, sealed classes, pattern matching
+- **java17_skill.md** — Java 17 modern features and best practices
+- **java11_skill.md** — Java 11 LTS features and long-term support patterns
+- **python_advanced_skill.md** — Python 3.11+ type hints, async/await, dataclasses
+- **react_advanced_skill.md** — React 18+ hooks, concurrent features, Suspense
+- **mssql_advanced_skill.md** — T-SQL, indexes, query optimization, DMVs
+
+#### **Framework Specific:**
+- **spring_advanced_skill.md** — Spring dependency injection, AOP, transactions
+- **spring_camel_integration_skill.md** — Spring with Camel integration
+- **rest_api_java_skill.md** — REST API patterns for Spring Boot
+- **rest_api_python_skill.md** — REST API patterns for FastAPI
+- **lombok_skill.md** — Project Lombok annotations and usage
+
+#### **Architecture & Design:**
+- **oop_skill.md** — OOP pillars: encapsulation, inheritance, polymorphism, abstraction
+- **documentation_skill.md** — Javadoc, docstrings, JSDoc, comment best practices
 
 ---
 

@@ -18,7 +18,8 @@
       "Bash(git config:*)",
       "Bash(gpg --list-secret-keys --keyid-format LONG)",
       "Skill(graphify)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(chmod +x tools/interactive_exporter.py)"
     ]
   }
 }
