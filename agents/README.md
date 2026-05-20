@@ -22,26 +22,21 @@ This eliminates duplication and ensures every feature is fully delivered.
 
 ```
 agents/
-├── implementation_agent.md       ← Build features end-to-end (any tech)
-├── code_review_agent.md         ← Review code (any tech)
-├── writer_agent.md              ← Write documentation
-├── integration_agent.md          ← CI/CD & automation
+├── implementation_agent.md               ← Build features end-to-end (any tech)
+├── code_review_agent.md                 ← Review code (any tech)
+├── writer_agent.md                      ← Write documentation (JSDoc/docstrings)
+├── integration_agent.md                 ← CI/CD & automation
+├── technical_documentation_agent.md     ← Generate project technical docs
 ├── context/
-│   └── context_builder_agent.md ← Build architecture context
+│   └── context_builder_agent.md         ← Build architecture context
 ├── autonomous/
-│   └── autonomous_dev_agent.md  ← Orchestrate full projects
-├── _deprecated/                 ← Old agents (archived)
-│   ├── developer_agent.md (renamed to implementation_agent)
-│   ├── java_advanced_agent.md
-│   ├── python_advanced_agent.md
-│   ├── react_advanced_agent.md
-│   └── ... (9 old tech-specific agents)
+│   └── autonomous_dev_agent.md          ← Orchestrate full projects
 └── README.md
 ```
 
 ---
 
-## 🚀 The 5 Agents
+## 🚀 The 6 Agents
 
 ### 1️⃣ Implementation Agent
 
@@ -183,7 +178,47 @@ Agent: Generates:
 
 ---
 
-### 5️⃣ Autonomous Developer Agent
+### 5️⃣ Technical Documentation Agent
+
+**File:** `technical_documentation_agent.md`
+
+**What it does:** Generates comprehensive technical documentation by analyzing your project
+
+**Documentation includes:**
+- Code workflows and request/response cycles
+- Database schema and relationships
+- Middleware and integration documentation
+- Dependency analysis (from package.json, pom.xml, requirements.txt, etc.)
+- API endpoint reference
+- Deployment guides
+- Interactive HTML visualization
+- Markdown files for all aspects
+
+**When to use:**
+- Onboarding new team members
+- Documenting existing projects
+- Creating architecture diagrams
+- Before major refactors
+- Building knowledge base
+- Preparing for external audits
+
+**Example:**
+```
+User: "Generate complete technical documentation for this project"
+
+Agent: Creates:
+- Interactive HTML with architecture diagrams
+- 10 markdown files covering all aspects
+- Tech stack analysis
+- Code workflow diagrams
+- Database schema documentation
+- Middleware documentation
+- Deployment guide
+```
+
+---
+
+### 6️⃣ Autonomous Developer Agent
 
 **Location:** `autonomous/autonomous_dev_agent.md`
 
@@ -359,6 +394,7 @@ Old agents are archived in `_deprecated/` for reference but not exported.
 | **Implementation** | Build features end-to-end | "Implement X feature" | Code + tests + docs + context + commit |
 | **Code Review** | Inspect quality | "Review this code" | Issues + severity + fixes |
 | **Writer** | Document code | "Write docs for this" | Javadoc/docstrings/README/API specs |
+| **Technical Documentation** | Generate project docs | "Document this project" | HTML + Markdown docs + diagrams |
 | **Integration** | CI/CD & DevOps | "Create pipeline for X" | CI/CD workflow + IaC + monitoring |
 | **Autonomous** | Full projects | "Build Y from Z requirements" | Complete system (DB + backend + frontend + tests) |
 
