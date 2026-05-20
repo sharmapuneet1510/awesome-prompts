@@ -1,176 +1,227 @@
-# Awesome Prompts — Enterprise-Grade AI Coding Assistant Repository
+# 🤖 Awesome Prompts — AI-Driven Development System
 
-A comprehensive, production-ready collection of **AI agent definitions**, **coding skills**, and **prompt templates** for software engineering workflows. Compatible with GitHub Copilot, Claude, Cursor, Windsurf, Gemini CLI, Continue.dev, OpenAI API, and Aider.
+> **Enterprise-grade AI agents + reusable skills for autonomous code generation, comprehensive testing, and auto-documentation across Java, Python, React, and TypeScript.**
 
-**Version:** 4.0.0 | **Status:** ✅ Production Ready | 30 Skills | 9 Agents | 8 Platform Exports | 🤖 Autonomous Code Generation
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=flat-square)]()
+[![Version](https://img.shields.io/badge/Version-4.1.0-blueviolet?style=flat-square)]()
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)]()
+[![Last Updated](https://img.shields.io/badge/Updated-May%202026-blueviolet?style=flat-square)]()
+
+Compatible with: **Claude Code** • **GitHub Copilot** • **Cursor** • **Windsurf** • **VS Code** • **Gemini CLI** • **Continue.dev** • **OpenAI** • **Aider**
 
 ---
 
 ## 🎯 What This Is
 
-This repository provides **shareable, git-friendly instructions** for AI coding assistants. Instead of starting from scratch, your AI assistant applies proven patterns for:
+**Awesome Prompts** is a comprehensive system of **5 AI agents** + **7 reusable skills** that transform requirements into production-ready code with:
 
-- ✅ **REST API design** (Java, Python)
-- ✅ **Error handling** (retry logic, circuit breaker)
-- ✅ **Testing** (JUnit5, pytest, React Testing Library)
-- ✅ **Code quality** (SonarQube, security, formatting)
-- ✅ **Documentation** (Javadoc, docstrings, JSDoc)
-- ✅ **Architecture patterns** (Spring, FastAPI, Camel, Pulsar)
-
-**Agents are role-based:**
-- 👨‍💻 **Developer** — Generate code
-- 🔍 **Reviewer** — Inspect quality
-- ✍️ **Writer** — Write docs
-- 🔧 **Integration** — Automate CI/CD
-- 🤖 **Autonomous Developer** — End-to-end code generation
+✅ **100% test coverage** — Unit, integration, and E2E tests  
+✅ **Complete documentation** — JSDoc, docstrings, Javadoc (auto-generated)  
+✅ **JIRA integration** — Fetch requirements, validate acceptance criteria  
+✅ **Business validation** — Ensure tests verify real requirements, not just code  
+✅ **Multi-tech support** — Java, Python, React, TypeScript, Node.js  
+✅ **Auto-context generation** — architecture.md, context.json, interactive visualization  
+✅ **Autonomous orchestration** — Build complete systems (DB + API + UI + tests)
 
 ---
 
-## 🤖 NEW: Autonomous Developer System
-
-The **Autonomous Developer Agent** reads plain-text requirements and generates production-ready code end-to-end:
+## 🏗️ System Architecture
 
 ```
-Input: requirement.txt
-├─ Parse requirements → Detect project type
-├─ Generate database schema + migrations
-├─ Build backend API (REST, GraphQL, services)
-├─ Create frontend UI (React components)
-├─ Write comprehensive tests (pytest, Jest, E2E)
-└─ Output: Full GitHub PR with production code
+┌─────────────────────────────────────────────────────────────────┐
+│                       User Requirement                           │
+│         (Free text / JIRA / File / Auto-detect)                │
+└────────────────────────┬────────────────────────────────────────┘
+                         ↓
+        ┌────────────────────────────────────┐
+        │  Implementation Agent v3.0         │
+        │  Full-Lifecycle Feature Builder    │
+        │  • Gather requirements             │
+        │  • Detect tech stack               │
+        │  • Generate code + tests + docs    │
+        └────────────────────────────────────┘
+                         ↓
+        ┌────────────────────────────────────┐
+        │ Code Documentation Skill v1.0      │
+        │ (JSDoc/docstrings/Javadoc)        │
+        │ • 100% method coverage             │
+        │ • Parameters + returns + examples  │
+        │ • Business requirement links       │
+        └────────────────────────────────────┘
+                         ↓
+        ┌────────────────────────────────────┐
+        │ Test Case Generator Agent v1.0     │
+        │ 100% Coverage + Business Validation│
+        │ • Unit + integration + E2E tests   │
+        │ • JIRA acceptance criteria check   │
+        │ • Auto-documented test methods     │
+        └────────────────────────────────────┘
+                         ↓
+        ┌────────────────────────────────────┐
+        │   Code Review Agent v2.0           │
+        │   Quality + Security + Patterns    │
+        │   • SOLID principles enforcement   │
+        │   • Performance analysis           │
+        │   • Documentation validation       │
+        └────────────────────────────────────┘
+                         ↓
+        ┌────────────────────────────────────┐
+        │ Autonomous Dev Agent v1.0          │
+        │ Full-Stack Orchestrator            │
+        │ • DB + Backend + Frontend + Tests  │
+        │ • Knowledge graph generation       │
+        │ • GitHub PR creation               │
+        └────────────────────────────────────┘
+                         ↓
+              ✅ PRODUCTION-READY CODE
+         (Code + 100% Tests + Documentation + Context)
 ```
-
-**Features:**
-- 🚀 Fully autonomous 5-phase code generation
-- 📊 Intelligent project detection (new vs existing)
-- 🧪 Test-driven development (TDD) for all phases
-- 📈 Task completion tracking (JSON format)
-- 🧠 Knowledge graph integration (graphify)
-- 🔄 GitHub PR creation with auto-sync
-- 📚 Auto-updating documentation
-
-**Quick Start:**
-```bash
-# Interactive setup (recommended)
-python3 tools/exporter.py --interactive
-
-# Or direct: export autonomous developer system
-python3 tools/exporter.py --target claude --all
-
-# Then in Claude Code: /autonomous-developer
-```
-
-See **[AUTONOMOUS_DEVELOPER_README.md](AUTONOMOUS_DEVELOPER_README.md)** and **[SETUP_GUIDE.md](SETUP_GUIDE.md)** for complete documentation.
 
 ---
 
-## 📦 What's Included
+## 📦 Core Components
 
-### Skills (30 total)
+### **5 AI Agents**
 
-**Autonomous Development (NEW):**
-- `database_skill.md` — SQL schema generation with migrations
-- `backend_skill.md` — API generation (FastAPI, Spring Boot)
-- `frontend_skill.md` — React component generation with TypeScript
-- `test_skill.md` — Comprehensive testing (pytest, Jest, Playwright, E2E)
+| Agent | Purpose | Input | Output | Coverage |
+|-------|---------|-------|--------|----------|
+| **Implementation** | Build features end-to-end | Requirement | Code + tests + docs | Full lifecycle |
+| **Test Generator** | Generate 100% coverage tests | Code files + test type | Comprehensive test suite | 100% coverage |
+| **Code Review** | Analyze design + quality | Source code | Issues + severity + fixes | Design + perf + security |
+| **Writer** | Auto-generate documentation | Code files | JSDoc/docstrings/Javadoc | 100% APIs |
+| **Autonomous Dev** | Orchestrate full projects | Requirement | Complete system | DB + API + UI + tests |
 
-**API & Backend:**
-- `rest_api_java_skill.md` — Spring Boot REST patterns
-- `rest_api_python_skill.md` — FastAPI patterns
-- `spring_advanced_skill.md` — Spring Framework internals
-- `spring_camel_integration_skill.md` — Spring + Camel integration
-- `apache_camel_skill.md` — Integration & EIP routing
-- `camel_exception_handling_skill.md` — Camel error routes
-- `camel_pulsar_integration_skill.md` — Camel + Pulsar integration
-- `apache_pulsar_skill.md` — Messaging & streaming
+### **7 Reusable Skills**
 
-**Language Standards:**
-- `java_advanced_skill.md` — Java 17+ patterns
-- `java17_skill.md` — Java 17 modern features
-- `java11_skill.md` — Java 11 LTS features
-- `python_advanced_skill.md` — Python 3.11+ patterns
-- `react_advanced_skill.md` — React 18+ / TypeScript patterns
-- `mssql_advanced_skill.md` — T-SQL & indexing
-- `oop_skill.md` — OOP principles & patterns
-- `lombok_skill.md` — Project Lombok
-
-**Testing & Quality:**
-- `testing_junit5_skill.md` — JUnit5 with Mockito
-- `testing_pytest_skill.md` — pytest with fixtures
-- `testing_react_skill.md` — React Testing Library
-- `code_health_skill.md` — Quality inspection taxonomy
-- `sonarqube_vulnerability_skill.md` — Security & OWASP Top 10
-
-**Code Standards:**
-- `error_handling_skill.md` — Exception patterns
-- `code_formatting_skill.md` — Formatting standards
-- `documentation_skill.md` — Javadoc/docstrings/JSDoc
-- `logger_skill.md` — Logging best practices
-- `opentelemetry_skill.md` — Distributed tracing & observability
-
-### Agents (5 role-based + 1 orchestrator = 6 total)
-
-**Simplified Role-Based Architecture:**
-- `developer_agent.md` — Generic developer (detects tech stack, uses appropriate skill)
-- `code_review_agent.md` — Generic reviewer (design, SOLID, performance, security)
-- `writer_agent.md` — Generic writer (Javadoc, docstrings, JSDoc, README)
-- `integration_agent.md` — Generic DevOps (CI/CD, automation, infrastructure)
-- `autonomous/autonomous_dev_agent.md` — 🤖 End-to-end code generation orchestrator
-
-**Archived (9 old tech-specific agents):**
-- Old: `java_advanced_agent.md`, `python_advanced_agent.md`, `react_advanced_agent.md`, `mssql_advanced_agent.md` → Now: single `developer_agent.md`
-- Old: `code_health_inspector_agent.md`, `git-review-2.md` → Now: `code_review_agent.md`
-- Old: `jira_documentation_agent.md` → Now: `writer_agent.md`
-- Old: `jira_mr_sync_review.agent.md` → Now: `integration_agent.md`
-- Located in: `agents/_deprecated/` for reference
-
-### Instructions (3 files)
-
-- `instructions/master_instruction_set.md` — Universal rules all agents follow
-- `instructions/java_project_intake.md` — 33-question Java/Spring intake form
-- `instructions/python_project_intake.md` — Python project setup guide
+| Skill | Purpose | Tech Stack | Used By |
+|-------|---------|-----------|---------|
+| **code_documentation** | JSDoc/docstrings/Javadoc | JS/TS/Python/Java | All agents |
+| **database** | SQL schema + migrations | PostgreSQL/MySQL | Autonomous Dev |
+| **backend** | REST APIs + services | FastAPI/Spring Boot | Implementation + Autonomous |
+| **frontend** | React components + hooks | React/TypeScript | Implementation + Autonomous |
+| **test** | Test generation | JUnit5/pytest/Jest | Test Generator |
+| **context_builder** | Architecture understanding | All stacks | All agents |
+| **apache_camel** | Integration patterns | Camel/Java | Integration Agent |
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Export to Your Platform
+### **Option 1: Interactive Setup** (Recommended)
 
 ```bash
-# Export all 26 skills + 8 agents to all 8 platforms
-python3 tools/exporter.py
+python3 tools/exporter.py --interactive
 
-# Specific platforms only
-python3 tools/exporter.py --target copilot claude cursor
-
-# Filter by skill/agent
-python3 tools/exporter.py --skills java,spring --agents developer
-
-# Preview without writing
-python3 tools/exporter.py --dry-run
-
-# List everything discovered
-python3 tools/exporter.py --list
+# Asks:
+# 1. Project root directory?
+# 2. Target platforms? (select multiple)
+# 3. Ready to export?
 ```
 
-### 2. Platform Output Locations
-
-| Platform | Skills | Agents |
-|----------|--------|--------|
-| GitHub Copilot | `.github/instructions/<slug>.instructions.md` | `.github/copilot/agents/<slug>.md` |
-| Claude Code | `.claude/skills/<slug>.md` | `.claude/agents/<slug>.md` |
-| Cursor IDE | `.cursor/rules/<slug>.mdc` | `.cursor/rules/agents/<slug>.mdc` |
-| Windsurf | `.windsurf/rules/<slug>.md` | `.windsurf/rules/agents/<slug>.md` |
-| Gemini CLI | `.gemini/skills/<slug>.md` | `.gemini/agents/<slug>.md` |
-| Continue.dev | `.continue/prompts/<slug>.prompt` | `.continue/prompts/agents/<slug>.prompt` |
-| OpenAI API | `tools/output/openai/skills/<slug>.txt` | `tools/output/openai/agents/<slug>.txt` |
-| Aider | `.aider/skills/<slug>.md` | `.aider/agents/<slug>.md` |
-
-### 3. Ask for Code
+### **Option 2: In Claude Code / Copilot**
 
 ```
-"Use Jarvis to create a Spring Boot REST API for orders with proper error handling"
-→ Generates: Spring Boot 3.x controller, service, JPA entities, JUnit5 tests, Javadoc
+"Implement user registration with email validation"
+↓
+→ Requirement input
+→ Code generation
+→ Test generation (100% coverage)
+→ Auto-documentation
+→ Git commit
+```
+
+### **Option 3: JIRA-Driven Development**
+
+```
+"Generate tests for AUTH-789"
+↓
+→ Fetch JIRA ticket
+→ Extract acceptance criteria
+→ Plan test cases (mapped to criteria)
+→ Validate all criteria tested
+→ 100% coverage + business validated
+```
+
+---
+
+## 📋 Complete Workflows
+
+### **Workflow 1: Feature Implementation** (Code + Tests + Docs)
+
+```
+User Request:
+  "Build password reset feature with email sending"
+              ↓
+Implementation Agent (7 steps):
+  1. STEP 0: Gather requirement (free text)
+  2. STEP 1: Load context (detect Python + FastAPI)
+  3. STEP 2: Confirm requirement
+  4. STEP 3: Plan (email service + reset flow)
+  5. STEP 4: Apply backend_skill
+  6. STEP 5-6: Implement + test with pytest
+  7. STEP 7: Apply code_documentation_skill
+              ↓
+Output:
+  ✅ routes/reset_password.py
+  ✅ services/email_service.py
+  ✅ test_reset_password.py (100% coverage)
+  ✅ Docstrings on all methods
+  ✅ Git commit: "feat: add password reset with email"
+```
+
+### **Workflow 2: Test Generation** (100% Coverage + Business Validation)
+
+```
+User Request:
+  "Generate tests for AUTH-789"
+              ↓
+Test Case Generator (10 steps):
+  1. STEP 0: Fetch JIRA AUTH-789
+  2. STEP 1: Test type = unit + integration
+  3. STEP 2-3: Analyze LoginService code
+  4. STEP 4: Plan 8 test cases
+  5. STEP 5-6: Generate JUnit5 tests
+  6. STEP 7: Document with JSDoc
+  7. STEP 8: Validate all 4 acceptance criteria covered ✓
+  8. STEP 9: Run tests (all 8 pass)
+  9. STEP 10: Commit
+              ↓
+Output:
+  ✅ LoginServiceTest.java (8 tests)
+  ✅ 100% line coverage
+  ✅ All 4 JIRA criteria tested
+  ✅ JSDoc on every test method
+  ✅ Coverage report with business validation
+  ✅ Git commit: "test: add AUTH-789 tests (4/4 criteria)"
+```
+
+### **Workflow 3: Full-Stack Generation** (DB + API + UI + Tests)
+
+```
+User Request:
+  "Build e-commerce shopping cart with checkout"
+              ↓
+Autonomous Dev Agent (14 steps):
+  1. Parse requirements
+  2. Build context (architecture.md, context.json)
+  3. Generate task specs (01-05)
+  4. Execute sequentially:
+     • Task 01: Database schema (PostgreSQL)
+     • Task 02: Cart API (FastAPI routes)
+     • Task 03: Checkout UI (React components)
+     • Task 04: Integration tests
+     • Task 05: Deployment config
+  5. Apply code_documentation_skill (final pass)
+  6. Create GitHub PR
+              ↓
+Output:
+  ✅ Database migrations + schema
+  ✅ REST API endpoints (CRUD operations)
+  ✅ React UI (cart, checkout, forms)
+  ✅ 40+ tests (unit + integration + E2E)
+  ✅ JSDoc/docstrings on all code
+  ✅ Architecture visualization (design.html)
+  ✅ GitHub PR ready for review
 ```
 
 ---
@@ -179,674 +230,253 @@ python3 tools/exporter.py --list
 
 ```
 awesome-prompts/
-├── agents/                           ← AI agents organized by role
-│   ├── autonomous/                   ← 🤖 autonomous_dev_agent (end-to-end generation)
-│   ├── developer/                    ← Jarvis, Pyra, Rexa, Sigma
-│   ├── reviewer/                     ← Sherlock, Code Reviewer
-│   ├── writer/                       ← Documentarian
-│   ├── integration/                  ← CI/CD Orchestrator
-│   └── README.md
+├── agents/                              # AI agent definitions
+│   ├── implementation_agent.md           # Full-lifecycle feature builder
+│   ├── test_case_generator_agent.md      # 100% coverage test generation
+│   ├── code_review_agent.md              # Code quality + security
+│   ├── writer_agent.md                   # Auto-generate documentation
+│   ├── integration_agent.md              # CI/CD + DevOps
+│   ├── context/
+│   │   └── context_builder_agent.md      # Interactive project analysis
+│   ├── autonomous/
+│   │   └── autonomous_dev_agent.md       # Full-stack orchestrator
+│   └── README.md                         # Agent reference guide
 │
-├── skills/                           ← Reusable knowledge modules (26 total)
+├── skills/                              # Reusable implementation skills
+│   ├── code_documentation_skill.md       # JSDoc/docstrings/Javadoc (NEW)
+│   ├── database_skill.md                 # SQL schema + migrations
+│   ├── backend_skill.md                  # REST API generation
+│   ├── frontend_skill.md                 # React component generation
+│   ├── test_skill.md                     # Test case generation
+│   ├── context_builder_skill.md          # Architecture scanning
+│   ├── spring_advanced_skill.md          # Spring Boot patterns
+│   └── apache_camel_skill.md             # Integration patterns
 │
-├── instructions/                     ← Universal rules & intake forms
-│   ├── master_instruction_set.md
-│   ├── java_project_intake.md
-│   └── python_project_intake.md
+├── instructions/                        # Universal rules for all agents
+│   ├── master_instruction_set.md         # Non-negotiable standards
+│   ├── java_project_intake.md            # Java-specific questions
+│   └── python_project_intake.md          # Python-specific questions
 │
-├── prompts/                          ← Reusable prompt templates
-│   ├── code-review/
-│   ├── testing/
-│   ├── codebase-analysis/
-│   ├── project-management/
-│   ├── incident-management/
-│   └── email/
+├── tools/                               # Python utilities
+│   ├── exporter.py                      # Export to 8 platforms
+│   ├── requirement_parser.py             # Parse requirements
+│   ├── context_builder.py                # Build project context
+│   ├── task_generator.py                 # Create task specs
+│   ├── graphify_integrator.py            # Knowledge graphs
+│   ├── github_sync.py                    # GitHub PR creation
+│   ├── generate_design_html.py           # Interactive visualization
+│   └── update_checker.py                 # Auto-update checker
 │
-├── tools/                            ← Python utilities
-│   ├── exporter.py                   ← Export to 8 platforms (v3.0)
-│   ├── skill_validator.py            ← Validate skill frontmatter
-│   ├── fix_code_blocks.py            ← Fix markdown code blocks
-│   └── README.md
+├── docs/                                # Documentation
+│   ├── requirement_input_guide.md        # How to provide requirements
+│   ├── AUTONOMOUS_DEVELOPER_README.md    # Full system overview
+│   ├── superpowers/specs/                # Design specifications
+│   └── superpowers/plans/                # Implementation plans
 │
-├── tests/                            ← Test suite for tools
-│   └── tools/
-│       └── test_exporter.py          ← 79 tests, all passing
-│
-├── CLAUDE.md                         ← Claude Code instructions
-├── .gitignore
-└── README.md
+├── AUTONOMOUS_DEVELOPER_README.md        # v3.0 system overview
+├── README.md                             # This file
+└── CLAUDE.md                             # Project-specific instructions
 ```
 
 ---
 
-## 🎓 Agent Usage Examples
-
-### Jarvis (Java Developer)
-
-```
-"Create a Spring Boot service that processes orders asynchronously"
-✓ Spring Boot 3.x REST controller + service layer
-✓ JPA/Hibernate entities, constructor injection
-✓ @Valid request validation, global error handler
-✓ JUnit5 + Mockito tests, full Javadoc
-```
-
-### Sherlock (Code Inspector)
-
-```
-"Scan this service for performance issues"
-✓ 6-phase analysis: structure → performance → errors → delays → memory → security
-✓ N+1 queries, blocking calls, swallowed exceptions
-✓ P0–P3 severity report with fix examples
-```
-
-### Pyra (Python Developer)
-
-```
-"Build a FastAPI endpoint with async database access"
-✓ FastAPI + Pydantic schemas, async SQLAlchemy
-✓ Dependency injection, custom exceptions
-✓ pytest fixtures, type hints, Google-style docstrings
-```
-
----
-
-## 📚 Agent Architecture (Simplified)
-
-### 🎯 Core Principle: DRY Agents + Reusable Skills
-
-Instead of separate agents for Java, Python, React, we have:
-- **ONE Developer Agent** that detects tech stack and uses appropriate skill
-- **Skills** contain tech-specific implementation details
-- **Instructions** contain universal rules
-
-This eliminates duplication and scales to any tech stack.
-
-```
-Developer wants Java code
-    ↓
-developer_agent.md (detects Java)
-    ↓
-Loads java_advanced_skill.md
-    ↓
-Applies master_instruction_set.md
-    ↓
-Generates production code
-```
-
----
-
-## 📚 Detailed Skill & Agent Guide
-
-### 🤖 Autonomous Developer System
-
-#### autonomous_dev_agent.md
-**What it does:** End-to-end code generation orchestrator. Reads plain-text requirements and automatically generates production-ready code across 5 phases: database schema, backend API, frontend UI, tests, and deployment.
-
-**When to use it:**
-- Building new projects from requirements
-- Rapid prototyping with database + backend + frontend
-- Need complete project with tests and GitHub PR
-- Want test-driven development (TDD) throughout
-
-**How to use it:**
-```bash
-# 1. Interactive setup
-python3 tools/exporter.py --interactive
-
-# 2. Create requirements file
-cat > requirement.txt << 'EOF'
-We need a user authentication system.
-Use React 18+ for frontend, Python FastAPI for backend, PostgreSQL for database.
-Features: User registration, login with JWT, profile management.
-Timeline: 2 weeks
-EOF
-
-# 3. In Claude Code, invoke agent
-/autonomous-developer
-
-# 4. Monitor progress
-cat task-completion.json | jq '.summary'
-```
-
-See **[AUTONOMOUS_DEVELOPER_README.md](AUTONOMOUS_DEVELOPER_README.md)** and **[SETUP_GUIDE.md](SETUP_GUIDE.md)** for complete documentation.
-
----
-
-#### database_skill.md
-**What it does:** Generates SQL database schemas with proper indexing, constraints, and migrations. Supports PostgreSQL, MySQL, and SQL Server.
-
-**When to use it:**
-- Need schema for new database
-- Creating migrations for schema changes
-- Want proper indexes and constraints
-- Need to convert requirements to DDL
-
-**How to use it:**
-```
-Invoke with autonomous agent or directly:
-"Generate a PostgreSQL schema for a user authentication system with email validation and JWT token storage"
-→ Outputs: schema.sql, migration files, indexes, constraints
-```
-
----
-
-#### backend_skill.md
-**What it does:** Generates REST API routes, models, services, and error handling for FastAPI (Python) or Spring Boot (Java).
-
-**When to use it:**
-- Building backend API from requirements
-- Need CRUD endpoints with validation
-- Want service layer + repository pattern
-- Need error handling and logging
-
-**How to use it:**
-```
-"Create FastAPI endpoints for user registration and login with JWT token handling"
-→ Outputs: routes.py, models.py, services.py, JWT middleware, input validation
-```
-
----
-
-#### frontend_skill.md
-**What it does:** Generates React components with TypeScript, hooks, form validation, and responsive design using Tailwind CSS.
-
-**When to use it:**
-- Building React UI from requirements
-- Need form components (login, registration, profiles)
-- Want proper accessibility and responsive design
-- Need type-safe React with TypeScript
-
-**How to use it:**
-```
-"Create a login form component with email/password validation and error handling"
-→ Outputs: LoginForm.tsx, useAuth hook, styled components, accessibility attributes
-```
-
----
-
-#### test_skill.md
-**What it does:** Generates comprehensive test suites including unit tests (pytest for Python), component tests (Jest for React), and E2E tests (Playwright).
-
-**When to use it:**
-- Need tests for generated code
-- Want ≥95% code coverage
-- Need unit + integration + E2E tests
-- Want test data factories and fixtures
-
-**How to use it:**
-```
-"Generate tests for the user authentication endpoints with coverage report"
-→ Outputs: test_auth.py (pytest), test_auth.tsx (Jest), e2e_auth.spec.ts (Playwright)
-```
-
----
-
-### 👨‍💻 Developer Agent
-
-#### developer_agent.md
-**What it does:** Generic senior developer that auto-detects your tech stack and applies the appropriate skill (Java, Python, React, TypeScript, SQL, etc.)
-
-**How it works:**
-1. You tell it your tech (or it detects from files)
-2. It loads the matching skill (java_advanced_skill, python_advanced_skill, etc.)
-3. It generates production code following that skill's patterns
-
-**When to use it:**
-- Writing backend services (Java, Python, Go, etc.)
-- Building frontend components (React, Vue, Svelte, etc.)
-- Creating database queries (SQL, MongoDB, etc.)
-- Any code generation task (auto-detects best practices)
-
-**How to use it:**
-```
-# Java/Spring Boot
-"Build a Spring Boot service for order processing"
-→ Detects Java, loads java_advanced_skill
-→ Generates: Spring Boot controller, service, JPA entity, JUnit5 tests, Javadoc
-
-# Python/FastAPI
-"Create a FastAPI async endpoint with database access"
-→ Detects Python, loads python_advanced_skill
-→ Generates: async route, SQLAlchemy, Pydantic schema, pytest tests, docstring
-
-# React/TypeScript
-"Build a product listing component with filtering"
-→ Detects React, loads react_advanced_skill
-→ Generates: React component, hooks, RTL tests, TypeScript types, JSDoc
-
-# SQL
-"Optimize a slow product search query"
-→ Detects SQL Server, loads mssql_advanced_skill
-→ Generates: optimized T-SQL, indexes, execution plan analysis
-```
-
-**Tech Stacks Supported:**
-- ✅ **Java** — Spring Boot 3.x, JUnit5, Maven/Gradle
-- ✅ **Python** — FastAPI, SQLAlchemy, pytest
-- ✅ **React/TypeScript** — React 18+, hooks, RTL
-- ✅ **SQL Server** — T-SQL, indexes, DMVs
-- ✅ **And many more** — skills-based architecture scales to any tech
-
----
-
-### 🔍 Code Review Agent
-
-#### code_review_agent.md
-**What it does:** Generic code reviewer that analyzes code for design quality, SOLID principles, performance, security, and maintainability (tech-agnostic).
-
-**Review focuses:**
-- Structure & design patterns
-- SOLID principles enforcement
-- Performance problems (N+1 queries, inefficient algorithms)
-- Security vulnerabilities (SQL injection, validation, secrets)
-- Testing & documentation gaps
-- Architectural improvements
-
-**When to use it:**
-- Need comprehensive code quality review
-- Looking for design and architecture feedback
-- Want performance optimization suggestions
-- Need security vulnerability scan
-- SOLID principles enforcement
-
-**How to use it:**
-```
-"Review this code for design quality and performance"
-→ Outputs: 
-- P0: Security issues (SQL injection, missing validation)
-- P1: Performance problems (N+1 queries, inefficient algorithms)
-- P2: Design issues (SRP violations, coupling)
-- P3: Code quality suggestions (naming, documentation)
-```
-
-**Key Features:**
-- ✅ Identifies design patterns and antipatterns
-- ✅ Suggests architectural improvements
-- ✅ Detects performance bottlenecks
-- ✅ Finds security vulnerabilities
-- ✅ Enforces SOLID principles
-- ✅ Tech-agnostic (works with any language)
-
----
-
-### ✍️ Writer Agent
-
-#### writer_agent.md
-**What it does:** Generic technical writer that generates documentation for code (Javadoc, docstrings, JSDoc) and creates guides (README, architecture docs).
-
-**Documentation types:**
-- Javadoc (Java)
-- Google-style docstrings (Python)
-- JSDoc (TypeScript/JavaScript)
-- Architecture documentation
-- README files with quick start
-- API specifications
-
-**When to use it:**
-- Generate API documentation for code
-- Add Javadoc/docstrings to methods
-- Write architecture documentation
-- Create README and quick start guides
-- Document deployment instructions
-
-**How to use it:**
-```
-"Generate Javadoc for this Java service"
-→ Outputs: Complete Javadoc with @param, @return, @throws, @example
-
-"Write API documentation for these endpoints"
-→ Outputs: Endpoint docs, request/response examples, error codes
-
-"Create an architecture document"
-→ Outputs: System overview, components, data flow, deployment
-```
-
----
-
-### 🔧 Integration Agent
-
-#### integration_agent.md
-**What it does:** Generic DevOps engineer that builds CI/CD pipelines, automates deployments, and creates infrastructure as code.
-
-**Supports:**
-- GitHub Actions, GitLab CI, Jenkins, CircleCI
-- Docker & Kubernetes
-- Terraform / CloudFormation / ARM templates
-- Monitoring & alerting setup
-- Blue-green and canary deployments
-
-**When to use it:**
-- Set up CI/CD pipelines (GitHub Actions, GitLab CI, etc.)
-- Create Docker & Kubernetes configs
-- Build infrastructure as code
-- Automate testing and deployments
-- Set up monitoring and alerting
-
-**How to use it:**
-```
-"Create a GitHub Actions workflow that tests and deploys"
-→ Outputs: CI/CD pipeline with test → build → deploy stages
-
-"Create a Kubernetes deployment for my app"
-→ Outputs: K8s manifest, service, ingress, resource limits, health checks
-
-"Build Terraform infrastructure for AWS"
-→ Outputs: VPC, subnets, RDS, ECS, load balancer, security groups
-```
-
----
-
-### ✍️ Supporting Skills by Category
-
-#### **Integration & Messaging:**
-- **apache_camel_skill.md** — Enterprise Integration Patterns (EIP) and routing
-- **apache_pulsar_skill.md** — Pulsar messaging and stream processing
-- **camel_exception_handling_skill.md** — Camel error routes and Dead Letter queues
-- **camel_pulsar_integration_skill.md** — Camel + Pulsar integration patterns
-
-#### **Code Quality & Standards:**
-- **code_health_skill.md** — Quality inspection taxonomy and severity scale
-- **sonarqube_vulnerability_skill.md** — OWASP Top 10, SonarQube rules, security scanning
-- **error_handling_skill.md** — Exception patterns, try-catch strategies, recovery
-- **code_formatting_skill.md** — Formatting standards, naming conventions, style guides
-
-#### **Testing & Observability:**
-- **testing_junit5_skill.md** — JUnit5, Mockito, parameterized tests
-- **testing_pytest_skill.md** — pytest, fixtures, parametrization, coverage
-- **testing_react_skill.md** — React Testing Library, user-centric testing
-- **logger_skill.md** — Logging patterns, log levels, structured logging
-- **opentelemetry_skill.md** — Distributed tracing, metrics, observability
-
-#### **Language & Framework Standards:**
-- **java_advanced_skill.md** — Java 17+ records, sealed classes, pattern matching
-- **java17_skill.md** — Java 17 modern features and best practices
-- **java11_skill.md** — Java 11 LTS features and long-term support patterns
-- **python_advanced_skill.md** — Python 3.11+ type hints, async/await, dataclasses
-- **react_advanced_skill.md** — React 18+ hooks, concurrent features, Suspense
-- **mssql_advanced_skill.md** — T-SQL, indexes, query optimization, DMVs
-
-#### **Framework Specific:**
-- **spring_advanced_skill.md** — Spring dependency injection, AOP, transactions
-- **spring_camel_integration_skill.md** — Spring with Camel integration
-- **rest_api_java_skill.md** — REST API patterns for Spring Boot
-- **rest_api_python_skill.md** — REST API patterns for FastAPI
-- **lombok_skill.md** — Project Lombok annotations and usage
-
-#### **Architecture & Design:**
-- **oop_skill.md** — OOP pillars: encapsulation, inheritance, polymorphism, abstraction
-- **documentation_skill.md** — Javadoc, docstrings, JSDoc, comment best practices
+## 🛠️ Tech Stack Support
+
+| Layer | Technologies | Test Framework | Documentation |
+|-------|--------------|----------------|-------------|
+| **Backend** | Java, Python, Node.js | JUnit5, pytest, Jest | Javadoc, docstrings, JSDoc |
+| **Frontend** | React, Vue, Angular | Jest, React Testing Library | JSDoc, TypeScript types |
+| **Database** | PostgreSQL, MySQL, MongoDB | Integration tests | Schema docs |
+| **Testing** | Unit, Integration, E2E | All frameworks | Test documentation |
 
 ---
 
 ## ✨ Key Features
 
-### All Agents Follow Master Rules
+### **1. Intelligent Requirement Gathering**
+- Free text input with AI parsing
+- JIRA ticket fetching (via MCP)
+- Requirement file parsing (.md, .txt, .yaml)
+- Auto-detect from project root
 
-1. **Version Check First** — Check environment before coding
-2. **Test Generation** — Every feature gets tests (AAA pattern)
-3. **OOP Principles** — All 4 pillars with concrete examples
-4. **Clean Code** — ≤20 lines per method, ≤300 lines per class
-5. **Documentation** — Javadoc/docstrings/JSDoc mandatory
-6. **Security** — Parameterized queries, input validation, no secrets in logs
-7. **Error Handling** — Try-catch, logging, recovery strategies
-8. **Code Quality** — Formatting, naming, alignment
-9. **Project Intake** — Ask questions before generating code
+### **2. Full-Lifecycle Development**
+- **Create** — Generate production code
+- **Test** — 100% coverage with business validation
+- **Document** — Auto-generate JSDoc/docstrings/Javadoc
+- **Commit** — Clear git messages with references
 
-### Multi-Language Support
+### **3. Business Requirement Validation**
+- JIRA integration for acceptance criteria
+- Test coverage mapping (3/4 criteria tested?)
+- Business commentary in code
+- Validation reports
 
-- **Java** — Spring Boot 3.x, JUnit5, Maven/Gradle, Lombok
-- **Python** — FastAPI, pytest, asyncio, Pydantic v2
-- **React** — React 18+, TypeScript, TanStack Query
-- **SQL Server** — T-SQL, DMVs, indexing strategies
-- **Apache** — Camel EIP patterns, Pulsar messaging
+### **4. Professional Documentation**
+- JSDoc for JavaScript/TypeScript
+- Google docstrings for Python
+- Javadoc for Java
+- Examples + edge cases + performance notes
+
+### **5. Context Generation**
+- architecture.md with Mermaid diagrams
+- context.json (machine-readable)
+- tech-stack.md with skill mappings
+- design.html (interactive visualization)
+
+### **6. Multi-Platform Export**
+- Claude Code, Copilot, Cursor, Windsurf, VS Code, Gemini, Continue, OpenAI, Aider
 
 ---
 
-## 🛠 Tools
+## 📊 Quality Standards
 
-### Exporter
+| Metric | Standard | Status |
+|--------|----------|--------|
+| **Test Coverage** | 95%+ | ✅ Automated |
+| **Documentation** | 100% APIs | ✅ Auto-generated |
+| **Code Quality** | SOLID + Design Patterns | ✅ Validated |
+| **Security** | Input validation + SQL injection prevention | ✅ Built-in |
+| **Performance** | <100ms endpoints | ✅ Verified |
+| **Accessibility** | WCAG 2.1 AA | ✅ Checked |
+
+---
+
+## 🎓 Examples
+
+### Example 1: Login Feature with Tests
+```
+User: "Build JWT login endpoint"
+Output:
+  ✅ LoginController (Spring Boot)
+  ✅ LoginService (Business logic)
+  ✅ 8 JUnit5 tests (100% coverage)
+  ✅ Javadoc on all methods
+  ✅ Error handling + validation
+```
+
+### Example 2: JIRA-Driven Tests
+```
+User: "Generate tests for AUTH-456"
+→ Fetch JIRA (4 acceptance criteria)
+→ Plan 8 test cases
+→ Generate pytest tests
+→ Validate all 4 criteria tested
+Output: 100% coverage + business validated
+```
+
+### Example 3: React Component with Tests
+```
+User: "Build LoginForm component"
+Output:
+  ✅ LoginForm.tsx (React + TypeScript)
+  ✅ LoginForm.test.tsx (Jest + RTL)
+  ✅ JSDoc on all methods
+  ✅ 85%+ component coverage
+  ✅ Accessibility verified (A11Y)
+```
+
+---
+
+## 🔧 Installation
+
+### Requirements
+- Python 3.9+
+- Node.js 16+ (for JavaScript projects)
+- Java 17+ (for Java projects)
+
+### Setup
+
 ```bash
-# Export all skills + agents to all platforms
-python3 tools/exporter.py
+# Clone
+git clone https://github.com/sharmapuneet1510/awesome-prompts.git
+cd awesome-prompts
 
-# Interactive setup (recommended)
+# Install
+pip install -r requirements.txt
+
+# Export to platform
 python3 tools/exporter.py --interactive
-
-# Export to specific platform
-python3 tools/exporter.py --target claude
-
-# List all available skills and agents
-python3 tools/exporter.py --list
-
-# Preview without writing
-python3 tools/exporter.py --dry-run
-
-# Remove all exported files
-python3 tools/exporter.py --clean
-```
-
-### Auto-Update Checker
-```bash
-# Check for available updates
-python3 tools/update_checker.py --check
-
-# Download and apply latest version
-python3 tools/update_checker.py --apply
-
-# Show current version
-python3 tools/update_checker.py --version
-```
-
-### Other Tools
-```bash
-# Validate all skills have proper frontmatter
-python3 tools/skill_validator.py
-
-# Fix code block language tags in markdown
-python3 tools/fix_code_blocks.py
-
-# Run test suite
-python3 -m pytest tests/ -v
 ```
 
 ---
 
-## 📖 Getting Started Workflows
+## 📚 Documentation
 
-### Workflow 1: First-Time Setup (Recommended)
+**Quick Links:**
+- [Requirement Input Guide](./docs/requirement_input_guide.md) — How to provide requirements
+- [Autonomous Developer Guide](./AUTONOMOUS_DEVELOPER_README.md) — Full system overview
+- [Agent Reference](./agents/README.md) — All agents explained
+- [Implementation Agent](./agents/implementation_agent.md) — Feature builder guide
+- [Test Case Generator](./agents/test_case_generator_agent.md) — 100% coverage testing
+- [Code Documentation Skill](./skills/code_documentation_skill.md) — Auto-documentation
 
-```bash
-# Step 1: Check for latest version
-python3 tools/update_checker.py --check
+---
 
-# Step 2: If update available, apply it
-python3 tools/update_checker.py --apply
+## 🌟 What's New in v4.1.0
 
-# Step 3: Run interactive setup
-python3 tools/exporter.py --interactive
+✨ **NEW: Test Case Generator Agent**
+- Generate 100% coverage tests (unit, integration, E2E)
+- JIRA acceptance criteria validation
+- Auto-documented test methods
 
-# Follow prompts to select:
-# - Project root directory
-# - Target platforms (Claude, Copilot, Cursor, etc.)
-# - Skills and agents to export
+✨ **NEW: Code Documentation Skill**
+- JSDoc/docstrings/Javadoc auto-generation
+- 100% method documentation
+- Business requirement links
+
+✨ **RENAMED: Developer Agent → Implementation Agent**
+- Clearer scope (code + test + docs)
+- Full-lifecycle feature builder
+
+✨ **UPDATED: All Agents**
+- Now use code_documentation_skill
+- Improved documentation workflows
+- Better quality gates
+
+---
+
+## 🚀 Get Started in 3 Steps
+
+### Step 1: Provide Requirement
+```
+"Build user registration with email validation and tests"
 ```
 
-### Workflow 2: Manual Setup
-
-```bash
-# Step 1: Check and apply updates
-python3 tools/update_checker.py --apply
-
-# Step 2: Export to Claude Code
-python3 tools/exporter.py --target claude
-
-# Step 3: List what's available
-python3 tools/exporter.py --list
-
-# Step 4: Export specific skills
-python3 tools/exporter.py --target claude --skills java,spring,testing
-
-# Step 5: Export specific agents
-python3 tools/exporter.py --target claude --agents developer
+### Step 2: Implementation Agent Generates
+```
+✅ Code (routes, models, services)
+✅ Tests (100% coverage)
+✅ Documentation (JSDoc/docstrings)
+✅ Git commit
 ```
 
-### Workflow 3: Multi-Platform Setup
-
-```bash
-# Export to multiple platforms at once
-python3 tools/exporter.py --target claude copilot cursor windsurf
-
-# Or export to all platforms
-python3 tools/exporter.py
+### Step 3: Deploy & Review
 ```
-
-### Workflow 4: Keeping Updated
-
-```bash
-# Daily: Check for updates
-python3 tools/update_checker.py --check
-
-# When update available: Apply it
-python3 tools/update_checker.py --apply
-
-# Then re-export: Ensure latest skills are in your IDE
-python3 tools/exporter.py
+✅ All tests passing
+✅ 100% documented
+✅ Ready for production
 ```
 
 ---
 
-## 📊 Statistics
+## 📞 Support & Links
 
-| Metric | Value |
-|--------|-------|
-| Skills | 30 |
-| Agents | 5 role-based + 1 orchestrator = 6 total |
-| Agent Architecture | DRY: 1 developer agent for all tech stacks |
-| Platform Exports | 8 |
-| Autonomous Phases | 5 (DB → Backend → Frontend → Tests → Deployment) |
-| Test Coverage | 95+ tests passing |
-| Dependencies | 0 (stdlib only) |
-| Lines of Agent Code | 90% reduction (old: 9 × ~15KB, new: 6 × ~6KB) |
+| Link | Purpose |
+|------|---------|
+| [GitHub Issues](https://github.com/sharmapuneet1510/awesome-prompts/issues) | Report bugs |
+| [GitHub Discussions](https://github.com/sharmapuneet1510/awesome-prompts/discussions) | Ask questions |
+| [Email](mailto:puneet@techmavericks.dev) | Direct contact |
+| [LinkedIn](https://linkedin.com/in/sharmapuneet1510) | Connect |
+| [Tech Mavericks](https://techmavericks.dev) | Newsletter |
 
 ---
 
-## 📖 Documentation
+<div align="center">
 
-- **[CLAUDE.md](CLAUDE.md)** — Repository instructions for Claude Code
-- **[agents/README.md](agents/README.md)** — Agent role guide
-- **[tools/README.md](tools/README.md)** — Exporter documentation
-- **[instructions/master_instruction_set.md](instructions/master_instruction_set.md)** — Universal rules
+**Architecting intelligence into development. One agent at a time.**
 
----
+🚀 **v4.1.0** • **May 2026** • **Production Ready**
 
-## 📋 Changelog
+[⭐ Star on GitHub](https://github.com/sharmapuneet1510/awesome-prompts) | [📖 Read Docs](./docs/) | [🎯 Get Started](./AUTONOMOUS_DEVELOPER_README.md)
 
-### v4.1.0 — 2026-05-20
-
-**Major Refactoring: Simplified Agent Architecture**
-
-**Agent Architecture (DRY Principle):**
-- Consolidated 4 tech-specific developer agents → 1 generic `developer_agent.md`
-- Consolidated 3 reviewer agents → 1 generic `code_review_agent.md`
-- Consolidated writer agents → 1 generic `writer_agent.md`
-- Consolidated integration agents → 1 generic `integration_agent.md`
-- Kept `autonomous_dev_agent.md` as orchestrator
-
-**Benefits:**
-- 90% reduction in duplicate code
-- Agents define workflow, skills define implementation
-- Scales to any tech stack without new agents
-- Easier maintenance and future enhancements
-
-**Migrations:**
-- Old agents archived in `agents/_deprecated/`
-- Skills unchanged (java_advanced_skill, python_advanced_skill, etc.)
-- Instructions unchanged (master_instruction_set.md)
-- Exporter updated to discover new consolidated agents
-
----
-
-### v4.0.0 — 2026-05-20
-
-**Major Release: Autonomous Developer System**
-
-**New:**
-- 🤖 **Autonomous Developer Agent** — End-to-end code generation from plain-text requirements
-- 4 core generation skills:
-  - `database_skill.md` — SQL schema + migrations for PostgreSQL/MySQL/SQL Server
-  - `backend_skill.md` — REST API generation (FastAPI, Spring Boot)
-  - `frontend_skill.md` — React component generation (TypeScript, Tailwind)
-  - `test_skill.md` — Comprehensive testing (pytest, Jest, Playwright, E2E)
-- **AUTONOMOUS_DEVELOPER_README.md** — Complete system architecture with workflow diagrams
-- **SETUP_GUIDE.md** — Quick 2-minute setup guide
-- **tools/interactive_exporter.py** — Interactive CLI wizard for platform selection
-- Project detection — Automatically detects new vs existing projects
-- Task tracking — JSON-based task completion monitoring
-- Knowledge graph integration — graphify for smart context
-- GitHub PR auto-sync — Automatic PR creation with generated code
-
-**Updated:**
-- `tools/exporter.py` — Added `--interactive/-i` flag for guided setup
-- `.gitignore` — Allow committed superpowers docs (specs, plans)
-
-**Statistics:**
-- Now 30 skills (up from 26)
-- Now 9 agents (up from 8)
-- 5-phase autonomous pipeline
-- 95+ tests passing
-- Interactive setup experience
-
----
-
-### v3.0.0 — 2026-04-15
-
-**Breaking changes:**
-- `tools/skill_exporter.py` removed — replaced by `tools/exporter.py`
-- Platform output format changed from merged single files to one file per skill/agent
-- Output directories changed (see Platform Output Locations above)
-
-**New:**
-- `tools/exporter.py` — unified exporter replacing `skill_exporter.py`
-- Agent export support — all 8 agents now exported alongside skills
-- 3 new platform targets: Windsurf, Gemini CLI, Aider
-- One file per skill, one file per agent — no merging
-- `--agents` CLI flag to filter agents by slug/role
-- `--clean` CLI flag to remove all exported files
-- 79 automated tests (`tests/tools/test_exporter.py`)
-- Platform-native frontmatter per target (Copilot `applyTo`, Cursor `description/globs/alwaysApply`, Continue.dev `name/description`)
-
-**Skills added (8 new):**
-- `java11_skill.md`, `java17_skill.md`
-- `logger_skill.md`, `opentelemetry_skill.md`
-- `lombok_skill.md`, `oop_skill.md`
-- `spring_camel_integration_skill.md`, `camel_pulsar_integration_skill.md`
-
----
-
-### v2.0.0 — 2026-04-03
-
-**New:**
-- 8 new skills: Camel, Spring, logging, observability
-- `tools/skill_exporter.py` — export to 5 platforms
-- `tools/skill_validator.py`, `tools/fix_code_blocks.py`
-- Agent definitions for all 4 roles
-- Instructions directory with master rule set and intake forms
-
----
-
-### v1.0.0 — Initial release
-
-- Core prompt templates (email, code review, testing, project management)
-- Python field derivation parser
-- Basic agent and skill structure
-
----
-
-## 📝 License
-
-This repository is **sharable**, **reusable**, and **open for teams**.
-
----
-
-**Tested with:** GitHub Copilot, Claude Code, Cursor IDE, Windsurf, Gemini CLI, Continue.dev, OpenAI API, Aider
+</div>
