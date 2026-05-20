@@ -55,52 +55,74 @@ Your motto: **"Simple code wins. Tests prove it works."**
 
 **Priority order for discovering project context:**
 
-1. **Check for existing context.json**
+1. **Check for existing context.json** (fastest)
    ```
-   If docs/context/context.json exists and is < 7 days old:
-   → Read it directly
-   → Extract tech_stack, file_structure, api_endpoints
-   → Skip to STEP 1 with full context
-   ```
-
-2. **Check for architecture.md**
-   ```
-   If docs/context/architecture.md exists:
-   → Read "Tech Stack" section
-   → Parse detected technologies
-   → Confirm with user: "Found architecture.md. Still current?"
+   if docs/context/context.json exists and age < 7 days:
+       context = load_json("docs/context/context.json")
+       proceed_with_full_context()
    ```
 
-3. **Auto-detect from project files**
+2. **Check for architecture.md** (fallback)
    ```
-   Search for (in order):
-   • package.json (Node/React)
-   • requirements.txt (Python)
-   • pom.xml (Java/Maven)
-   • build.gradle (Gradle)
-   • go.mod (Go)
-   • Cargo.toml (Rust)
-   • pyproject.toml (Python poetry)
+   if docs/context/architecture.md exists:
+       tech_stack = parse_tech_section(architecture.md)
+       confirm_with_user("Found architecture.md. Use this?")
+       proceed_with_parsed_stack()
+   ```
+
+3. **Auto-detect from project files** (smart)
+   ```
+   Search for:
+   • package.json       → detect React, Node.js version
+   • requirements.txt   → detect Flask, FastAPI, Django
+   • pom.xml           → detect Spring Boot, Java version
+   • build.gradle      → detect Gradle, Java
+   • go.mod            → detect Go modules
+   • Cargo.toml        → detect Rust crates
+   • pyproject.toml    → detect Poetry dependencies
    
-   Extract version info from dependency files
+   Extract versions and infer tech stack
    ```
 
-4. **Ask user if not found**
+4. **Call context_builder_skill** (comprehensive)
    ```
-   "I couldn't find context files. What's your tech stack?
-
-   Options:
-   a) Point me to a file (package.json, requirements.txt, etc.)
-   b) Let me scan the project and build context (runs context_builder_agent)
-   c) Tell me directly: 'React + FastAPI + PostgreSQL'"
-   
-   If option b: Run context_builder_agent, wait for docs/context/context.json
+   if no context found or user wants full analysis:
+       call context_builder_skill.build_context()
+       ├─ Phase 1: Discover existing context
+       ├─ Phase 2: Deep scan project (APIs, models, components)
+       ├─ Phase 3: User confirmation
+       ├─ Phase 4: Generate docs/context/ files
+       └─ Phase 5: Return complete context dict
+       
+       Files created:
+       ✓ docs/context/context.json
+       ✓ docs/context/architecture.md
+       ✓ docs/context/tech-stack.md
+       ✓ docs/context/design.html
    ```
 
-**After STEP 0:**
-- You have complete project context (tech_stack, structure, APIs)
-- You know which skill(s) to use in STEP 3
-- Proceed with full understanding to STEP 1
+5. **Ask user for manual input** (last resort)
+   ```
+   if all above fail:
+       ask("I couldn't detect your stack automatically.
+           
+           Options:
+           a) Point to a file (package.json, requirements.txt, pom.xml, etc.)
+           b) Tell me directly: 'React + FastAPI + PostgreSQL'
+           c) Let me scan the entire project (runs context_builder_skill)")
+       
+       if option c:
+           call context_builder_skill.build_context()
+   ```
+
+**After STEP 0 — You have:**
+- ✅ Complete context dict (tech_stack, file_structure, api_endpoints, db_schema)
+- ✅ Architecture documentation (architecture.md)
+- ✅ Interactive visualization (design.html)
+- ✅ Tech-skill mappings (tech-stack.md)
+- ✅ Machine-readable metadata (context.json)
+
+**Proceed to STEP 1** with full understanding of the project
 
 ---
 

@@ -1,0 +1,454 @@
+---
+name: Context Builder Skill
+version: 1.0
+description: >
+  Reusable skill for scanning projects and building architecture context.
+  Generates context.json, architecture.md, tech-stack.md, and design.html.
+  Used internally by developer_agent and context_builder_agent.
+---
+
+# Context Builder Skill — v1.0
+
+## Purpose
+
+Build complete project understanding from source code analysis. Detects tech stack, architecture, API endpoints, database models, and generates structured context files that guide all downstream development.
+
+This skill is **internal** — called by agents, not invoked directly by users.
+
+---
+
+## What It Does
+
+Scans a project directory and generates 4 context files:
+
+```
+docs/context/
+├── context.json      ← Machine-readable project metadata
+├── architecture.md   ← Mermaid diagram + narrative + design decisions
+├── tech-stack.md     ← Technology reference table + skill mappings
+└── design.html       ← Interactive 4-tab visualization (offline)
+```
+
+---
+
+## 5-Phase Workflow
+
+### Phase 1: Discovery
+
+Check if context already exists:
+
+```python
+# Check for existing context
+if Path("docs/context/context.json").exists():
+    # Load existing context
+    context = load_json("docs/context/context.json")
+    
+    # Check freshness (< 7 days old?)
+    if is_fresh(context['scanned_at'], days=7):
+        return context  # Reuse existing
+    else:
+        prompt_user("Context is stale. Rebuild?")
+
+# Check for architecture.md
+if Path("docs/context/architecture.md").exists():
+    tech_stack = parse_architecture_md()  # Extract tech section
+    return tech_stack
+```
+
+### Phase 2: Deep Scan
+
+Walk the project tree and analyze:
+
+```python
+def scan_project(project_path):
+    # 2a: Technology Detection
+    tech_stack = {
+        'frontend': detect_frontend_framework(project_path),
+        'backend': detect_backend_framework(project_path),
+        'database': detect_database_engine(project_path),
+        'auth': detect_auth_method(project_path),
+    }
+    
+    # 2b: Source File Analysis
+    files = {
+        'python': count_files(project_path, '*.py'),
+        'javascript': count_files(project_path, '*.js'),
+        'typescript': count_files(project_path, '*.ts'),
+        'jsx': count_files(project_path, '*.jsx'),
+        'tsx': count_files(project_path, '*.tsx'),
+        'java': count_files(project_path, '*.java'),
+        'sql': count_files(project_path, '*.sql'),
+    }
+    
+    # 2c: API Route Detection
+    api_endpoints = []
+    api_endpoints.extend(find_python_routes(project_path))
+    api_endpoints.extend(find_java_routes(project_path))
+    api_endpoints.extend(find_javascript_routes(project_path))
+    
+    # 2d: Database Model Detection
+    db_models = []
+    db_models.extend(find_python_models(project_path))
+    db_models.extend(find_java_entities(project_path))
+    db_models.extend(find_sql_tables(project_path))
+    
+    # 2e: Component Analysis
+    components = count_components(project_path)  # React, Vue, etc.
+    
+    return {
+        'tech_stack': tech_stack,
+        'files': files,
+        'api_endpoints': api_endpoints,
+        'database_models': db_models,
+        'components': components,
+    }
+```
+
+**Detects:**
+
+**Frontend Frameworks:**
+- React (from package.json, src/App.tsx, export default)
+- Vue (from package.json, .vue files, export default)
+- Angular (from package.json, @Component decorator)
+- Svelte (from package.json, .svelte files)
+
+**Backend Frameworks:**
+- FastAPI/Flask (from requirements.txt, @app.route, @router.get)
+- Django (from requirements.txt, settings.py, models.py)
+- Spring Boot (from pom.xml, @GetMapping, @PostMapping)
+- Express (from package.json, app.get, app.post)
+- Go (from go.mod, router patterns)
+
+**Databases:**
+- PostgreSQL (from requirements.txt, config files, .sql files)
+- MySQL/MariaDB (from requirements.txt, config, schema)
+- MongoDB (from requirements.txt, collection definitions)
+- SQL Server (from pom.xml, T-SQL files)
+
+**Authentication:**
+- JWT (from requirements.txt, imports, /api/auth endpoints)
+- OAuth (from config, imports)
+- Session-based (from Flask/Express middleware)
+
+### Phase 3: User Confirmation
+
+Present findings in a structured format:
+
+```
+DETECTED ARCHITECTURE:
+
+Frontend:      React 18.2.0 + TypeScript
+Backend:       Python FastAPI 0.95.0
+Database:      PostgreSQL 13
+Authentication: JWT
+
+File Summary:
+  • 45 React components (.tsx files)
+  • 8 API routes (FastAPI endpoints)
+  • 5 database models (SQLAlchemy)
+  • 78 unit tests
+
+Changes? (approve or specify corrections)
+```
+
+**User responses:**
+- "ok" → proceed
+- "backend is Django, not FastAPI" → update
+- "add Redis caching" → add to stack
+
+### Phase 4: Generate Output Files
+
+Create all 4 context files.
+
+#### 4a: context.json
+
+```json
+{
+  "project_name": "awesome-prompts",
+  "scanned_at": "2026-05-20T16:30:00Z",
+  "tech_stack": {
+    "frontend": {
+      "framework": "React",
+      "version": "18.2.0",
+      "language": "TypeScript",
+      "state_management": "Zustand",
+      "css": "TailwindCSS"
+    },
+    "backend": {
+      "framework": "FastAPI",
+      "version": "0.95.0",
+      "language": "Python",
+      "version_required": "3.11+",
+      "orm": "SQLAlchemy 2.0",
+      "auth": "JWT"
+    },
+    "database": {
+      "engine": "PostgreSQL",
+      "version": "13+",
+      "migration_tool": "Alembic"
+    }
+  },
+  "file_structure": {
+    "backend": {
+      "app": { "routes": 8, "models": 5, "services": 3 },
+      "tests": { "unit": 45, "integration": 12, "e2e": 3 }
+    },
+    "frontend": {
+      "components": 45,
+      "pages": 8,
+      "hooks": 12
+    }
+  },
+  "api_endpoints": [
+    { "method": "POST", "path": "/api/auth/login", "description": "User login" },
+    { "method": "POST", "path": "/api/auth/register", "description": "User registration" },
+    ...
+  ],
+  "database_schema": {
+    "users": ["id", "email", "password_hash", "created_at"],
+    "orders": ["id", "user_id", "total", "status", "created_at"],
+    ...
+  }
+}
+```
+
+#### 4b: architecture.md
+
+```markdown
+# Architecture — Project Name
+
+## System Overview
+[1-2 paragraphs describing what the system does]
+
+## Tech Stack
+- Frontend: React 18+ with TypeScript
+- Backend: Python FastAPI
+- Database: PostgreSQL 13
+- Auth: JWT tokens
+
+## Component Diagram
+
+\`\`\`mermaid
+graph TB
+    Client["React Frontend"]
+    API["FastAPI Backend"]
+    DB["PostgreSQL"]
+    
+    Client -->|REST API| API
+    API -->|SQL| DB
+\`\`\`
+
+## Data Flow
+[Numbered steps explaining request/response cycle]
+
+## Key Decisions
+- Why FastAPI? [reasons]
+- Why PostgreSQL? [reasons]
+- Why React? [reasons]
+
+## File Structure
+[Auto-generated from Phase 2 scan]
+
+## Dependencies
+[Key packages with versions]
+
+## Deployment
+[How it runs in production]
+```
+
+#### 4c: tech-stack.md
+
+```markdown
+# Tech Stack Reference
+
+| Technology | Version | Purpose | Category | Skill File |
+|-----------|---------|---------|----------|-----------|
+| React | 18.2.0 | Frontend UI | Frontend | react_advanced_skill.md |
+| FastAPI | 0.95.0 | Backend API | Backend | python_advanced_skill.md |
+| PostgreSQL | 13 | Database | Database | mssql_advanced_skill.md |
+| ... | ... | ... | ... | ... |
+```
+
+#### 4d: design.html
+
+(Generated by `tools/generate_design_html.py`)
+
+Interactive single-file HTML with 4 tabs:
+- Architecture diagram (D3.js)
+- Tech Stack table (filterable)
+- File Tree (collapsible)
+- API Endpoints (sortable)
+
+### Phase 5: Return Context
+
+Return context dict ready for consumption:
+
+```python
+return {
+    'context.json': '/path/to/context.json',
+    'architecture.md': '/path/to/architecture.md',
+    'tech_stack.md': '/path/to/tech_stack.md',
+    'design.html': '/path/to/design.html',
+    'context': {
+        'tech_stack': {...},
+        'file_structure': {...},
+        'api_endpoints': [...],
+        ...
+    }
+}
+```
+
+---
+
+## Implementation Details
+
+### Dependency File Parsing
+
+```python
+def parse_requirements_txt():
+    """Extract packages and versions from requirements.txt"""
+    dependencies = {}
+    with open('requirements.txt') as f:
+        for line in f:
+            if '==' in line:
+                name, version = line.split('==')
+                dependencies[name.strip()] = version.strip()
+    return dependencies
+
+def parse_package_json():
+    """Extract packages from package.json"""
+    data = json.load(open('package.json'))
+    deps = {}
+    deps.update(data.get('dependencies', {}))
+    deps.update(data.get('devDependencies', {}))
+    return deps
+
+def parse_pom_xml():
+    """Extract Maven dependencies from pom.xml"""
+    # Parse <dependency> tags, extract <artifactId> and <version>
+    ...
+
+def parse_go_mod():
+    """Extract Go modules from go.mod"""
+    # Parse require blocks, extract module and version
+    ...
+```
+
+### Pattern Detection
+
+```python
+def find_python_routes(project_path):
+    """Find FastAPI/Flask routes via @app.route or @router.get patterns"""
+    routes = []
+    for py_file in project_path.rglob('*.py'):
+        with open(py_file) as f:
+            content = f.read()
+            
+            # FastAPI patterns
+            routes.extend(re.findall(r'@app\.(?:get|post|put|delete)\("([^"]+)"', content))
+            routes.extend(re.findall(r'@router\.(?:get|post|put|delete)\("([^"]+)"', content))
+            
+            # Flask patterns
+            routes.extend(re.findall(r'@app\.route\("([^"]+)"', content))
+    
+    return routes
+
+def find_db_models(project_path):
+    """Find database models/entities"""
+    models = []
+    for py_file in project_path.rglob('*.py'):
+        with open(py_file) as f:
+            content = f.read()
+            
+            # SQLAlchemy patterns
+            models.extend(re.findall(r'class (\w+)\(Base\):', content))
+            models.extend(re.findall(r'class (\w+)\(declarative_base\(\)\):', content))
+    
+    return models
+
+def find_components(project_path):
+    """Find React/Vue components"""
+    components = []
+    
+    # React components
+    for tsx_file in project_path.rglob('*.tsx'):
+        if 'export default' in tsx_file.read_text() or 'export function' in tsx_file.read_text():
+            components.append(tsx_file.name)
+    
+    # Vue components
+    for vue_file in project_path.rglob('*.vue'):
+        components.append(vue_file.name)
+    
+    return components
+```
+
+---
+
+## When This Skill Is Used
+
+Called automatically by:
+- **developer_agent** — STEP 0 (Context Discovery)
+- **context_builder_agent** — Phase 4 (Generate Output)
+
+Can be called by:
+- Any agent that needs to understand project architecture
+- CI/CD pipeline for automated context generation
+- Documentation generators
+
+---
+
+## Success Criteria
+
+Context is complete when:
+- ✅ `context.json` exists with all fields
+- ✅ `architecture.md` renders on GitHub with Mermaid diagram
+- ✅ `tech-stack.md` maps each tech to a skill file
+- ✅ `design.html` opens in browser with all 4 tabs functional
+- ✅ Tech stack matches actual project structure
+- ✅ API endpoints are correctly detected
+- ✅ Database models are identified
+
+---
+
+## Example Usage (Internal)
+
+```python
+# In developer_agent.py, STEP 0:
+from skills.context_builder_skill import ContextBuilder
+
+builder = ContextBuilder(project_path='.')
+result = builder.build_context()
+
+if result['success']:
+    tech_stack = result['context']['tech_stack']
+    # Continue with STEP 1 using full context
+else:
+    # Ask user for manual input
+    ...
+```
+
+---
+
+## Trade-offs
+
+**Pros:**
+- Reusable across multiple agents
+- Can be updated independently
+- Clear interface for context consumption
+- Automated project understanding
+
+**Cons:**
+- Requires scanning (takes time on large projects)
+- Pattern detection isn't 100% accurate
+- User confirmation adds interaction step
+- Stores files on disk
+
+---
+
+## Future Enhancements
+
+- Cache API endpoint detection (don't re-scan if unchanged)
+- Machine learning-based tech stack confidence scoring
+- Integration with IDE plugins (VS Code, JetBrains)
+- Graphify knowledge graph generation
+- Architecture drift detection (warns if structure changed)
