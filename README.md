@@ -110,7 +110,7 @@ Compatible with: **Claude Code** • **GitHub Copilot** • **Cursor** • **Win
 ### **Option 1: Interactive Setup** (Recommended)
 
 ```bash
-python3 tools/exporter.py --interactive
+python tools/exporter.py --interactive
 
 # Asks:
 # 1. Project root directory?
@@ -386,7 +386,7 @@ Output:
 ## 🔧 Installation & Setup
 
 ### Requirements
-- Python 3.9+
+- Python 3.9+ (auto-detected: works with `python` or `python3`)
 - Node.js 16+ (for JavaScript projects)
 - Java 17+ (for Java projects)
 
@@ -397,25 +397,43 @@ Output:
 git clone https://github.com/sharmapuneet1510/awesome-prompts.git
 cd awesome-prompts
 
-# Install
+# Install dependencies
 pip install -r requirements.txt
 
 # Interactive setup (recommended)
 # Creates folder structure in your project, copies files there
-python3 tools/exporter.py --interactive
+# Works on Windows, Linux, macOS
+python tools/exporter.py --interactive
+
+# Alternative on systems with python3
+python tools/exporter.py --interactive
 ```
 
 ### Alternative: Direct Export
 
 ```bash
 # Export to specific project directory with platform choice
-python3 tools/exporter.py --target-project /path/to/your/project --target copilot
+python tools/exporter.py --target-project /path/to/your/project --target copilot
 
 # Export to Claude Code (creates .claude/skills/, .claude/agents/)
-python3 tools/exporter.py --target-project /path/to/your/project --target claude
+python tools/exporter.py --target-project /path/to/your/project --target claude
 
 # Export to all platforms
-python3 tools/exporter.py --target-project /path/to/your/project --target copilot claude cursor windsurf
+python tools/exporter.py --target-project /path/to/your/project --target copilot claude cursor windsurf
+```
+
+### Python Detection
+
+The exporter automatically detects your Python installation:
+- **Linux/macOS:** Tries `python3` first, then `python`
+- **Windows:** Tries `python`, `python3`, then `py` launcher
+
+**Check your Python setup:**
+```bash
+# See which Python version is available
+python --version
+# OR
+python3 --version
 ```
 
 **Platform Options:**

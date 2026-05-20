@@ -960,7 +960,11 @@ def main() -> None:
     if args.interactive:
         try:
             import subprocess
-            result = subprocess.run([sys.executable, "tools/interactive_exporter.py"], cwd=Path.cwd())
+            # Use the same Python executable that's running this script
+            result = subprocess.run(
+                [sys.executable, str(Path(__file__).parent / "interactive_exporter.py")],
+                cwd=Path.cwd()
+            )
             sys.exit(result.returncode)
         except Exception as e:
             print(f"Error running interactive setup: {e}")

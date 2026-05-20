@@ -156,12 +156,15 @@ def confirm_setup(project_root: Path, platforms: list[str], skills: list[str], a
 
 def run_exporter(project_root: Path, platforms: list[str], skills: list[str], agents: list[str]) -> bool:
     """Run the exporter tool."""
+    import sys
+
     print(f"\n{Colors.BOLD}Running export...{Colors.ENDC}\n")
 
     # Build command with target-project parameter
+    # Use the same Python executable that's running this script
     cmd = [
-        "python3",
-        "tools/exporter.py",
+        sys.executable,
+        str(Path(__file__).parent / "exporter.py"),
         "--target", *platforms,
         "--skills", ",".join(skills),
         "--agents", ",".join(agents),
