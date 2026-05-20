@@ -1,0 +1,121 @@
+---
+name: Comprehensive Testing Skill
+version: 1.0
+description: Generate and run unit, integration, and E2E tests with coverage reporting
+---
+
+# Comprehensive Testing Skill
+
+## Purpose
+
+Generate and execute comprehensive tests across backend, frontend, and integration layers with coverage metrics.
+
+## Input
+
+- Completed code from all tasks (backend, frontend)
+- Task specifications (acceptance criteria)
+- Coverage targets: >= 95% overall, >= 90% per layer
+
+## Output
+
+- Backend tests: `tests/unit/*.test.py`, `tests/integration/*.integration.py`
+- Frontend tests: `tests/components/*.test.tsx`
+- E2E tests: `tests/e2e/*.e2e.ts`
+- Coverage reports: `coverage.html`, `coverage.json`
+
+## Process
+
+### Backend Testing (pytest)
+
+1. Generate unit tests for models, services, routes
+2. Create mocks for external dependencies
+3. Test happy paths and error cases
+4. Achieve >= 95% coverage
+
+```python
+# tests/unit/test_user_service.py
+import pytest
+from src.services.user_service import UserService
+from src.models.user import User
+
+@pytest.fixture
+def service():
+    return UserService()
+
+def test_create_user_success(service):
+    """Test successful user creation."""
+    result = service.create_user("test@example.com", "hashedpwd")
+    assert result.email == "test@example.com"
+    assert result.id is not None
+
+def test_create_duplicate_user_raises_error(service):
+    """Test that duplicate user creation raises error."""
+    service.create_user("test@example.com", "pwd")
+    with pytest.raises(ValueError):
+        service.create_user("test@example.com", "pwd")
+```
+
+### Frontend Testing (Jest + Playwright)
+
+1. Generate component tests for each component
+2. Create Playwright E2E tests for user flows
+3. Test form validation and error handling
+4. Achieve >= 85% component coverage
+
+```typescript
+// tests/components/LoginForm.test.tsx
+import { render, screen, userEvent } from '@testing-library/react';
+import { LoginForm } from '../components/LoginForm';
+
+test('submits form with valid credentials', async () => {
+  const handleSuccess = jest.fn();
+  render(<LoginForm onSuccess={handleSuccess} />);
+  
+  const emailInput = screen.getByLabelText(/email/i);
+  const passwordInput = screen.getByLabelText(/password/i);
+  const submitButton = screen.getByRole('button', { name: /login/i });
+  
+  await userEvent.type(emailInput, 'test@example.com');
+  await userEvent.type(passwordInput, 'password123');
+  await userEvent.click(submitButton);
+  
+  expect(handleSuccess).toHaveBeenCalled();
+});
+```
+
+### Coverage Reporting
+
+1. Generate coverage reports for both layers
+2. Fail if coverage < targets
+3. Create HTML report
+
+## Validation
+
+- [ ] All unit tests pass
+- [ ] All integration tests pass
+- [ ] All E2E tests pass
+- [ ] Coverage >= 95% (backend)
+- [ ] Coverage >= 85% (frontend)
+- [ ] No flaky tests
+- [ ] Test execution time < 60 seconds
+
+## Success Criteria
+
+- All tests green
+- Coverage reports generated
+- Overall coverage >= 95%
+- No hardcoded test data leaking into reports
+- Performance metrics tracked
+
+## Execution Commands
+
+```bash
+# Backend tests
+pytest tests/ -v --cov=src --cov-report=html --cov-report=json
+
+# Frontend tests
+npm test -- --coverage --watchAll=false
+
+# E2E tests
+playwright test
+```
