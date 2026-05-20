@@ -95,6 +95,6 @@ coverage.xml
 .aider/
 tools/output/openai/
 
-# Superpowers plans (ignore) but allow specs (commit)
-docs/superpowers/plans/
+# Superpowers: allow specs and plans (commit)
 !docs/superpowers/specs/
+!docs/superpowers/plans/
