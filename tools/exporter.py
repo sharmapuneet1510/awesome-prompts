@@ -892,6 +892,8 @@ def copy_to_target_project(
 ) -> None:
     """Copy exported files to a target project directory.
 
+    Works on Windows and Unix-like systems (Linux, macOS).
+
     Args:
         skills: List of skill files to copy
         agents: List of agent files to copy
@@ -901,16 +903,16 @@ def copy_to_target_project(
     target_project = target_project.resolve()
     target_project.mkdir(parents=True, exist_ok=True)
 
-    # Map platforms to their folder structures
+    # Map platforms to their folder structures (using Path for cross-platform compatibility)
     platform_dirs = {
-        "claude": (".claude/skills", ".claude/agents"),
-        "copilot": (".github/instructions", ".github/copilot/agents"),
-        "cursor": (".cursor/rules", ".cursor/rules/agents"),
-        "windsurf": (".windsurf/rules", ".windsurf/rules/agents"),
-        "gemini": (".gemini/skills", ".gemini/agents"),
-        "continue": (".continue/prompts", ".continue/prompts/agents"),
-        "openai": ("tools/output/openai/skills", "tools/output/openai/agents"),
-        "aider": (".aider/skills", ".aider/agents"),
+        "claude": (Path(".claude") / "skills", Path(".claude") / "agents"),
+        "copilot": (Path(".github") / "instructions", Path(".github") / "copilot" / "agents"),
+        "cursor": (Path(".cursor") / "rules", Path(".cursor") / "rules" / "agents"),
+        "windsurf": (Path(".windsurf") / "rules", Path(".windsurf") / "rules" / "agents"),
+        "gemini": (Path(".gemini") / "skills", Path(".gemini") / "agents"),
+        "continue": (Path(".continue") / "prompts", Path(".continue") / "prompts" / "agents"),
+        "openai": (Path("tools") / "output" / "openai" / "skills", Path("tools") / "output" / "openai" / "agents"),
+        "aider": (Path(".aider") / "skills", Path(".aider") / "agents"),
     }
 
     # Determine which folders to create based on platforms
@@ -948,17 +950,20 @@ def main() -> None:
     parser       = build_argument_parser()
     args         = parser.parse_args()
 
-    # Check for updates (unless explicitly skipped with --no-update-check)
-    if not getattr(args, 'no_update_check', False):
-        try:
-            from update_checker import VersionChecker
-            checker = VersionChecker()
-            if checker.check_for_updates():
-                print("\n💡 Tip: Run 'python tools/update_checker.py --apply' to get the latest features\n")
-        except ImportError:
-            pass  # update_checker not available
-        except Exception:
-            pass  # Silently ignore update check errors
+    # Check for updates (silently skip if unavailable or on network error)
+    try:
+        from update_checker import VersionChecker
+        checker = VersionChecker()
+        # Only show update tip if successfully checked and update is available
+        # verbose=False suppresses error messages for network issues
+        if checker.check_for_updates(verbose=False):
+            print("\n💡 Tip: Run 'python tools/update_checker.py --apply' to get the latest features\n")
+    except ImportError:
+        # update_checker module not available — that's fine
+        pass
+    except Exception:
+        # Network or other errors checking updates — silently skip
+        pass
 
     # Handle interactive mode by delegating to interactive_exporter.py
     if args.interactive:

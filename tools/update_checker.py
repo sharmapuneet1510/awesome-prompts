@@ -57,8 +57,11 @@ class VersionChecker:
             current = current.parent
         return Path.cwd()
 
-    def get_latest_release(self) -> Optional[dict]:
+    def get_latest_release(self, verbose: bool = True) -> Optional[dict]:
         """Fetch latest release info from GitHub API.
+
+        Args:
+            verbose: If True, print error messages. If False, silently fail.
 
         Returns:
             Release dict with 'tag_name' and 'zipball_url', or None if error.
@@ -73,7 +76,8 @@ class VersionChecker:
                     "name": data.get("name", ""),
                 }
         except Exception as e:
-            print(f"{Colors.FAIL}Failed to check for updates: {e}{Colors.ENDC}")
+            if verbose:
+                print(f"{Colors.FAIL}Failed to check for updates: {e}{Colors.ENDC}")
             return None
 
     @staticmethod
@@ -92,13 +96,16 @@ class VersionChecker:
         except (ValueError, AttributeError):
             return (0, 0, 0)
 
-    def check_for_updates(self) -> Optional[dict]:
+    def check_for_updates(self, verbose: bool = True) -> Optional[dict]:
         """Check if update is available.
+
+        Args:
+            verbose: If True, print error messages. If False, silently fail.
 
         Returns:
             Release info if newer version exists, None if current or no update.
         """
-        release = self.get_latest_release()
+        release = self.get_latest_release(verbose=verbose)
         if not release:
             return None
 
