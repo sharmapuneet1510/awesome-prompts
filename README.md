@@ -438,7 +438,7 @@ python3 --version
 
 **Platform Options:**
 - `claude` → `.claude/skills/`, `.claude/agents/`
-- `copilot` → `.github/instructions/`, `.github/copilot/agents/`
+- `copilot` → `.github/instructions/`, `.github/agents/`
 - `cursor` → `.cursor/rules/`, `.cursor/rules/agents/`
 - `windsurf` → `.windsurf/rules/`, `.windsurf/rules/agents/`
 - `gemini` → `.gemini/skills/`, `.gemini/agents/`

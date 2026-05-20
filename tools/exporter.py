@@ -25,7 +25,7 @@ Interactive Mode:
     Great for first-time setup!
 
 Supported targets:
-    copilot   → .github/instructions/ + .github/copilot/agents/
+    copilot   → .github/instructions/ + .github/agents/
     claude    → .claude/skills/ + .claude/agents/
     cursor    → .cursor/rules/ + .cursor/rules/agents/
     windsurf  → .windsurf/rules/ + .windsurf/rules/agents/
@@ -365,7 +365,7 @@ class PlatformExporter(ABC):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class CopilotExporter(PlatformExporter):
-    """GitHub Copilot — .github/instructions/ and .github/copilot/agents/"""
+    """GitHub Copilot — .github/instructions/ and .github/agents/"""
 
     @property
     def target_name(self) -> str:
@@ -375,7 +375,7 @@ class CopilotExporter(PlatformExporter):
         return self._repo_root / ".github" / "instructions"
 
     def agent_output_dir(self) -> Path:
-        return self._repo_root / ".github" / "copilot" / "agents"
+        return self._repo_root / ".github" / "agents"
 
     def skill_filename(self, skill: SkillFile) -> str:
         return f"{skill.slug}.instructions.md"
@@ -898,7 +898,7 @@ def copy_to_target_project(
     # Map platforms to their folder structures (using Path for cross-platform compatibility)
     platform_dirs = {
         "claude": (Path(".claude") / "skills", Path(".claude") / "agents"),
-        "copilot": (Path(".github") / "instructions", Path(".github") / "copilot" / "agents"),
+        "copilot": (Path(".github") / "instructions", Path(".github") / "agents"),
         "cursor": (Path(".cursor") / "rules", Path(".cursor") / "rules" / "agents"),
         "windsurf": (Path(".windsurf") / "rules", Path(".windsurf") / "rules" / "agents"),
         "gemini": (Path(".gemini") / "skills", Path(".gemini") / "agents"),

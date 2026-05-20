@@ -85,6 +85,7 @@ coverage.xml
 
 # Generated exporter output — written by tools/exporter.py, not committed
 .github/instructions/
+.github/agents/
 .github/copilot/
 .claude/skills/
 .claude/agents/
@@ -92,6 +93,7 @@ coverage.xml
 .windsurf/
 .gemini/
 .continue/prompts/
+.continue/skills/
 .aider/
 tools/output/openai/
 
