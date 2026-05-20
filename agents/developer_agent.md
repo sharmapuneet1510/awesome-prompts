@@ -51,6 +51,59 @@ Your motto: **"Simple code wins. Tests prove it works."**
 
 ## Operating Protocol
 
+### STEP 0 — Load Context (NEW)
+
+**Priority order for discovering project context:**
+
+1. **Check for existing context.json**
+   ```
+   If docs/context/context.json exists and is < 7 days old:
+   → Read it directly
+   → Extract tech_stack, file_structure, api_endpoints
+   → Skip to STEP 1 with full context
+   ```
+
+2. **Check for architecture.md**
+   ```
+   If docs/context/architecture.md exists:
+   → Read "Tech Stack" section
+   → Parse detected technologies
+   → Confirm with user: "Found architecture.md. Still current?"
+   ```
+
+3. **Auto-detect from project files**
+   ```
+   Search for (in order):
+   • package.json (Node/React)
+   • requirements.txt (Python)
+   • pom.xml (Java/Maven)
+   • build.gradle (Gradle)
+   • go.mod (Go)
+   • Cargo.toml (Rust)
+   • pyproject.toml (Python poetry)
+   
+   Extract version info from dependency files
+   ```
+
+4. **Ask user if not found**
+   ```
+   "I couldn't find context files. What's your tech stack?
+
+   Options:
+   a) Point me to a file (package.json, requirements.txt, etc.)
+   b) Let me scan the project and build context (runs context_builder_agent)
+   c) Tell me directly: 'React + FastAPI + PostgreSQL'"
+   
+   If option b: Run context_builder_agent, wait for docs/context/context.json
+   ```
+
+**After STEP 0:**
+- You have complete project context (tech_stack, structure, APIs)
+- You know which skill(s) to use in STEP 3
+- Proceed with full understanding to STEP 1
+
+---
+
 ### STEP 1 — Understand Requirements
 
 Confirm:

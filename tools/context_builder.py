@@ -474,3 +474,287 @@ class ContextBuilder:
             json.dump(self.context, f, indent=2, default=str)
 
         return str(output_file.resolve())
+
+    def save_full_context(self, output_dir: str = 'docs/context') -> Dict[str, str]:
+        """Save complete context to docs/context/ with all files.
+
+        Generates:
+        - context.json — machine-readable
+        - architecture.md — Mermaid diagram + narrative
+        - tech-stack.md — tech reference table
+        - design.html — interactive visualization
+
+        Args:
+            output_dir: Where to save all context files
+
+        Returns:
+            Dict mapping file names to their paths
+        """
+        if not self.context:
+            self.build()
+
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        files = {}
+
+        # 1. Save context.json
+        context_json = output_path / 'context.json'
+        with open(context_json, 'w') as f:
+            json.dump(self.context, f, indent=2, default=str)
+        files['context.json'] = str(context_json.resolve())
+
+        # 2. Save architecture.md
+        architecture_md = output_path / 'architecture.md'
+        arch_content = self._generate_architecture_md()
+        with open(architecture_md, 'w') as f:
+            f.write(arch_content)
+        files['architecture.md'] = str(architecture_md.resolve())
+
+        # 3. Save tech-stack.md
+        tech_md = output_path / 'tech-stack.md'
+        tech_content = self._generate_tech_stack_md()
+        with open(tech_md, 'w') as f:
+            f.write(tech_content)
+        files['tech-stack.md'] = str(tech_md.resolve())
+
+        # 4. Generate and save design.html
+        try:
+            from generate_design_html import DesignHTMLGenerator
+            generator = DesignHTMLGenerator(context_json)
+            design_html = output_path / 'design.html'
+            generator.save(design_html)
+            files['design.html'] = str(design_html.resolve())
+        except ImportError:
+            print("Warning: generate_design_html.py not found. Skipping HTML generation.")
+
+        return files
+
+    def _generate_architecture_md(self) -> str:
+        """Generate architecture.md with Mermaid diagram."""
+        tech_stack = self.context.get('tech_stack', {})
+        project = self.context.get('project_name', 'Project')
+
+        markdown = f"""# Architecture — {project}
+
+## System Overview
+
+This document describes the architecture of {project}, including tech stack, components, and data flow.
+
+## Tech Stack
+
+- **Frontend:** {tech_stack.get('frontend', 'React 18+')}
+- **Backend:** {tech_stack.get('backend', 'Python FastAPI')}
+- **Database:** {tech_stack.get('database', 'PostgreSQL')}
+- **Authentication:** {tech_stack.get('auth', 'JWT')}
+
+## Component Diagram
+
+```mermaid
+graph TB
+    Client["Frontend<br/>{tech_stack.get('frontend', 'React')}"]
+    API["Backend API<br/>{tech_stack.get('backend', 'FastAPI')}"]
+    DB["Database<br/>{tech_stack.get('database', 'PostgreSQL')}"]
+
+    Client -->|REST API| API
+    API -->|SQL Queries| DB
+    Client -->|Authentication| API
+```
+
+## Data Flow
+
+1. **User Interaction** → Frontend captures user input
+2. **API Request** → Frontend sends REST request to Backend
+3. **Validation** → Backend validates request data
+4. **Database Query** → Backend queries PostgreSQL
+5. **Response** → Backend returns data to Frontend
+6. **Rendering** → Frontend updates UI with response data
+
+## File Structure
+
+Generated automatically based on tech stack:
+
+```
+{project}/
+├── backend/                 ← Backend application
+│   ├── app/                 ← FastAPI app
+│   │   ├── main.py         ← Entry point
+│   │   ├── routes/         ← API endpoints
+│   │   ├── models/         ← Data models
+│   │   └── services/       ← Business logic
+│   └── tests/              ← Test suite
+│
+├── frontend/                ← Frontend application
+│   ├── src/
+│   │   ├── components/     ← React components
+│   │   ├── pages/          ← Page components
+│   │   └── hooks/          ← Custom hooks
+│   └── public/             ← Static assets
+│
+└── docs/context/           ← Architecture documentation
+    ├── architecture.md     ← This file
+    ├── tech-stack.md       ← Technology reference
+    ├── context.json        ← Machine-readable context
+    └── design.html         ← Interactive visualization
+```
+
+## Key Decisions
+
+### Why {tech_stack.get('backend', 'FastAPI')}?
+- Async/await support for I/O-bound operations
+- Automatic API documentation (Swagger UI)
+- Modern Python features (type hints, dataclasses)
+- Easy testing with pytest
+
+### Why {tech_stack.get('frontend', 'React')}?
+- Component-based architecture
+- Rich ecosystem (React Router, TanStack Query, etc.)
+- Virtual DOM for efficient rendering
+- Strong TypeScript support
+
+### Why {tech_stack.get('database', 'PostgreSQL')}?
+- ACID compliance for data integrity
+- Relational schema for complex queries
+- Advanced features (JSON, full-text search)
+- Excellent performance for moderate scale
+
+## Dependencies
+
+Key packages installed in requirements.txt and package.json:
+
+### Backend
+{self._generate_backend_dependencies()}
+
+### Frontend
+{self._generate_frontend_dependencies()}
+
+## Testing Strategy
+
+- **Unit Tests:** Test individual functions and methods
+- **Integration Tests:** Test API endpoints with real database
+- **E2E Tests:** Test user workflows end-to-end
+
+Target coverage: ≥ 80% for critical paths
+
+## Deployment
+
+- **Frontend:** Built with npm run build, served by Nginx
+- **Backend:** Docker container, deployed to AWS ECS
+- **Database:** Managed PostgreSQL instance (AWS RDS)
+- **CI/CD:** GitHub Actions pipeline
+
+## Performance Considerations
+
+- Frontend bundling with Webpack
+- API caching with Redis (optional)
+- Database indexing on frequently queried columns
+- Connection pooling for database connections
+
+## Security
+
+- JWT tokens for stateless authentication
+- HTTPS for all communications
+- Environment variables for secrets
+- Input validation on all endpoints
+- CORS configuration for cross-origin requests
+
+## Monitoring & Logging
+
+- Application logs to stdout (container-friendly)
+- Metrics collection with Prometheus (optional)
+- Error tracking with Sentry (optional)
+- Health check endpoint at /api/health
+"""
+
+        return markdown
+
+    def _generate_backend_dependencies(self) -> str:
+        """Generate list of backend dependencies."""
+        backend = self.context.get('tech_stack', {}).get('backend', '').lower()
+        if 'fastapi' in backend or 'python' in backend:
+            return """- fastapi — Web framework
+- sqlalchemy — SQL ORM
+- pydantic — Data validation
+- pytest — Testing framework
+- python-dotenv — Environment variables
+- passlib — Password hashing
+- pyjwt — JWT token handling
+- cors — Cross-origin resource sharing"""
+        else:
+            return """- spring-boot — Application framework
+- spring-data-jpa — JPA repository abstraction
+- spring-security — Authentication/authorization
+- junit5 — Testing framework
+- lombok — Boilerplate reduction
+- jackson — JSON processing"""
+
+    def _generate_frontend_dependencies(self) -> str:
+        """Generate list of frontend dependencies."""
+        return """- react — UI framework
+- react-router-dom — Client-side routing
+- typescript — Type safety
+- tailwindcss — Utility-first CSS
+- @tanstack/react-query — Data fetching
+- zustand — State management
+- axios — HTTP client
+- jest — Testing framework"""
+
+    def _generate_tech_stack_md(self) -> str:
+        """Generate tech-stack.md reference table."""
+        tech_stack = self.context.get('tech_stack', {})
+
+        markdown = """# Tech Stack Reference
+
+This table maps technologies to their purposes and corresponding skill files.
+
+| Technology | Purpose | Category | Skill File | Notes |
+|-----------|---------|----------|-----------|-------|
+"""
+
+        # Frontend
+        markdown += """| React | Frontend UI framework | Frontend | react_advanced_skill.md | Component-based, virtual DOM |
+| TypeScript | Type safety for JavaScript | Frontend | react_advanced_skill.md | Prevents common runtime errors |
+| TailwindCSS | Utility-first CSS framework | Frontend | react_advanced_skill.md | Fast styling, responsive design |
+| TanStack Query | Server state management | Frontend | react_advanced_skill.md | Caching, synchronization, mutations |
+| Zustand | Client state management | Frontend | react_advanced_skill.md | Lightweight, performant |
+
+"""
+
+        # Backend
+        if 'fastapi' in tech_stack.get('backend', '').lower() or 'python' in tech_stack.get('backend', '').lower():
+            markdown += """| FastAPI | Web framework | Backend | python_advanced_skill.md | Async, auto-docs, fast |
+| SQLAlchemy | ORM for database access | Backend | python_advanced_skill.md | Query builder, relationships |
+| Pydantic | Data validation | Backend | python_advanced_skill.md | Type hints, automatic validation |
+| pytest | Unit & integration testing | Backend | testing_pytest_skill.md | Fixtures, parametrization |
+| python-jose | JWT token handling | Backend | python_advanced_skill.md | Secure token management |
+
+"""
+        else:
+            markdown += """| Spring Boot | Web framework | Backend | spring_advanced_skill.md | Convention over configuration |
+| Spring Data JPA | ORM for database access | Backend | spring_advanced_skill.md | Automatic query generation |
+| Spring Security | Authentication/authorization | Backend | spring_advanced_skill.md | Token, session management |
+| JUnit5 | Unit & integration testing | Backend | testing_junit5_skill.md | Parametrized tests, extensions |
+
+"""
+
+        # Database
+        markdown += f"""| {tech_stack.get('database', 'PostgreSQL')} | Relational database | Database | mssql_advanced_skill.md | ACID, JSON support |
+| Docker | Containerization | DevOps | integration_agent.md | Consistent environment |
+| Docker Compose | Multi-container orchestration | DevOps | integration_agent.md | Local development |
+
+---
+
+## Skill Files Reference
+
+- **react_advanced_skill.md** — React 18+, hooks, testing, best practices
+- **python_advanced_skill.md** — Python 3.11+, FastAPI, async/await, testing
+- **spring_advanced_skill.md** — Spring Boot 3.x, dependency injection, patterns
+- **testing_pytest_skill.md** — pytest framework, fixtures, mocking
+- **testing_junit5_skill.md** — JUnit5 testing, Mockito, parametrization
+- **mssql_advanced_skill.md** — SQL Server, T-SQL, optimization
+- **integration_agent.md** — CI/CD pipelines, Docker, Kubernetes
+
+See `agents/developer_agent.md` for how these skills are applied during development.
+"""
+
+        return markdown
