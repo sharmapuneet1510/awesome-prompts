@@ -2,7 +2,7 @@
 
 A comprehensive, production-ready collection of **AI agent definitions**, **coding skills**, and **prompt templates** for software engineering workflows. Compatible with GitHub Copilot, Claude, Cursor, Windsurf, Gemini CLI, Continue.dev, OpenAI API, and Aider.
 
-**Version:** 3.0.0 | **Status:** ✅ Production Ready | 26 Skills | 8 Agents | 8 Platform Exports
+**Version:** 4.0.0 | **Status:** ✅ Production Ready | 30 Skills | 9 Agents | 8 Platform Exports | 🤖 Autonomous Code Generation
 
 ---
 
@@ -22,12 +22,57 @@ This repository provides **shareable, git-friendly instructions** for AI coding 
 - 🔍 **Reviewer** — Inspect quality
 - ✍️ **Writer** — Write docs
 - 🔧 **Integration** — Automate CI/CD
+- 🤖 **Autonomous Developer** — End-to-end code generation
+
+---
+
+## 🤖 NEW: Autonomous Developer System
+
+The **Autonomous Developer Agent** reads plain-text requirements and generates production-ready code end-to-end:
+
+```
+Input: requirement.txt
+├─ Parse requirements → Detect project type
+├─ Generate database schema + migrations
+├─ Build backend API (REST, GraphQL, services)
+├─ Create frontend UI (React components)
+├─ Write comprehensive tests (pytest, Jest, E2E)
+└─ Output: Full GitHub PR with production code
+```
+
+**Features:**
+- 🚀 Fully autonomous 5-phase code generation
+- 📊 Intelligent project detection (new vs existing)
+- 🧪 Test-driven development (TDD) for all phases
+- 📈 Task completion tracking (JSON format)
+- 🧠 Knowledge graph integration (graphify)
+- 🔄 GitHub PR creation with auto-sync
+- 📚 Auto-updating documentation
+
+**Quick Start:**
+```bash
+# Interactive setup (recommended)
+python3 tools/exporter.py --interactive
+
+# Or direct: export autonomous developer system
+python3 tools/exporter.py --target claude --all
+
+# Then in Claude Code: /autonomous-developer
+```
+
+See **[AUTONOMOUS_DEVELOPER_README.md](AUTONOMOUS_DEVELOPER_README.md)** and **[SETUP_GUIDE.md](SETUP_GUIDE.md)** for complete documentation.
 
 ---
 
 ## 📦 What's Included
 
-### Skills (26 total)
+### Skills (30 total)
+
+**Autonomous Development (NEW):**
+- `database_skill.md` — SQL schema generation with migrations
+- `backend_skill.md` — API generation (FastAPI, Spring Boot)
+- `frontend_skill.md` — React component generation with TypeScript
+- `test_skill.md` — Comprehensive testing (pytest, Jest, Playwright, E2E)
 
 **API & Backend:**
 - `rest_api_java_skill.md` — Spring Boot REST patterns
@@ -63,7 +108,10 @@ This repository provides **shareable, git-friendly instructions** for AI coding 
 - `logger_skill.md` — Logging best practices
 - `opentelemetry_skill.md` — Distributed tracing & observability
 
-### Agents (8 total, organized by role)
+### Agents (9 total, organized by role)
+
+**Autonomous Developer** (NEW)
+- `autonomous_dev_agent.md` — 🤖 Autonomous code generation end-to-end
 
 **Developer Agents** (`agents/developer/`)
 - `java_advanced_agent.md` — Jarvis (Java 17+ / Spring Boot)
@@ -254,11 +302,12 @@ python3 -m pytest tests/ -v
 
 | Metric | Value |
 |--------|-------|
-| Skills | 26 |
-| Agents | 8 |
-| Agent Roles | 4 |
+| Skills | 30 |
+| Agents | 9 |
+| Agent Roles | 5 |
 | Platform Exports | 8 |
-| Test Coverage | 79 tests passing |
+| Autonomous Phases | 5 (DB → Backend → Frontend → Tests → Deployment) |
+| Test Coverage | 95+ tests passing |
 | Dependencies | 0 (stdlib only) |
 
 ---
@@ -273,6 +322,38 @@ python3 -m pytest tests/ -v
 ---
 
 ## 📋 Changelog
+
+### v4.0.0 — 2026-05-20
+
+**Major Release: Autonomous Developer System**
+
+**New:**
+- 🤖 **Autonomous Developer Agent** — End-to-end code generation from plain-text requirements
+- 4 core generation skills:
+  - `database_skill.md` — SQL schema + migrations for PostgreSQL/MySQL/SQL Server
+  - `backend_skill.md` — REST API generation (FastAPI, Spring Boot)
+  - `frontend_skill.md` — React component generation (TypeScript, Tailwind)
+  - `test_skill.md` — Comprehensive testing (pytest, Jest, Playwright, E2E)
+- **AUTONOMOUS_DEVELOPER_README.md** — Complete system architecture with workflow diagrams
+- **SETUP_GUIDE.md** — Quick 2-minute setup guide
+- **tools/interactive_exporter.py** — Interactive CLI wizard for platform selection
+- Project detection — Automatically detects new vs existing projects
+- Task tracking — JSON-based task completion monitoring
+- Knowledge graph integration — graphify for smart context
+- GitHub PR auto-sync — Automatic PR creation with generated code
+
+**Updated:**
+- `tools/exporter.py` — Added `--interactive/-i` flag for guided setup
+- `.gitignore` — Allow committed superpowers docs (specs, plans)
+
+**Statistics:**
+- Now 30 skills (up from 26)
+- Now 9 agents (up from 8)
+- 5-phase autonomous pipeline
+- 95+ tests passing
+- Interactive setup experience
+
+---
 
 ### v3.0.0 — 2026-04-15
 
