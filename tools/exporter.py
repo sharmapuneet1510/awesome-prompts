@@ -695,16 +695,12 @@ class ExportOrchestrator:
                 f"Run from the repository root or use --repo-root."
             )
         skills: list[SkillFile] = []
-        errors: list[str] = []
         for path in sorted(self._skills_dir.glob("*.md")):
             try:
                 skills.append(SkillFile.from_path(path))
-            except (ValueError, OSError) as err:
-                errors.append(f"  Skipped {path.name}: {err}")
-        if errors:
-            print("Skill warnings:")
-            for msg in errors:
-                print(msg)
+            except (ValueError, OSError):
+                # Silently skip files with invalid frontmatter (e.g., old deprecated files)
+                pass
         return skills
 
     def discover_agents(self) -> list[AgentFile]:
@@ -714,18 +710,14 @@ class ExportOrchestrator:
                 f"Run from the repository root or use --repo-root."
             )
         agents: list[AgentFile] = []
-        errors: list[str] = []
         for path in sorted(self._agents_dir.rglob("*.md")):
             if path.name.lower() == "readme.md":
                 continue
             try:
                 agents.append(AgentFile.from_path(path))
-            except (ValueError, OSError) as err:
-                errors.append(f"  Skipped {path.name}: {err}")
-        if errors:
-            print("Agent warnings:")
-            for msg in errors:
-                print(msg)
+            except (ValueError, OSError):
+                # Silently skip files with invalid frontmatter (e.g., old deprecated files)
+                pass
         return agents
 
     def filter_skills(self, skills: list[SkillFile], requested: list[str]) -> list[SkillFile]:
@@ -950,19 +942,18 @@ def main() -> None:
     parser       = build_argument_parser()
     args         = parser.parse_args()
 
-    # Check for updates (silently skip if unavailable or on network error)
+    # Check for updates (completely silent mode)
     try:
+        import io
+        import contextlib
         from update_checker import VersionChecker
         checker = VersionChecker()
-        # Only show update tip if successfully checked and update is available
-        # verbose=False suppresses error messages for network issues
-        if checker.check_for_updates(verbose=False):
-            print("\n💡 Tip: Run 'python tools/update_checker.py --apply' to get the latest features\n")
-    except ImportError:
-        # update_checker module not available — that's fine
-        pass
-    except Exception:
-        # Network or other errors checking updates — silently skip
+        # Suppress all output (both stdout and stderr) during update check
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            if checker.check_for_updates(verbose=False):
+                print("\n💡 Tip: Run 'python tools/update_checker.py --apply' to get the latest features\n")
+    except (ImportError, Exception):
+        # update_checker not available or any error — completely silent
         pass
 
     # Handle interactive mode by delegating to interactive_exporter.py
