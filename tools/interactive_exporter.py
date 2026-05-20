@@ -117,19 +117,60 @@ def get_skills_and_agents() -> tuple[list[str], list[str]]:
     """Ask user which skills and agents to export."""
     print(f"{Colors.BOLD}Step 3: Skills & Agents to Export{Colors.ENDC}\n")
 
-    # Default: export autonomous developer system
-    skills = [
-        "database_skill",
-        "backend_skill",
-        "frontend_skill",
-        "test_skill",
-    ]
-    agents = ["autonomous_dev"]
+    print("Options:")
+    print("1. [ ] Autonomous Developer (4 core skills)")
+    print("2. [ ] All Skills (25+ skills for all tech stacks)")
+    print("3. [ ] Custom selection\n")
+
+    user_input = input("Choose what to export (1-3, or press Enter for #1): ").strip()
+
+    if user_input == "2":
+        # Export ALL skills
+        skills = []  # Empty list means all skills
+        agents = []  # Empty list means all agents
+        print(f"\n{Colors.OKGREEN}✓ Ready to export all available skills and agents{Colors.ENDC}\n")
+    elif user_input == "3":
+        # Custom selection
+        print("\nAvailable skills: database, backend, frontend, test, context_builder, code_documentation,")
+        print("                  java_advanced, python_advanced, react_advanced, spring_advanced, etc.")
+        print("(comma-separated, or press Enter for core 4)\n")
+
+        skills_input = input("Enter skills to export: ").strip()
+        if skills_input:
+            skills = [s.strip() for s in skills_input.split(",")]
+        else:
+            # Default to core 4
+            skills = [
+                "database_skill",
+                "backend_skill",
+                "frontend_skill",
+                "test_skill",
+            ]
+
+        agents = ["autonomous_dev"]
+        print(f"\n{Colors.OKGREEN}✓ Ready to export selected skills{Colors.ENDC}\n")
+    else:
+        # Default: export autonomous developer system (4 core skills)
+        skills = [
+            "database_skill",
+            "backend_skill",
+            "frontend_skill",
+            "test_skill",
+        ]
+        agents = ["autonomous_dev"]
+        print(f"\n{Colors.OKGREEN}✓ Ready to export autonomous developer system{Colors.ENDC}\n")
 
     print("Exporting:")
-    print(f"  Skills: {', '.join(skills)}")
-    print(f"  Agents: {', '.join(agents)}")
-    print(f"\n{Colors.OKGREEN}✓ Ready to export autonomous developer system{Colors.ENDC}\n")
+    if not skills:
+        print(f"  Skills: ALL (25+)")
+    else:
+        print(f"  Skills: {', '.join(skills)}")
+
+    if not agents:
+        print(f"  Agents: ALL")
+    else:
+        print(f"  Agents: {', '.join(agents)}")
+    print()
 
     return skills, agents
 
