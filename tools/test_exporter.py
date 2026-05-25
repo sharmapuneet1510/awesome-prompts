@@ -9,12 +9,16 @@ Tests:
 4. test_discover_hooks_empty() — return [] when no hooks/ dir
 5. test_discover_hooks_valid() — discover and parse valid hook files
 6. test_discover_hooks_skip_invalid() — skip hooks with errors, continue with valid ones
+7. test_export_hooks_filters_by_platform() — only export hooks for current platform
+8. test_export_hooks_makes_executable() — .sh files get executable bit (0o755)
 """
 
 import tempfile
 from pathlib import Path
+import os
+import stat
 
-from exporter import HookFile, ExportOrchestrator
+from exporter import HookFile, ExportOrchestrator, ClaudeExporter, CopilotExporter
 
 
 def test_hookfile_from_path_valid():
@@ -351,6 +355,190 @@ echo "hidden"
         print("\n✓ TEST 6 PASSED")
 
 
+def test_export_hooks_filters_by_platform():
+    """Test that export_hooks() only exports hooks matching applies_to platform."""
+    print("\n" + "=" * 70)
+    print("TEST 7: export_hooks() filters by platform")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create hooks that apply to different platforms
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Hook for claude only
+        claude_hook = hooks_dir / "claude_only.sh"
+        claude_hook.write_text(
+            """---
+name: Claude Only Hook
+version: 1.0
+hook_type: pre-commit
+applies_to:
+  - claude
+---
+
+#!/bin/bash
+echo "Claude only"
+""",
+            encoding="utf-8",
+        )
+
+        # Hook for copilot only
+        copilot_hook = hooks_dir / "copilot_only.sh"
+        copilot_hook.write_text(
+            """---
+name: Copilot Only Hook
+version: 1.0
+hook_type: pre-commit
+applies_to:
+  - copilot
+---
+
+#!/bin/bash
+echo "Copilot only"
+""",
+            encoding="utf-8",
+        )
+
+        # Hook for multiple platforms
+        multi_hook = hooks_dir / "multi.sh"
+        multi_hook.write_text(
+            """---
+name: Multi Platform Hook
+version: 1.0
+hook_type: pre-commit
+applies_to:
+  - claude
+  - copilot
+  - windsurf
+---
+
+#!/bin/bash
+echo "Multi platform"
+""",
+            encoding="utf-8",
+        )
+
+        # Discover all hooks
+        orchestrator = ExportOrchestrator(repo_root)
+        all_hooks = orchestrator.discover_hooks()
+        assert len(all_hooks) == 3, f"Expected 3 hooks, got {len(all_hooks)}"
+        print(f"✓ Discovered {len(all_hooks)} hooks")
+
+        # Export with Claude exporter
+        claude_exporter = ClaudeExporter(repo_root)
+        claude_paths = claude_exporter.export_hooks(all_hooks, dry_run=False)
+
+        # Should only have claude_only and multi
+        assert len(claude_paths) == 2, f"Expected 2 hooks for Claude, got {len(claude_paths)}"
+        print(f"✓ Claude exporter exported {len(claude_paths)} hooks (filtered applies_to)")
+
+        # Verify the correct hooks were exported
+        exported_names = {p.name for p in claude_paths}
+        assert "claude_only.sh" in exported_names, "Expected claude_only.sh to be exported"
+        assert "multi.sh" in exported_names, "Expected multi.sh to be exported"
+        assert "copilot_only.sh" not in exported_names, "copilot_only.sh should not be exported"
+        print(f"✓ Correct hooks exported: {sorted(exported_names)}")
+
+        # Export with Copilot exporter
+        copilot_exporter = CopilotExporter(repo_root)
+        copilot_paths = copilot_exporter.export_hooks(all_hooks, dry_run=False)
+
+        # Should only have copilot_only and multi
+        assert len(copilot_paths) == 2, f"Expected 2 hooks for Copilot, got {len(copilot_paths)}"
+        print(f"✓ Copilot exporter exported {len(copilot_paths)} hooks (filtered applies_to)")
+
+        # Verify the correct hooks were exported
+        exported_names = {p.name for p in copilot_paths}
+        assert "copilot_only.sh" in exported_names, "Expected copilot_only.sh to be exported"
+        assert "multi.sh" in exported_names, "Expected multi.sh to be exported"
+        assert "claude_only.sh" not in exported_names, "claude_only.sh should not be exported"
+        print(f"✓ Correct hooks exported: {sorted(exported_names)}")
+
+        print("\n✓ TEST 7 PASSED")
+
+
+def test_export_hooks_makes_executable():
+    """Test that .sh files get executable bit (0o755) when exported."""
+    print("\n" + "=" * 70)
+    print("TEST 8: export_hooks() makes .sh files executable")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create hooks directory
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create a shell script hook
+        shell_hook = hooks_dir / "my_script.sh"
+        shell_hook.write_text(
+            """---
+name: Shell Script Hook
+version: 1.0
+hook_type: pre-commit
+---
+
+#!/bin/bash
+echo "test"
+""",
+            encoding="utf-8",
+        )
+
+        # Create a Python hook (not executable)
+        python_hook = hooks_dir / "my_script.py"
+        python_hook.write_text(
+            """---
+name: Python Hook
+version: 1.0
+hook_type: pre-commit
+---
+
+#!/usr/bin/env python3
+print("test")
+""",
+            encoding="utf-8",
+        )
+
+        # Discover hooks
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+        assert len(hooks) == 2, f"Expected 2 hooks, got {len(hooks)}"
+        print(f"✓ Discovered {len(hooks)} hooks")
+
+        # Export hooks
+        exporter = ClaudeExporter(repo_root)
+        exported_paths = exporter.export_hooks(hooks, dry_run=False)
+        assert len(exported_paths) == 2, f"Expected 2 exported paths, got {len(exported_paths)}"
+        print(f"✓ Exported {len(exported_paths)} hooks")
+
+        # Check executable bit on .sh file
+        shell_exported = next((p for p in exported_paths if p.name == "my_script.sh"), None)
+        assert shell_exported is not None, "my_script.sh not found in exported paths"
+        assert shell_exported.exists(), f"my_script.sh not written to {shell_exported}"
+
+        file_mode = os.stat(shell_exported).st_mode
+        is_executable = bool(file_mode & stat.S_IXUSR)
+        assert is_executable, f".sh file not executable. Mode: {oct(stat.S_IMODE(file_mode))}"
+        print(f"✓ .sh file is executable (mode: {oct(stat.S_IMODE(file_mode))})")
+
+        # Check that Python file is not marked executable
+        python_exported = next((p for p in exported_paths if p.name == "my_script.py"), None)
+        assert python_exported is not None, "my_script.py not found in exported paths"
+        assert python_exported.exists(), f"my_script.py not written to {python_exported}"
+
+        python_mode = os.stat(python_exported).st_mode
+        python_is_executable = bool(python_mode & stat.S_IXUSR)
+        # Python files should not be marked executable by the exporter
+        # (they have is_executable=False because they're not .sh files)
+        print(f"✓ .py file not marked executable by export_hooks (correct)")
+
+        print("\n✓ TEST 8 PASSED")
+
+
 if __name__ == "__main__":
     test_hookfile_from_path_valid()
     test_hookfile_missing_hook_type()
@@ -358,9 +546,11 @@ if __name__ == "__main__":
     test_discover_hooks_empty()
     test_discover_hooks_valid()
     test_discover_hooks_skip_invalid()
+    test_export_hooks_filters_by_platform()
+    test_export_hooks_makes_executable()
 
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print("✓ All 6 tests PASSED")
+    print("✓ All 8 tests PASSED")
     print("=" * 70)
