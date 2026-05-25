@@ -27,7 +27,10 @@
       "Bash(mv integration/* _deprecated/)",
       "Bash(2>&1)",
       "Bash(grep -v \"Step 1\\\\|Step 2\\\\|Step 3\\\\|Enter\\\\|platform\\\\|Select\\\\|emoji\\\\|Running\\\\|Setup\\\\|Create\\\\|Invoke\\\\|Monitor\\\\|Review\\\\|Full\\\\|Ready\\\\|^$\")",
-      "Bash(chmod +x *)"
+      "Bash(chmod +x *)",
+      "Bash(cat)",
+      "Bash(bash /tmp/verify_skill.sh)",
+      "Bash(bash /tmp/verify_implementation.sh)"
     ]
   }
 }
