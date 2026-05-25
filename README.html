@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awesome Prompts — AI-Driven Development System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d9ff;
+            --secondary: #7c3aed;
+            --accent: #ec4899;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f1f5f9;
+            --glass: rgba(30, 41, 59, 0.8);
+            --glass-light: rgba(148, 163, 184, 0.1);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, #1a1a2e 50%, var(--dark) 100%);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            background: var(--glass);
+            border-bottom: 1px solid var(--glass-light);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            text-align: center;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent), var(--primary));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 8s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1.4s ease-out;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 50px rgba(0, 217, 255, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--light);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: var(--darker);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+        }
+
+        /* Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+            padding: 2rem;
+            animation: fadeInUp 1.6s ease-out;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-light);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Section Heading */
+        .section-heading {
+            text-align: center;
+            margin: 4rem 0 3rem 0;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .section-heading h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-heading p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        /* Agents Section */
+        .agents {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .agent-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-light);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .agent-card:nth-child(1) { animation-delay: 0.1s; }
+        .agent-card:nth-child(2) { animation-delay: 0.2s; }
+        .agent-card:nth-child(3) { animation-delay: 0.3s; }
+        .agent-card:nth-child(4) { animation-delay: 0.4s; }
+        .agent-card:nth-child(5) { animation-delay: 0.5s; }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .agent-card:hover::before {
+            left: 100%;
+        }
+
+        .agent-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+            transform: translateY(-10px);
+        }
+
+        .agent-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .agent-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .agent-card p {
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .agent-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Skills Showcase */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .skill-item {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.05), rgba(124, 58, 237, 0.05));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .skill-item:nth-child(1) { animation-delay: 0.1s; }
+        .skill-item:nth-child(2) { animation-delay: 0.2s; }
+        .skill-item:nth-child(3) { animation-delay: 0.3s; }
+        .skill-item:nth-child(4) { animation-delay: 0.4s; }
+        .skill-item:nth-child(5) { animation-delay: 0.5s; }
+        .skill-item:nth-child(6) { animation-delay: 0.6s; }
+        .skill-item:nth-child(7) { animation-delay: 0.7s; }
+
+        .skill-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .skill-name {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .skill-desc {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        /* Workflows */
+        .workflows {
+            padding: 2rem;
+        }
+
+        .workflow {
+            margin-bottom: 4rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .workflow-title {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .workflow-title span {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--darker);
+        }
+
+        .workflow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--darker);
+        }
+
+        .step h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        .step p {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        /* Code Example */
+        .code-example {
+            background: var(--darker);
+            border: 1px solid var(--glass-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+        }
+
+        .code-example code {
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .keyword { color: var(--secondary); }
+        .string { color: var(--accent); }
+        .comment { color: #64748b; }
+        .function { color: var(--primary); }
+
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .feature {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-light);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .feature:nth-child(1) { animation-delay: 0.1s; }
+        .feature:nth-child(2) { animation-delay: 0.2s; }
+        .feature:nth-child(3) { animation-delay: 0.3s; }
+        .feature:nth-child(4) { animation-delay: 0.4s; }
+        .feature:nth-child(5) { animation-delay: 0.5s; }
+        .feature:nth-child(6) { animation-delay: 0.6s; }
+
+        .feature:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .feature:nth-child(2) .feature-icon { animation-delay: 0.2s; }
+        .feature:nth-child(3) .feature-icon { animation-delay: 0.4s; }
+        .feature:nth-child(4) .feature-icon { animation-delay: 0.6s; }
+        .feature:nth-child(5) .feature-icon { animation-delay: 0.8s; }
+        .feature:nth-child(6) .feature-icon { animation-delay: 1s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .feature h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .feature p {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        /* CTA Section */
+        .cta {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border: 1px solid var(--glass-light);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin: 4rem 2rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cta p {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-light);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-column h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-column a:hover {
+            color: var(--primary);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: var(--glass-light);
+            border: 1px solid var(--glass-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            color: var(--darker);
+            border-color: var(--primary);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-light);
+            color: #64748b;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-heading h2 {
+                font-size: 2rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Scroll animation */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">🤖 Awesome Prompts</div>
+        <ul class="nav-links">
+            <li><a href="#agents">Agents</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#workflows">Workflows</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="https://github.com/sharmapuneet1510/awesome-prompts" target="_blank">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Enterprise-Grade AI Agents & Reusable Skills</h1>
+            <p>Transform requirements into production-ready code with 100% test coverage, complete documentation, and JIRA integration</p>
+
+            <div class="hero-buttons">
+                <a href="https://github.com/sharmapuneet1510/awesome-prompts" class="btn btn-primary">⭐ Star on GitHub</a>
+                <a href="#agents" class="btn btn-secondary">Explore Agents</a>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">AI Agents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Reusable Skills</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Test Coverage</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">9</div>
+                    <div class="stat-label">Platforms</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents Section -->
+    <section id="agents">
+        <div class="section-heading">
+            <h2>🤖 Core Agents</h2>
+            <p>Role-based AI agents that handle every phase of development</p>
+        </div>
+
+        <div class="agents">
+            <div class="agent-card">
+                <div class="agent-icon">🏗️</div>
+                <h3>Implementation Agent</h3>
+                <p>Full-lifecycle feature builder that generates code, tests, and documentation</p>
+                <span class="agent-badge">v3.0</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🔍</div>
+                <h3>Code Review Agent</h3>
+                <p>Requirement-driven validation with 6-phase analysis and scoring</p>
+                <span class="agent-badge">v3.0 NEW</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🧪</div>
+                <h3>Test Case Generator</h3>
+                <p>Generates 100% coverage tests with JIRA acceptance criteria validation</p>
+                <span class="agent-badge">v1.0</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">📚</div>
+                <h3>Writer Agent</h3>
+                <p>Auto-generates JSDoc, docstrings, Javadoc, and documentation</p>
+                <span class="agent-badge">v1.0</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">⚙️</div>
+                <h3>Autonomous Dev Agent</h3>
+                <p>Full-stack orchestrator that builds complete systems (DB + API + UI)</p>
+                <span class="agent-badge">v1.0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills">
+        <div class="section-heading">
+            <h2>🛠️ Reusable Skills</h2>
+            <p>Tech-agnostic skill modules used by all agents</p>
+        </div>
+
+        <div class="skills-grid">
+            <div class="skill-item">
+                <div class="skill-name">📝 Code Documentation</div>
+                <div class="skill-desc">JSDoc, docstrings, Javadoc generation</div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-name">🗄️ Database</div>
+                <div class="skill-desc">SQL schema + migrations</div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-name">🔌 Backend API</div>
+                <div class="skill-desc">REST API generation</div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-name">⚛️ Frontend</div>
+                <div class="skill-desc">React component generation</div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-name">🧪 Testing</div>
+                <div class="skill-desc">Unit, integration, E2E tests</div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-name">🔍 Code Review</div>
+                <div class="skill-desc">6-phase analysis + scoring</div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-name">🚀 Integration</div>
+                <div class="skill-desc">CI/CD + deployment automation</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflows Section -->
+    <section id="workflows">
+        <div class="section-heading">
+            <h2>⚡ Workflow Examples</h2>
+            <p>See how agents work together to build production-grade systems</p>
+        </div>
+
+        <div class="workflows">
+            <!-- Workflow 1 -->
+            <div class="workflow">
+                <div class="workflow-title">
+                    <span>1</span>
+                    Feature Implementation (5 Steps)
+                </div>
+                <div class="workflow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h4>Input Requirement</h4>
+                        <p>"Build user registration with email validation"</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h4>Detect Tech Stack</h4>
+                        <p>Scans project, detects Python/FastAPI</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h4>Generate Code</h4>
+                        <p>Creates routes, models, middleware</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h4>Add Tests</h4>
+                        <p>100% coverage unit + integration tests</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <h4>Create PR</h4>
+                        <p>GitHub PR with auto-generated description</p>
+                    </div>
+                </div>
+                <div class="code-example">
+                    <code><span class="keyword">def</span> <span class="function">register_user</span>(email: <span class="string">str</span>, password: <span class="string">str</span>) -> User:<br/>
+    <span class="comment">"""Register a new user with email validation"""</span><br/>
+    validate_email(email)<br/>
+    hashed = hash_password(password)<br/>
+    user = User.create(email=email, password=hashed)<br/>
+    send_confirmation_email(email)<br/>
+    <span class="keyword">return</span> user</code>
+                </div>
+            </div>
+
+            <!-- Workflow 2 -->
+            <div class="workflow">
+                <div class="workflow-title">
+                    <span>2</span>
+                    JIRA-Driven Test Generation
+                </div>
+                <div class="workflow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h4>Fetch JIRA Ticket</h4>
+                        <p>AUTH-456: User Login</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h4>Extract Criteria</h4>
+                        <p>Valid login, error handling, rate limiting</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h4>Generate Tests</h4>
+                        <p>Unit + integration + edge cases</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h4>Validate Coverage</h4>
+                        <p>All 4 ACs tested ✅</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow 3 -->
+            <div class="workflow">
+                <div class="workflow-title">
+                    <span>3</span>
+                    Code Review with Requirement Validation
+                </div>
+                <div class="workflow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h4>Load PR + JIRA</h4>
+                        <p>Link PR #456 to JIRA-123</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h4>6-Phase Analysis</h4>
+                        <p>Requirements, quality, tests, docs</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h4>Calculate Score</h4>
+                        <p>Grade B (83.5/100)</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h4>Post Comment</h4>
+                        <p>Summary + issues + action items</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <div class="section-heading">
+            <h2>✨ Key Features</h2>
+            <p>Everything you need for enterprise-grade development</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <h3>100% Test Coverage</h3>
+                <p>Unit, integration, and E2E tests with business validation</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📚</div>
+                <h3>Auto-Documentation</h3>
+                <p>JSDoc, docstrings, Javadoc generation with examples</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3>JIRA Integration</h3>
+                <p>Fetch requirements and validate acceptance criteria</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🏗️</div>
+                <h3>Multi-Tech Support</h3>
+                <p>Java, Python, React, TypeScript, Node.js, SQL</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>Auto-Context</h3>
+                <p>Generate architecture.md, tech-stack.md, context.json</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚙️</div>
+                <h3>Full Orchestration</h3>
+                <p>Build complete systems (DB + API + UI + tests)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>Ready to Transform Your Development?</h2>
+        <p>Start building production-grade code with AI agents and reusable skills</p>
+        <div class="hero-buttons">
+            <a href="https://github.com/sharmapuneet1510/awesome-prompts" class="btn btn-primary">Get Started</a>
+            <a href="https://github.com/sharmapuneet1510/awesome-prompts/issues" class="btn btn-secondary">Report Issue</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#agents">Agents</a></li>
+                        <li><a href="#skills">Skills</a></li>
+                        <li><a href="#workflows">Workflows</a></li>
+                        <li><a href="#features">Features</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/sharmapuneet1510/awesome-prompts" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://github.com/sharmapuneet1510/awesome-prompts/issues" target="_blank">Issues</a></li>
+                        <li><a href="https://github.com/sharmapuneet1510/awesome-prompts/discussions" target="_blank">Discussions</a></li>
+                        <li><a href="https://github.com/sharmapuneet1510" target="_blank">Author</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Follow</h4>
+                    <div class="social-links">
+                        <a href="https://github.com/sharmapuneet1510" class="social-link" target="_blank">🐙</a>
+                        <a href="https://twitter.com/puneet_sharma" class="social-link" target="_blank">𝕏</a>
+                        <a href="mailto:sharmapuneet1510@gmail.com" class="social-link" target="_blank">✉️</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Awesome Prompts. Built with ❤️ by Puneet Sharma. Licensed under MIT.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                }
+            });
+        });
+
+        // Animate stat numbers
+        const animateCounter = (element, target, duration = 2000) => {
+            let current = 0;
+            const increment = target / (duration / 16);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        };
+
+        // Trigger counter animation when stats are visible
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.hasAttribute('data-animated')) {
+                    entry.target.setAttribute('data-animated', 'true');
+                    const number = entry.target.querySelector('.stat-number');
+                    const target = parseInt(number.textContent);
+                    animateCounter(number, target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stat-card').forEach(card => {
+            statsObserver.observe(card);
+        });
+
+        // Parallax effect
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            document.body.style.backgroundPosition = `0% ${scrolled * 0.5}px`;
+        });
+    </script>
+</body>
+</html>
