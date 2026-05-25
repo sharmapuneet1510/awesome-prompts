@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-test_exporter.py — Test suite for HookFile data class.
+test_exporter.py — Test suite for HookFile data class and hook discovery.
 
 Tests:
 1. test_hookfile_from_path_valid() — parse valid hook with all fields
 2. test_hookfile_missing_hook_type() — raise error when hook_type missing
 3. test_hookfile_defaults_to_claude() — applies_to defaults to ["claude"]
+4. test_discover_hooks_empty() — return [] when no hooks/ dir
+5. test_discover_hooks_valid() — discover and parse valid hook files
+6. test_discover_hooks_skip_invalid() — skip hooks with errors, continue with valid ones
 """
 
 import tempfile
 from pathlib import Path
 
-from exporter import HookFile
+from exporter import HookFile, ExportOrchestrator
 
 
 def test_hookfile_from_path_valid():
@@ -159,13 +162,205 @@ print("Running hook...")
         print("\n✓ TEST 3 PASSED")
 
 
+def test_discover_hooks_empty():
+    """Test discover_hooks() returns [] when hooks/ doesn't exist."""
+    print("\n" + "=" * 70)
+    print("TEST 4: discover_hooks_empty() — no hooks/ directory")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create minimal repo structure (no hooks/ dir)
+        (repo_root / "skills").mkdir()
+        (repo_root / "agents").mkdir()
+
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+
+        assert hooks == [], f"Expected empty list, got {hooks}"
+        print("✓ discover_hooks() returns [] when hooks/ doesn't exist")
+
+        print("\n✓ TEST 4 PASSED")
+
+
+def test_discover_hooks_valid():
+    """Test discover_hooks() discovers and parses valid hook files."""
+    print("\n" + "=" * 70)
+    print("TEST 5: discover_hooks_valid() — discover valid hooks")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create minimal repo structure
+        (repo_root / "skills").mkdir()
+        (repo_root / "agents").mkdir()
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create two valid hook files
+        hook1_path = hooks_dir / "pre_commit.sh"
+        hook1_path.write_text(
+            """---
+name: Pre-Commit Hook
+version: 1.0.0
+description: Runs tests before commit
+hook_type: pre-commit
+applies_to:
+  - claude
+---
+
+#!/bin/bash
+echo "Running pre-commit checks..."
+""",
+            encoding="utf-8",
+        )
+
+        hook2_path = hooks_dir / "prompt_submit.py"
+        hook2_path.write_text(
+            """---
+name: Prompt Submit Hook
+version: 1.0.0
+description: Validates prompt before submit
+hook_type: user-prompt-submit
+---
+
+#!/usr/bin/env python3
+print("Validating prompt...")
+""",
+            encoding="utf-8",
+        )
+
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+
+        assert len(hooks) == 2, f"Expected 2 hooks, got {len(hooks)}"
+        print(f"✓ Discovered {len(hooks)} hook(s)")
+
+        # Verify hooks are sorted
+        assert hooks[0].slug == "pre_commit", f"Expected first hook slug 'pre_commit', got '{hooks[0].slug}'"
+        assert hooks[1].slug == "prompt_submit", f"Expected second hook slug 'prompt_submit', got '{hooks[1].slug}'"
+        print(f"✓ Hook 1 (sorted): {hooks[0].slug} ({hooks[0].hook_type})")
+        print(f"✓ Hook 2 (sorted): {hooks[1].slug} ({hooks[1].hook_type})")
+
+        assert hooks[0].is_executable is True, "Expected hook1 (.sh) to be executable"
+        print(f"✓ Hook 1 is_executable: {hooks[0].is_executable}")
+
+        assert hooks[1].is_executable is False, "Expected hook2 (.py) to NOT be executable"
+        print(f"✓ Hook 2 is_executable: {hooks[1].is_executable}")
+
+        print("\n✓ TEST 5 PASSED")
+
+
+def test_discover_hooks_skip_invalid():
+    """Test discover_hooks() skips invalid hooks and continues with valid ones."""
+    print("\n" + "=" * 70)
+    print("TEST 6: discover_hooks_skip_invalid() — skip invalid, continue with valid")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create minimal repo structure
+        (repo_root / "skills").mkdir()
+        (repo_root / "agents").mkdir()
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create a valid hook
+        valid_hook = hooks_dir / "valid_hook.sh"
+        valid_hook.write_text(
+            """---
+name: Valid Hook
+version: 1.0.0
+description: A valid hook
+hook_type: pre-commit
+---
+
+#!/bin/bash
+echo "Valid hook"
+""",
+            encoding="utf-8",
+        )
+
+        # Create an invalid hook (missing hook_type)
+        invalid_hook = hooks_dir / "invalid_hook.sh"
+        invalid_hook.write_text(
+            """---
+name: Invalid Hook
+version: 1.0.0
+description: Missing hook_type field
+---
+
+#!/bin/bash
+echo "Invalid hook"
+""",
+            encoding="utf-8",
+        )
+
+        # Create another valid hook
+        another_valid = hooks_dir / "another_hook.py"
+        another_valid.write_text(
+            """---
+name: Another Valid Hook
+version: 1.0.0
+description: Another valid hook
+hook_type: user-prompt-submit
+---
+
+#!/usr/bin/env python3
+print("Another valid hook")
+""",
+            encoding="utf-8",
+        )
+
+        # Create hidden file (should be skipped)
+        hidden_hook = hooks_dir / ".hidden_hook.sh"
+        hidden_hook.write_text(
+            """---
+name: Hidden Hook
+hook_type: pre-commit
+---
+
+#!/bin/bash
+echo "hidden"
+""",
+            encoding="utf-8",
+        )
+
+        # Create wrong file type (should be skipped)
+        wrong_type = hooks_dir / "readme.txt"
+        wrong_type.write_text("This is not a hook file")
+
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+
+        # Should only have the 2 valid hooks
+        assert len(hooks) == 2, f"Expected 2 valid hooks, got {len(hooks)}"
+        print(f"✓ Discovered {len(hooks)} valid hook(s) (skipped invalid/hidden/wrong-type)")
+
+        # Verify the valid hooks are present
+        slugs = {h.slug for h in hooks}
+        assert "another_hook" in slugs, "Expected 'another_hook' to be discovered"
+        assert "valid_hook" in slugs, "Expected 'valid_hook' to be discovered"
+        assert "invalid_hook" not in slugs, "Should have skipped 'invalid_hook'"
+        assert "hidden_hook" not in slugs, "Should have skipped '.hidden_hook'"
+        print(f"✓ Valid hooks included: {sorted(slugs)}")
+
+        print("\n✓ TEST 6 PASSED")
+
+
 if __name__ == "__main__":
     test_hookfile_from_path_valid()
     test_hookfile_missing_hook_type()
     test_hookfile_defaults_to_claude()
+    test_discover_hooks_empty()
+    test_discover_hooks_valid()
+    test_discover_hooks_skip_invalid()
 
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print("✓ All 3 tests PASSED")
+    print("✓ All 6 tests PASSED")
     print("=" * 70)

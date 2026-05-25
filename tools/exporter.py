@@ -312,13 +312,25 @@ class ExportResult:
         target:      Platform name (e.g. 'claude').
         skill_files: Paths of written (or would-be-written) skill files.
         agent_files: Paths of written (or would-be-written) agent files.
+        hook_files:  Paths of discovered hook files.
         dry_run:     True if files were NOT actually written.
     """
 
     target: str
     skill_files: list[Path]
     agent_files: list[Path]
-    dry_run: bool
+    hook_files: list[Path] = field(default_factory=list)
+    dry_run: bool = False
+
+    def summary(self) -> str:
+        """Human-readable summary of exported files."""
+        lines = [
+            f"✅ {self.target.upper()}",
+            f"   Skills: {len(self.skill_files)}",
+            f"   Agents: {len(self.agent_files)}",
+            f"   Hooks:  {len(self.hook_files)}",
+        ]
+        return "\n".join(lines)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -768,6 +780,47 @@ class ExportOrchestrator:
                 # Silently skip files with invalid frontmatter (e.g., old deprecated files)
                 pass
         return agents
+
+    def discover_hooks(self) -> list[HookFile]:
+        """Scan hooks/ directory and parse all hook files.
+
+        Returns:
+            List of parsed HookFile objects.
+
+        Note:
+            Hooks can be .sh or .py files with YAML frontmatter.
+            If hooks/ directory doesn't exist, returns empty list.
+            Skips hidden files and files with errors (prints warnings).
+        """
+        hooks_dir = self._repo_root / "hooks"
+
+        if not hooks_dir.exists():
+            return []
+
+        hooks: list[HookFile] = []
+        for path in sorted(hooks_dir.glob("*")):
+            # Skip directories
+            if path.is_dir():
+                continue
+
+            # Skip hidden files
+            if path.name.startswith("."):
+                continue
+
+            # Skip non-hook file types
+            if path.suffix not in [".sh", ".py"]:
+                continue
+
+            try:
+                hooks.append(HookFile.from_path(path))
+            except ValueError as e:
+                # Print warning for invalid hooks but continue processing
+                print(f"Warning: {e}", file=sys.stderr)
+            except OSError as e:
+                # Print warning for file read errors but continue processing
+                print(f"Warning: Could not read {path.name}: {e}", file=sys.stderr)
+
+        return hooks
 
     def filter_skills(self, skills: list[SkillFile], requested: list[str]) -> list[SkillFile]:
         if not requested:
