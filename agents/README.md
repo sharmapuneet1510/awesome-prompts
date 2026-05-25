@@ -1,404 +1,206 @@
-# Agents — Role-Based AI Assistant Definitions
+# 🤖 AI Agents Directory
 
-This directory contains **simplified, role-based AI agents** that focus on workflow and use **skills** for implementation details.
+> Complete guide to all AI agents in the Awesome Prompts system
 
----
-
-## 🎯 Core Principle
-
-**Agents = Roles + Workflows**  
-**Skills = Tech-Specific Implementation Details**
-
-Instead of separate agents for Java, Python, React developers, we have **ONE implementation agent** that:
-1. Takes your requirement
-2. Detects your tech stack
-3. Builds complete feature: code + tests + documentation
-
-This eliminates duplication and ensures every feature is fully delivered.
+**Quick Navigation**
+| Agent | Purpose | Version | Status |
+|-------|---------|---------|--------|
+| [Implementation](implementation_agent.md) | Feature builder | v3.0 | ✅ Ready |
+| [Code Review](code_review_agent.md) | Requirement validation | v3.0 | ✅ NEW |
+| [Test Generator](test_case_generator_agent.md) | 100% coverage tests | v1.0 | ✅ Ready |
+| [Writer](writer_agent.md) | Auto-documentation | v1.0 | ✅ Ready |
+| [Integration](integration_agent.md) | CI/CD automation | v1.0 | ✅ Ready |
+| [Autonomous Dev](autonomous/autonomous_dev_agent.md) | Full-stack | v1.0 | ✅ Ready |
+| [Tech Docs](technical_documentation_agent.md) | Architecture docs | v1.0 | ✅ Ready |
 
 ---
 
-## 📁 Directory Structure
+## 🎯 Agent Overview
+
+### Architecture Pattern
 
 ```
-agents/
-├── implementation_agent.md               ← Build features end-to-end (any tech)
-├── code_review_agent.md                 ← Review code (any tech)
-├── writer_agent.md                      ← Write documentation (JSDoc/docstrings)
-├── integration_agent.md                 ← CI/CD & automation
-├── technical_documentation_agent.md     ← Generate project technical docs
-├── context/
-│   └── context_builder_agent.md         ← Build architecture context
-├── autonomous/
-│   └── autonomous_dev_agent.md          ← Orchestrate full projects
-└── README.md
-```
-
----
-
-## 🚀 The 6 Agents
-
-### 1️⃣ Implementation Agent
-
-**File:** `implementation_agent.md`
-
-**What it does:** Complete end-to-end feature implementation. Takes requirement → Creates code → Tests → Documents → Commits
-
-**Full Lifecycle:**
-1. Gathers requirement (free text, JIRA, file, or auto-detect)
-2. Detects tech stack (auto or from project)
-3. Plans implementation
-4. Generates production-ready code
-5. Creates comprehensive tests (≥95% coverage)
-6. Auto-generates documentation
-7. Commits with clear messages
-
-**When to use:**
-- Building new features with complete delivery
-- Need code + tests + documentation together
-- Want auto-updated project context
-- Requirements in free text, JIRA, or files
-- Rapid feature implementation
-
-**Example:**
-```
-User: "Implement user registration with email validation"
-
-Agent:
-1. Gathers requirement
-2. Detects: Python + FastAPI
-3. Plans: Models, Routes, Email Service
-4. Creates: Routes, Pydantic schemas, email sending
-5. Tests: pytest with ≥95% coverage
-6. Docs: Auto-generated docstrings
-7. Commits: Feature branch + commit
+User Requirement
+    ↓
+Orchestration Layer (Agent)
+    ├─ Parse requirement
+    ├─ Detect tech stack
+    ├─ Apply skill
+    └─ Generate + test + document
+    ↓
+Skill Layer (Reusable)
+    ├─ Code Documentation
+    ├─ Database
+    ├─ Backend API
+    ├─ Frontend
+    ├─ Testing
+    └─ [etc.]
+    ↓
+Output (Production-Ready)
+    ├─ Code
+    ├─ Tests (100% coverage)
+    ├─ Documentation
+    └─ GitHub PR
 ```
 
 ---
 
-### 2️⃣ Code Review Agent
+## 🔍 Implementation Agent (v3.0)
 
-**File:** `code_review_agent.md`
+**File:** [`implementation_agent.md`](implementation_agent.md)
 
-**What it does:** Analyzes code for design quality, SOLID principles, performance, security, and maintainability (tech-agnostic)
+| Aspect | Details |
+|--------|---------|
+| **Purpose** | Full-lifecycle feature builder |
+| **Input** | Requirement (free text / JIRA / file) |
+| **Steps** | 7-step process (parse → plan → code → test → doc → PR) |
+| **Output** | Complete code + tests + docs + GitHub PR |
+| **Tech** | Java, Python, React, TypeScript, Node.js, SQL |
 
-**Review checklist:**
-- Structure & design
-- SOLID principles
-- Design patterns
-- Performance (N+1 queries, inefficient algorithms)
-- Security (SQL injection, validation, secrets)
-- Testing & documentation
-
-**When to use:**
-- Code quality review
-- Design feedback
-- Performance optimization
-- Security audit
-- SOLID principles enforcement
-
-**Example:**
-```
-User: "Review this Python function for design quality"
-
-Agent: Returns detailed report:
-- P0: SQL injection vulnerability
-- P1: N+1 query problem
-- P2: SRP violation (too many responsibilities)
-- P3: Missing error handling
-```
+**When to use:** Building features, adding endpoints, implementing logic
 
 ---
 
-### 3️⃣ Writer Agent
+## 🔍 Code Review Agent (v3.0) ⭐ NEW
 
-**File:** `writer_agent.md`
+**File:** [`code_review_agent.md`](code_review_agent.md)
 
-**What it does:** Generates Javadoc, docstrings, JSDoc, README files, architecture docs, API specifications
+| Aspect | Details |
+|--------|---------|
+| **Purpose** | Requirement-driven code validation |
+| **Input** | PR/MR + JIRA requirement |
+| **Analysis** | 6-phase (requirement → quality → testing → docs → scoring) |
+| **Output** | Interactive HTML report + MR comment |
+| **Grade** | A-F with weighted scorecard |
 
-**Supports:**
+**New Features:**
+- 🎯 Requirement validation (AC coverage %)
+- 📊 Weighted scorecard (Req 40% + Quality 30% + Testing 20% + Docs 10%)
+- 📈 Interactive HTML reports
+- 💬 MR comment summaries
+
+**When to use:** Reviewing PRs, validating requirements, rating code quality
+
+---
+
+## 🧪 Test Case Generator (v1.0)
+
+**File:** [`test_case_generator_agent.md`](test_case_generator_agent.md)
+
+**Purpose:** Generate tests with 100% coverage + business validation
+
+**Process:**
+1. Fetch JIRA acceptance criteria
+2. Analyze code context
+3. Generate unit + integration tests
+4. Validate all ACs covered
+5. Run test suite (100% coverage)
+
+**Output:** Complete test suite with JIRA validation
+
+**When to use:** Need complete test coverage, JIRA-driven testing
+
+---
+
+## 📚 Writer Agent (v1.0)
+
+**File:** [`writer_agent.md`](writer_agent.md)
+
+**Purpose:** Auto-generate documentation
+
+**Generates:**
+- JSDoc (JavaScript/TypeScript)
+- docstrings (Python)
 - Javadoc (Java)
-- Google-style docstrings (Python)
-- JSDoc (TypeScript/JavaScript)
-- Architecture documentation
-- README files with quick start
+- README updates
+- Changelog entries
+- API documentation
 
-**When to use:**
-- Add documentation to code
-- Generate API docs
-- Write architecture documentation
-- Create README and quick start guides
-- Explain complex code with comments
-
-**Example:**
-```
-User: "Generate Javadoc for this Java service"
-
-Agent: Adds:
-- Javadoc with @param, @return, @throws
-- Usage examples
-- Related methods
-- Performance notes
-```
+**When to use:** Need documentation, README updates, API docs
 
 ---
 
-### 4️⃣ Integration Agent
+## ⚙️ Integration Agent (v1.0)
 
-**File:** `integration_agent.md`
+**File:** [`integration_agent.md`](integration_agent.md)
 
-**What it does:** Builds CI/CD pipelines, automates testing, deployments, and infrastructure
+**Purpose:** CI/CD pipelines and deployment automation
 
-**Supports:**
-- GitHub Actions
-- GitLab CI
-- Jenkins
-- CircleCI
-- Docker & Kubernetes
-- Terraform / CloudFormation
-- Monitoring & alerting
+**Generates:**
+- GitHub Actions workflows
+- Docker configuration
+- Infrastructure as Code (Terraform)
+- Monitoring & alerts
+- Cloud deployment configs
 
-**When to use:**
-- Set up CI/CD pipelines
-- Automate testing and deployments
-- Create Infrastructure as Code
-- Build monitoring and alerting
-- Orchestrate releases
+**Supports:** AWS, GCP, Azure, Kubernetes
 
-**Example:**
-```
-User: "Create a GitHub Actions workflow that runs tests and deploys"
-
-Agent: Generates:
-- Run tests on every PR
-- Build Docker image on main
-- Deploy to AWS ECS
-- Health checks and rollbacks
-```
+**When to use:** Need CI/CD setup, Docker, deployment automation
 
 ---
 
-### 5️⃣ Technical Documentation Agent
+## 🚀 Autonomous Dev Agent (v1.0)
 
-**File:** `technical_documentation_agent.md`
+**File:** [`autonomous/autonomous_dev_agent.md`](autonomous/autonomous_dev_agent.md)
 
-**What it does:** Generates comprehensive technical documentation by analyzing your project
+**Purpose:** Full-stack project orchestrator
 
-**Documentation includes:**
-- Code workflows and request/response cycles
-- Database schema and relationships
-- Middleware and integration documentation
-- Dependency analysis (from package.json, pom.xml, requirements.txt, etc.)
-- API endpoint reference
-- Deployment guides
-- Interactive HTML visualization
-- Markdown files for all aspects
+**Scope:** Complete system generation (DB + API + UI + tests)
 
-**When to use:**
-- Onboarding new team members
-- Documenting existing projects
-- Creating architecture diagrams
-- Before major refactors
-- Building knowledge base
-- Preparing for external audits
+**Process:** 14-step orchestration
+1. Parse requirement
+2. Create database schema
+3. Generate backend API
+4. Create frontend UI
+5. Write tests (100% coverage)
+6. Generate documentation
+7. Create GitHub PR
+8. Ready for production
 
-**Example:**
-```
-User: "Generate complete technical documentation for this project"
+**When to use:** Building complete systems, MVPs, starting new projects
 
-Agent: Creates:
-- Interactive HTML with architecture diagrams
-- 10 markdown files covering all aspects
-- Tech stack analysis
-- Code workflow diagrams
-- Database schema documentation
-- Middleware documentation
-- Deployment guide
-```
+[📖 Full Guide](../AUTONOMOUS_DEVELOPER_README.md)
 
 ---
 
-### 6️⃣ Autonomous Developer Agent
+## 📊 Technical Documentation Agent (v1.0)
 
-**Location:** `autonomous/autonomous_dev_agent.md`
+**File:** [`technical_documentation_agent.md`](technical_documentation_agent.md)
 
-**What it does:** Orchestrates **end-to-end code generation** from plain-text requirements
+**Purpose:** Auto-generate project documentation
 
-**5-phase pipeline:**
-1. Database schema + migrations
-2. Backend API (REST, GraphQL)
-3. Frontend UI (React components)
-4. Comprehensive tests (unit, integration, E2E)
-5. Deployment configuration
+**Generates:**
+- `architecture.md` — System design with Mermaid diagrams
+- `tech-stack.md` — Technology reference table
+- `context.json` — Machine-readable metadata
+- `design.html` — Interactive visualization
 
-**When to use:**
-- Building complete projects from requirements
-- Rapid prototyping
-- Full-stack development
-- Want everything at once (DB + backend + frontend + tests)
-
-**Example:**
-```
-User: "Generate a complete auth system"
-
-Agent: Creates:
-- PostgreSQL schema with migrations
-- FastAPI backend with JWT
-- React login/register UI
-- pytest + Jest tests (95% coverage)
-- GitHub PR with all code
-```
+**When to use:** Need architecture docs, project documentation, knowledge graphs
 
 ---
 
-## 🔗 Agents + Skills Architecture
+## 📋 Agent Decision Matrix
 
-### How It Works
-
-```
-User Request
-    ↓
-Agent (role-based workflow)
-    ↓
-Detect tech stack
-    ↓
-Load appropriate skill
-    ↓
-Load master instruction set
-    ↓
-Generate code/docs
-```
-
-### Skill Mapping
-
-| Tech Stack | Skill | Used By |
-|-----------|-------|---------|
-| **Java** | `java_advanced_skill.md` | implementation_agent |
-| **Python** | `python_advanced_skill.md` | implementation_agent |
-| **React/TypeScript** | `react_advanced_skill.md` | implementation_agent |
-| **SQL Server** | `mssql_advanced_skill.md` | implementation_agent |
-| **Code Review** | `code_health_skill.md` | code_review_agent |
-| **All Agents** | `master_instruction_set.md` | (universal) |
+| Need | Agent | Time |
+|------|-------|------|
+| Build a feature | Implementation | 5-10 min |
+| Review a PR | Code Review | 2-5 min |
+| Generate tests | Test Generator | 3-7 min |
+| Document code | Writer | 2-4 min |
+| Setup CI/CD | Integration | 10-15 min |
+| Full system | Autonomous Dev | 20-30 min |
+| Architecture docs | Tech Docs | 5-10 min |
 
 ---
 
-## 💡 Benefits of Simplified Architecture
+## 🔗 Links
 
-### Before (Old: Tech-Specific Agents)
-```
-Developer Agents:
-- java_advanced_agent.md (15 KB)
-- python_advanced_agent.md (14 KB)
-- react_advanced_agent.md (12 KB)
-- mssql_advanced_agent.md (19 KB)
-
-Problem: 90% duplicate code, maintenance nightmare
-```
-
-### After (New: Role-Based Agents)
-```
-Implementation Agent: (8 KB)
-- Gathers requirements
-- Detects tech stack
-- Full lifecycle: code + tests + docs
-- 1 agent, infinite tech stacks
-
-Result: DRY, complete delivery, maintainable
-```
+- **[Skills Directory](../skills/README.md)** — Reusable skill modules
+- **[Tools Documentation](../tools/README.md)** — Utility scripts
+- **[Master Rules](../instructions/master_instruction_set.md)** — Non-negotiable standards
+- **[Main README](../README.md)** — Project overview
+- **[Autonomous Dev Guide](../AUTONOMOUS_DEVELOPER_README.md)** — Full-stack generation
 
 ---
 
-## 🎓 How to Use
-
-### 1. Direct Invocation (Claude Code, Copilot)
-
-```bash
-# Implementation agent (any tech, complete feature)
-"Implement user registration with email validation"
-"Build a Spring Boot order API endpoint with tests"
-"Create a React dashboard with data fetching"
-
-# Code Review agent
-"Review this code for design issues"
-"Check this for performance problems"
-
-# Writer agent
-"Generate Javadoc for this service"
-"Write API documentation"
-
-# Integration agent
-"Create a GitHub Actions CI/CD pipeline"
-"Build a Docker + Kubernetes setup"
-
-# Autonomous agent
-"Generate a complete e-commerce system from requirements"
-```
-
-### 2. Chaining Workflows
-
-```
-Step 1: Use Implementation Agent
-→ "Implement user registration with email verification"
-→ Returns: Code + tests + docs + commit
-
-Step 2: Use Code Review Agent (if needed)
-→ "Review the generated code for quality"
-→ Returns: Issues and recommendations
-
-Step 3: Use Writer Agent (for additional docs)
-→ "Generate API documentation from comments"
-→ Returns: OpenAPI spec, Swagger UI
-
-Step 4: Use Integration Agent
-→ "Create a CI/CD pipeline for deployment"
-→ Returns: GitHub Actions workflow
-```
-
----
-
-## 🔄 Migration from Old Agents
-
-**Old way (tech-specific agents):**
-```
-"Use Jarvis to build a Java service"
-→ Loads java_advanced_agent.md (15 KB, duplicate code)
-→ Returns only code, no tests/docs
-```
-
-**New way (role-based with full lifecycle):**
-```
-"Implement user registration in Java"
-→ Implementation Agent (8 KB)
-→ Detects Java + Spring Boot
-→ Returns: Code + tests + docs + commit
-→ Includes context generation
-```
-
-Old agents are archived in `_deprecated/` for reference but not exported.
-
----
-
-## 📚 Related Documentation
-
-- **[../CLAUDE.md](../CLAUDE.md)** — Project overview
-- **[../skills/](../skills/)** — Tech-specific skills (Java, Python, React, etc.)
-- **[../instructions/](../instructions/)** — Universal rules all agents follow
-- **[../README.md](../README.md)** — Main project README
-
----
-
-## ⚡ Quick Reference
-
-| Agent | Purpose | Input | Output |
-|-------|---------|-------|--------|
-| **Implementation** | Build features end-to-end | "Implement X feature" | Code + tests + docs + context + commit |
-| **Code Review** | Inspect quality | "Review this code" | Issues + severity + fixes |
-| **Writer** | Document code | "Write docs for this" | Javadoc/docstrings/README/API specs |
-| **Technical Documentation** | Generate project docs | "Document this project" | HTML + Markdown docs + diagrams |
-| **Integration** | CI/CD & DevOps | "Create pipeline for X" | CI/CD workflow + IaC + monitoring |
-| **Autonomous** | Full projects | "Build Y from Z requirements" | Complete system (DB + backend + frontend + tests) |
-
----
-
-**Version:** 3.0 (Simplified Role-Based Architecture)  
-**Last Updated:** 2026-05-20
+**Last Updated:** May 25, 2026 | **Version:** 4.2.0
