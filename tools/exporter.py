@@ -251,6 +251,55 @@ class AgentFile(BaseFile):
         )
 
 
+@dataclass
+class HookFile(BaseFile):
+    """Parsed representation of a hook file (.sh or .py) from hooks/.
+
+    Attributes:
+        hook_type:    Type of hook (e.g. 'pre-commit', 'user-prompt-submit'). REQUIRED.
+        applies_to:   Platforms this hook applies to (defaults to ['claude']).
+        is_executable: True for .sh files, False for .py files.
+    """
+
+    hook_type: str
+    applies_to: list[str] = field(default_factory=lambda: ["claude"])
+    is_executable: bool = False
+
+    @classmethod
+    def from_path(cls, path: Path) -> "HookFile":
+        """Parses a hook file (.sh or .py) with YAML frontmatter.
+
+        Args:
+            path: Path to the hooks/*.sh or hooks/*.py file.
+
+        Returns:
+            A populated HookFile instance.
+
+        Raises:
+            ValueError: If hook_type is missing or file has no YAML frontmatter.
+        """
+        fm, body = cls._parse_frontmatter(path)
+
+        hook_type = cls._extract_scalar(fm, "hook_type")
+        if not hook_type:
+            raise ValueError(
+                f"'{path.name}' is missing required 'hook_type' in YAML frontmatter. "
+                f"Valid hook types: pre-commit, user-prompt-submit, etc."
+            )
+
+        return cls(
+            path=path,
+            name=cls._extract_scalar(fm, "name", default=path.stem),
+            version=cls._extract_scalar(fm, "version", default="1.0"),
+            description=cls._extract_scalar(fm, "description"),
+            hook_type=hook_type,
+            applies_to=cls._extract_list(fm, "applies_to") or ["claude"],
+            is_executable=(path.suffix == ".sh"),
+            content=body,
+            slug=path.stem,
+        )
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Export Result
 # ─────────────────────────────────────────────────────────────────────────────
