@@ -564,7 +564,7 @@ class CursorExporter(PlatformExporter):
         return self._repo_root / ".cursor" / "rules" / "agents"
 
     def hook_output_dir(self) -> Path:
-        return self._repo_root / ".cursor" / "hooks"
+        return self._repo_root / ".cursor" / "rules" / "hooks"
 
     def skill_filename(self, skill: SkillFile) -> str:
         return f"{skill.slug}.mdc"
@@ -616,7 +616,7 @@ class WindsurfExporter(PlatformExporter):
         return self._repo_root / ".windsurf" / "rules" / "agents"
 
     def hook_output_dir(self) -> Path:
-        return self._repo_root / ".windsurf" / "hooks"
+        return self._repo_root / ".windsurf" / "rules" / "hooks"
 
     def _header(self, name: str, source_path: str) -> str:
         return (

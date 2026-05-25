@@ -18,7 +18,18 @@ from pathlib import Path
 import os
 import stat
 
-from exporter import HookFile, ExportOrchestrator, ClaudeExporter, CopilotExporter
+from exporter import (
+    HookFile,
+    ExportOrchestrator,
+    ClaudeExporter,
+    CopilotExporter,
+    CursorExporter,
+    WindsurfExporter,
+    GeminiExporter,
+    ContinueExporter,
+    OpenAIExporter,
+    AiderExporter,
+)
 
 
 def test_hookfile_from_path_valid():
@@ -539,6 +550,150 @@ print("test")
         print("\n✓ TEST 8 PASSED")
 
 
+def test_claude_exporter_hook_output_dir():
+    """Test ClaudeExporter.hook_output_dir() returns ~/.claude/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 9: ClaudeExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = ClaudeExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / ".claude" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 9 PASSED")
+
+
+def test_copilot_exporter_hook_output_dir():
+    """Test CopilotExporter.hook_output_dir() returns .github/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 10: CopilotExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = CopilotExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / ".github" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 10 PASSED")
+
+
+def test_cursor_exporter_hook_output_dir():
+    """Test CursorExporter.hook_output_dir() returns .cursor/rules/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 11: CursorExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = CursorExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / ".cursor" / "rules" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 11 PASSED")
+
+
+def test_windsurf_exporter_hook_output_dir():
+    """Test WindsurfExporter.hook_output_dir() returns .windsurf/rules/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 12: WindsurfExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = WindsurfExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / ".windsurf" / "rules" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 12 PASSED")
+
+
+def test_gemini_exporter_hook_output_dir():
+    """Test GeminiExporter.hook_output_dir() returns .gemini/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 13: GeminiExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = GeminiExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / ".gemini" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 13 PASSED")
+
+
+def test_continue_exporter_hook_output_dir():
+    """Test ContinueExporter.hook_output_dir() returns .continue/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 14: ContinueExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = ContinueExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / ".continue" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 14 PASSED")
+
+
+def test_openai_exporter_hook_output_dir():
+    """Test OpenAIExporter.hook_output_dir() returns tools/output/openai/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 15: OpenAIExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = OpenAIExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / "tools" / "output" / "openai" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 15 PASSED")
+
+
+def test_aider_exporter_hook_output_dir():
+    """Test AiderExporter.hook_output_dir() returns .aider/hooks"""
+    print("\n" + "=" * 70)
+    print("TEST 16: AiderExporter.hook_output_dir()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        exporter = AiderExporter(repo_root)
+        hook_dir = exporter.hook_output_dir()
+
+        expected = repo_root / ".aider" / "hooks"
+        assert hook_dir == expected, f"Expected {expected}, got {hook_dir}"
+        print(f"✓ hook_output_dir: {hook_dir}")
+
+        print("\n✓ TEST 16 PASSED")
+
+
 if __name__ == "__main__":
     test_hookfile_from_path_valid()
     test_hookfile_missing_hook_type()
@@ -548,9 +703,17 @@ if __name__ == "__main__":
     test_discover_hooks_skip_invalid()
     test_export_hooks_filters_by_platform()
     test_export_hooks_makes_executable()
+    test_claude_exporter_hook_output_dir()
+    test_copilot_exporter_hook_output_dir()
+    test_cursor_exporter_hook_output_dir()
+    test_windsurf_exporter_hook_output_dir()
+    test_gemini_exporter_hook_output_dir()
+    test_continue_exporter_hook_output_dir()
+    test_openai_exporter_hook_output_dir()
+    test_aider_exporter_hook_output_dir()
 
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print("✓ All 8 tests PASSED")
+    print("✓ All 16 tests PASSED")
     print("=" * 70)
