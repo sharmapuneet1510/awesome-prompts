@@ -1,9 +1,11 @@
 #!/bin/bash
-# name: Code Format Checker
-# version: 1.0
-# description: Checks Python code formatting with black and isort
-# hook_type: pre-commit
-# applies_to: [claude, copilot, cursor, windsurf]
+---
+name: Code Format Checker
+version: 1.0
+description: Checks Python code formatting with black and isort
+hook_type: pre-commit
+applies_to: [claude, copilot, cursor, windsurf]
+---
 
 set -e
 

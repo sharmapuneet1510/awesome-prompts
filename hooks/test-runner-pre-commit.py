@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-# name: Test Runner Pre-Commit
-# version: 1.0
-# description: Runs test suite before allowing commits
-# hook_type: pre-commit
-# applies_to: [claude, copilot, cursor, windsurf, gemini, continue, openai]
+---
+name: Test Runner Pre-Commit
+version: 1.0
+description: Runs test suite before allowing commits
+hook_type: pre-commit
+applies_to: [claude, copilot, cursor, windsurf, gemini, continue, openai]
+---
 
 import subprocess
 import sys

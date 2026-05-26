@@ -267,6 +267,33 @@ class HookFile(BaseFile):
     applies_to: list[str] = field(default_factory=lambda: ["claude"])
     is_executable: bool = False
 
+    _HOOK_FRONTMATTER_RE: ClassVar[re.Pattern] = re.compile(
+        r"(?:^#!/[^\n]*\n)?---\s*\n(.*?)\n---\s*\n", re.DOTALL
+    )
+
+    @classmethod
+    def _parse_frontmatter(cls, path: Path) -> tuple[str, str]:
+        """Override to handle shebangs before YAML frontmatter in hook files.
+
+        Args:
+            path: Path to the .sh or .py hook file.
+
+        Returns:
+            Tuple of (frontmatter YAML text, body text).
+
+        Raises:
+            ValueError: If the file has no --- frontmatter block.
+        """
+        raw = path.read_text(encoding="utf-8-sig")
+        # Try to match with optional shebang at the start
+        match = cls._HOOK_FRONTMATTER_RE.search(raw)
+        if not match:
+            raise ValueError(
+                f"'{path.name}' is missing YAML frontmatter (--- ... ---). "
+                f"Hook files can have an optional shebang (#!) before the frontmatter."
+            )
+        return match.group(1), raw[match.end():].strip()
+
     @classmethod
     def from_path(cls, path: Path) -> "HookFile":
         """Parses a hook file (.sh or .py) with YAML frontmatter.
