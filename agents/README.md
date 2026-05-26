@@ -6,12 +6,13 @@
 | Agent | Purpose | Version | Status |
 |-------|---------|---------|--------|
 | [Implementation](implementation_agent.md) | Feature builder | v3.0 | ✅ Ready |
-| [Code Review](code_review_agent.md) | Requirement validation | v3.0 | ✅ NEW |
+| [Code Review](code_review_agent.md) | Requirement validation | v3.0 | ✅ Ready |
 | [Test Generator](test_case_generator_agent.md) | 100% coverage tests | v1.0 | ✅ Ready |
 | [Writer](writer_agent.md) | Auto-documentation | v1.0 | ✅ Ready |
 | [Integration](integration_agent.md) | CI/CD automation | v1.0 | ✅ Ready |
 | [Autonomous Dev](autonomous/autonomous_dev_agent.md) | Full-stack | v1.0 | ✅ Ready |
 | [Tech Docs](technical_documentation_agent.md) | Architecture docs | v1.0 | ✅ Ready |
+| [Architecture Refactorer](architecture_refactorer_agent.md) | Code restructuring | v1.0 | ✅ NEW |
 
 ---
 
@@ -61,7 +62,7 @@ Output (Production-Ready)
 
 ---
 
-## 🔍 Code Review Agent (v3.0) ⭐ NEW
+## 🔍 Code Review Agent (v3.0)
 
 **File:** [`code_review_agent.md`](code_review_agent.md)
 
@@ -73,13 +74,37 @@ Output (Production-Ready)
 | **Output** | Interactive HTML report + MR comment |
 | **Grade** | A-F with weighted scorecard |
 
-**New Features:**
+**Features:**
 - 🎯 Requirement validation (AC coverage %)
 - 📊 Weighted scorecard (Req 40% + Quality 30% + Testing 20% + Docs 10%)
 - 📈 Interactive HTML reports
 - 💬 MR comment summaries
 
 **When to use:** Reviewing PRs, validating requirements, rating code quality
+
+---
+
+## 🏗️ Architecture Refactorer Agent (v1.0) ⭐ NEW
+
+**File:** [`architecture_refactorer_agent.md`](architecture_refactorer_agent.md)
+
+| Aspect | Details |
+|--------|---------|
+| **Purpose** | Restructure messy production codebase |
+| **Input** | Existing code, architectural pain points |
+| **Analysis** | 8-phase (assessment → diagnosis → design → refactoring → migration) |
+| **Output** | Clean layered architecture + refactored code + migration guide |
+| **Key Pattern** | Domain-Driven Design (DDD) with clean architecture layers |
+
+**Features:**
+- 🔍 Architectural problem diagnosis (coupling, god modules, circular deps)
+- 🎯 Clean architecture design (presentation → application → domain ← infrastructure)
+- 📊 Phased refactoring roadmap (3-5 incremental, deployable phases)
+- 💻 Production code examples (before/after transformations)
+- 🛡️ Zero-downtime migration strategy (feature flags, rollback procedures)
+- ✅ 100% backward compatibility (no functionality changes)
+
+**When to use:** Untangling tight coupling, fixing god classes, improving testability, scaling blockers
 
 ---
 
@@ -190,6 +215,7 @@ Output (Production-Ready)
 | Setup CI/CD | Integration | 10-15 min |
 | Full system | Autonomous Dev | 20-30 min |
 | Architecture docs | Tech Docs | 5-10 min |
+| Refactor messy code | Architecture Refactorer | 30-120 min |
 
 ---
 
@@ -203,4 +229,4 @@ Output (Production-Ready)
 
 ---
 
-**Last Updated:** May 25, 2026 | **Version:** 4.2.0
+**Last Updated:** May 27, 2026 | **Version:** 4.3.0

@@ -31,7 +31,8 @@
       "Bash(cat)",
       "Bash(bash /tmp/verify_skill.sh)",
       "Bash(bash /tmp/verify_implementation.sh)",
-      "Bash(grep -E \"\\\\.py$\")"
+      "Bash(grep -E \"\\\\.py$\")",
+      "Bash(grep *)"
     ]
   }
 }
