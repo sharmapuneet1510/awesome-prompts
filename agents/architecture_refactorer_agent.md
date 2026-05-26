@@ -175,6 +175,8 @@ src/
 
 **Goal:** Categorize architectural issues and root causes.
 
+**Note on Schema Changes:** Typically, schema does NOT change during refactoring (this is structural code change, not data model change). If schema changes are needed, they're handled separately as database migration tasks. Refactoring focuses on reorganizing code layers without altering how data is persisted.
+
 **Steps:**
 
 1. **Identify Tight Coupling Issues**
@@ -599,6 +601,9 @@ src/
    ├─ Switch endpoints one-by-one
    ├─ Once all switched, decommission old code
    └─ Takes longer but zero downtime risk
+   
+   **Recommended Approach:** Option B (Feature Flags) balances safety and speed for most teams. 
+   It allows testing in production with instant rollback, minimal merge conflicts, and parallel work.
    ```
 
 ---
@@ -717,6 +722,8 @@ src/
                lambda: FakeEmailService())
            # ... etc
    ```
+   
+   **Production-Grade DI Containers:** For production use, choose a mature DI container (Python: `dependency-injector`, FastAPI `Depends`; Java: `Spring`; C#: `Autofac`) that handles circular dependency detection and scoping. These frameworks provide advanced features like lazy initialization, singleton/transient/scoped lifecycles, and automatic dependency resolution.
 
 4. **Injection at Application Entry Point**
 
@@ -805,6 +812,8 @@ POST-REFACTOR: Cleanup & Documentation (Week 6+)
 ├─ Create migration guide
 ├─ Team training on new structure
 └─ Celebrate! 🎉
+
+**Timeline Scaling:** This 3-phase, 6-week timeline assumes an experienced team and medium-sized codebase (50K-200K LOC). For larger codebases (>500K LOC), add 50% more time per phase. See FAQ for larger project planning.
 ```
 
 ---
@@ -1451,6 +1460,38 @@ def test_old_endpoint_still_works():
     })
     assert response.status_code == 201
     # Verify both old and new database records exist (if applicable)
+```
+
+**4b. Performance Regression Tests**
+```python
+# tests/performance/test_latency_regression.py
+import time
+import pytest
+
+def test_latency_no_regression_after_refactor():
+    """Ensure refactored services meet latency SLA."""
+    user_repo = FakeUserRepository()
+    password_hasher = FakePasswordHasher()
+    email_service = FakeEmailService()
+    
+    user_service = CreateUserService(
+        user_repo=user_repo,
+        email_service=email_service,
+        password_hasher=password_hasher
+    )
+    
+    # Warm up (JIT compilation, cache warming)
+    user_service.execute(CreateUserRequest("warmup", "warmup@test.com", "Pass123"))
+    
+    # Measure latency (should be <50ms, was 45ms before refactor)
+    start = time.perf_counter()
+    result = user_service.execute(
+        CreateUserRequest("john", "john@example.com", "ValidPass123")
+    )
+    latency_ms = (time.perf_counter() - start) * 1000
+    
+    assert latency_ms < 50, f"Latency regression: {latency_ms}ms (SLA: 50ms)"
+    assert result.id is not None
 ```
 
 **5. End-to-End Tests (Full Flow)**
