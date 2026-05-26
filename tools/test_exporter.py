@@ -13,6 +13,7 @@ Tests:
 8. test_export_hooks_makes_executable() — .sh files get executable bit (0o755)
 """
 
+import json
 import tempfile
 from pathlib import Path
 import os
@@ -1017,6 +1018,215 @@ echo "Hook 2"
         print("\n✓ TEST 20 PASSED")
 
 
+def test_export_hooks_end_to_end():
+    """Test complete hook export workflow: discover → validate → export → verify."""
+    print("\n" + "=" * 70)
+    print("TEST 21: test_export_hooks_end_to_end()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # 1. Create hooks/ directory with sample hook
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        hook_path = hooks_dir / "test_hook.sh"
+        hook_path.write_text(
+            """---
+name: Test Hook
+version: 1.0
+description: Test hook for end-to-end validation
+hook_type: pre-commit
+applies_to:
+  - claude
+  - copilot
+---
+
+#!/bin/bash
+exit 0
+""",
+            encoding="utf-8",
+        )
+
+        # 2. Discover hooks using ExportOrchestrator
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+        assert len(hooks) == 1, f"Expected 1 hook, got {len(hooks)}"
+        print(f"✓ Step 1 (Discover): Found {len(hooks)} hook(s)")
+
+        # Validate hook properties
+        hook = hooks[0]
+        assert hook.name == "Test Hook", f"Expected name 'Test Hook', got '{hook.name}'"
+        assert hook.hook_type == "pre-commit", f"Expected hook_type 'pre-commit', got '{hook.hook_type}'"
+        assert "claude" in hook.applies_to, "Hook should apply to claude"
+        assert "copilot" in hook.applies_to, "Hook should apply to copilot"
+        print(f"✓ Step 2 (Validate): Hook is valid (name={hook.name}, type={hook.hook_type})")
+
+        # 3. Export to claude platform
+        claude_exporter = ClaudeExporter(repo_root)
+        result = claude_exporter.export([], [], hooks, dry_run=False)
+
+        # 4. Verify hook was exported
+        assert len(result.hook_files) == 1, f"Expected 1 hook file in result, got {len(result.hook_files)}"
+        hook_file = result.hook_files[0]
+        assert hook_file.exists(), f"Hook file not written to {hook_file}"
+        print(f"✓ Step 3 (Export): Hook exported to {hook_file.parent.name}/")
+
+        # Verify correct location (should be in .claude/hooks/)
+        assert hook_file.parent == repo_root / ".claude" / "hooks", \
+            f"Hook should be in .claude/hooks/, got {hook_file.parent}"
+        print(f"✓ Step 4 (Verify location): Hook in correct directory (.claude/hooks/)")
+
+        # Verify executable bit (for .sh files)
+        assert os.access(hook_file, os.X_OK), f"Hook {hook_file} should be executable"
+        file_mode = os.stat(hook_file).st_mode
+        is_executable = bool(file_mode & stat.S_IXUSR)
+        assert is_executable, f"Hook not executable. Mode: {oct(stat.S_IMODE(file_mode))}"
+        print(f"✓ Step 5 (Verify executable): Hook is executable (mode: {oct(stat.S_IMODE(file_mode))})")
+
+        # Verify content is preserved
+        exported_content = hook_file.read_text(encoding="utf-8")
+        assert "#!/bin/bash" in exported_content, "Bash shebang should be preserved"
+        assert "exit 0" in exported_content, "Hook body should be preserved"
+        print(f"✓ Step 6 (Verify content): Hook content preserved")
+
+        # 5. Test export to copilot (different platform)
+        copilot_exporter = CopilotExporter(repo_root)
+        result_copilot = copilot_exporter.export([], [], hooks, dry_run=False)
+
+        assert len(result_copilot.hook_files) == 1, f"Expected 1 hook for copilot, got {len(result_copilot.hook_files)}"
+        copilot_hook_file = result_copilot.hook_files[0]
+        assert copilot_hook_file.exists(), f"Copilot hook not written to {copilot_hook_file}"
+        assert copilot_hook_file.parent == repo_root / ".github" / "hooks", \
+            f"Copilot hook should be in .github/hooks/, got {copilot_hook_file.parent}"
+        print(f"✓ Step 7 (Multi-platform): Hook also exported to copilot (.github/hooks/)")
+
+        print("\n✓ TEST 21 PASSED")
+
+
+def test_export_all_platforms_with_hooks():
+    """Test hook export to all 8 platforms simultaneously."""
+    print("\n" + "=" * 70)
+    print("TEST 22: test_export_all_platforms_with_hooks()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create hooks/ directory
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create a multi-platform hook
+        multi_hook_path = hooks_dir / "multi.sh"
+        multi_hook_path.write_text(
+            """---
+name: Multi Platform Hook
+version: 1.0
+description: Hook for all platforms
+hook_type: pre-commit
+applies_to:
+  - claude
+  - copilot
+  - cursor
+  - windsurf
+  - gemini
+  - continue
+  - openai
+  - aider
+---
+
+#!/bin/bash
+echo "Running on all platforms"
+exit 0
+""",
+            encoding="utf-8",
+        )
+
+        # Discover hooks
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+        assert len(hooks) == 1, f"Expected 1 hook, got {len(hooks)}"
+        hook = hooks[0]
+        print(f"✓ Step 1 (Discover): Found hook '{hook.name}' with {len(hook.applies_to)} platforms")
+
+        # Verify applies_to includes all platforms
+        expected_platforms = {"claude", "copilot", "cursor", "windsurf", "gemini", "continue", "openai", "aider"}
+        actual_platforms = set(hook.applies_to)
+        assert actual_platforms == expected_platforms, \
+            f"Expected all platforms, got {actual_platforms}"
+        print(f"✓ Step 2 (Validate): Hook applies to all 8 platforms")
+
+        # Export to all platforms
+        platforms_and_exporters = [
+            ("claude", ClaudeExporter),
+            ("copilot", CopilotExporter),
+            ("cursor", CursorExporter),
+            ("windsurf", WindsurfExporter),
+            ("gemini", GeminiExporter),
+            ("continue", ContinueExporter),
+            ("openai", OpenAIExporter),
+            ("aider", AiderExporter),
+        ]
+
+        results = {}
+        for platform_name, exporter_cls in platforms_and_exporters:
+            exporter = exporter_cls(repo_root)
+            result = exporter.export([], [], hooks, dry_run=False)
+            results[platform_name] = result
+
+            # Each platform should have exactly 1 hook
+            assert len(result.hook_files) == 1, \
+                f"{platform_name}: Expected 1 hook, got {len(result.hook_files)}"
+            hook_file = result.hook_files[0]
+
+            # Verify file exists
+            assert hook_file.exists(), \
+                f"{platform_name}: Hook file not written to {hook_file}"
+
+            # Verify it's a file (not directory)
+            assert hook_file.is_file(), \
+                f"{platform_name}: Hook path should be a file, got {hook_file}"
+
+            print(f"✓ Step 3.{platform_name}: Exported to {hook_file.parent.relative_to(repo_root)}")
+
+        # Additional verifications for each platform's specific directory
+        assert (repo_root / ".claude" / "hooks" / "multi.sh").exists(), "Claude hook missing"
+        assert (repo_root / ".github" / "hooks" / "multi.sh").exists(), "Copilot hook missing"
+        assert (repo_root / ".cursor" / "rules" / "hooks" / "multi.sh").exists(), "Cursor hook missing"
+        assert (repo_root / ".windsurf" / "rules" / "hooks" / "multi.sh").exists(), "Windsurf hook missing"
+        assert (repo_root / ".gemini" / "hooks" / "multi.sh").exists(), "Gemini hook missing"
+        assert (repo_root / ".continue" / "hooks" / "multi.sh").exists(), "Continue hook missing"
+        assert (repo_root / "tools" / "output" / "openai" / "hooks" / "multi.sh").exists(), "OpenAI hook missing"
+        assert (repo_root / ".aider" / "hooks" / "multi.sh").exists(), "Aider hook missing"
+
+        print(f"✓ Step 4 (Verify all platforms): All 8 hooks written to correct directories")
+
+        # Verify all hooks are executable
+        for platform_name, result in results.items():
+            hook_file = result.hook_files[0]
+            is_executable = os.access(hook_file, os.X_OK)
+            assert is_executable, f"{platform_name}: Hook not executable at {hook_file}"
+            print(f"✓ Step 5.{platform_name}: Hook executable")
+
+        # Verify content is identical across all platforms
+        content_set = set()
+        for platform_name, result in results.items():
+            hook_file = result.hook_files[0]
+            content = hook_file.read_text(encoding="utf-8")
+            content_set.add(content)
+
+        assert len(content_set) == 1, \
+            f"Hook content should be identical across platforms, got {len(content_set)} variations"
+        print(f"✓ Step 6 (Verify consistency): Hook content identical across all platforms")
+
+        # Summary
+        print(f"\n✓ TEST 22 PASSED")
+        print(f"   Total hooks exported: {len(results)}")
+        print(f"   Platforms covered: {', '.join([p for p, _ in platforms_and_exporters])}")
+
+
 if __name__ == "__main__":
     test_hookfile_from_path_valid()
     test_hookfile_missing_hook_type()
@@ -1038,9 +1248,11 @@ if __name__ == "__main__":
     test_generate_copilot_config()
     test_filter_hooks_by_name()
     test_filter_hooks_none_returns_all()
+    test_export_hooks_end_to_end()
+    test_export_all_platforms_with_hooks()
 
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print("✓ All 20 tests PASSED")
+    print("✓ All 22 tests PASSED")
     print("=" * 70)
