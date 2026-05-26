@@ -10,6 +10,7 @@ Usage:
     python tools/exporter.py --target copilot claude  # specific platforms
     python tools/exporter.py --skills java,spring     # filter skills
     python tools/exporter.py --agents developer       # filter agents by role
+    python tools/exporter.py --hooks promptshield     # filter hooks
     python tools/exporter.py --list                   # list all items
     python tools/exporter.py --dry-run                # preview without writing
     python tools/exporter.py --clean                  # remove all exported files
@@ -933,6 +934,30 @@ class ExportOrchestrator:
             print(f"  No agents matched: {requested}. Available: {[a.slug for a in agents]}")
         return result
 
+    def filter_hooks(self, hooks: list[HookFile], requested: list[str]) -> list[HookFile]:
+        """Filter hooks by name if specified.
+
+        Args:
+            hooks: All discovered hooks
+            requested: Comma-separated hook names (slugs to filter by)
+
+        Returns:
+            Filtered list of hooks
+        """
+        if not requested:
+            return hooks
+        req_lower = [r.lower() for r in requested]
+        result = [
+            h for h in hooks
+            if any(
+                req in h.slug.lower()
+                for req in req_lower
+            )
+        ]
+        if not result:
+            print(f"  No hooks matched: {requested}. Available: {[h.slug for h in hooks]}")
+        return result
+
     def clean(self) -> None:
         for rel in self._CLEAN_DIRS:
             target = self._repo_root / rel
@@ -945,6 +970,7 @@ class ExportOrchestrator:
         targets: list[str],
         skill_filter: list[str],
         agent_filter: list[str],
+        hook_filter: list[str] = [],
         dry_run: bool = False,
     ) -> list[ExportResult]:
         all_skills = self.discover_skills()
@@ -952,8 +978,9 @@ class ExportOrchestrator:
         all_hooks = self.discover_hooks()
         skills = self.filter_skills(all_skills, skill_filter)
         agents = self.filter_agents(all_agents, agent_filter)
+        hooks = self.filter_hooks(all_hooks, hook_filter)
 
-        print(f"\n{'DRY RUN — ' if dry_run else ''}Exporting {len(skills)} skill(s), {len(agents)} agent(s), {len(all_hooks)} hook(s)")
+        print(f"\n{'DRY RUN — ' if dry_run else ''}Exporting {len(skills)} skill(s), {len(agents)} agent(s), {len(hooks)} hook(s)")
 
         if "all" in targets or not targets:
             exporter_classes = list(self.EXPORTERS.values())
@@ -971,7 +998,7 @@ class ExportOrchestrator:
         for cls in exporter_classes:
             exporter = cls(self._repo_root)
             try:
-                result = exporter.export(skills, agents, all_hooks, dry_run=dry_run)
+                result = exporter.export(skills, agents, hooks, dry_run=dry_run)
                 results.append(result)
                 action = "Would write" if dry_run else "Wrote"
                 print(
@@ -1030,6 +1057,13 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="AGENT[,AGENT...]",
         help="Comma-separated agent slugs/roles to include (default: all).",
+    )
+    parser.add_argument(
+        "--hooks", "-k",
+        type=lambda v: [x.strip() for x in v.split(",") if x.strip()],
+        default=[],
+        metavar="HOOK[,HOOK...]",
+        help="Comma-separated hook slugs to include (default: all).",
     )
     parser.add_argument("--list", "-l", action="store_true",
                         help="List all discovered skills and agents, then exit.")
@@ -1193,6 +1227,7 @@ def main() -> None:
             targets      = args.target,
             skill_filter = args.skills,
             agent_filter = args.agents,
+            hook_filter  = args.hooks,
             dry_run      = args.dry_run,
         )
 

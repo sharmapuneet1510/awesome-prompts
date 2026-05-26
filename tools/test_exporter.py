@@ -694,6 +694,329 @@ def test_aider_exporter_hook_output_dir():
         print("\n✓ TEST 16 PASSED")
 
 
+def test_generate_claude_settings():
+    """Test ConfigGenerator.generate_claude_settings() creates valid settings.json."""
+    print("\n" + "=" * 70)
+    print("TEST 17: ConfigGenerator.generate_claude_settings()")
+    print("=" * 70)
+
+    from config_generator import ConfigGenerator
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create hooks directory with sample hooks
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create a pre-commit hook
+        pre_commit_hook = hooks_dir / "pre_commit.sh"
+        pre_commit_hook.write_text(
+            """---
+name: Pre-Commit Hook
+version: 1.0
+description: Validates code before commit
+hook_type: pre-commit
+applies_to:
+  - claude
+---
+
+#!/bin/bash
+echo "Running pre-commit checks..."
+""",
+            encoding="utf-8",
+        )
+
+        # Create a user-prompt-submit hook
+        prompt_hook = hooks_dir / "prompt_submit.py"
+        prompt_hook.write_text(
+            """---
+name: Prompt Submit Hook
+version: 1.0
+description: Validates prompt before submission
+hook_type: user-prompt-submit
+applies_to:
+  - claude
+---
+
+#!/usr/bin/env python3
+print("Validating prompt...")
+""",
+            encoding="utf-8",
+        )
+
+        # Parse hooks
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+        assert len(hooks) == 2, f"Expected 2 hooks, got {len(hooks)}"
+        print(f"✓ Parsed {len(hooks)} hooks")
+
+        # Generate settings
+        config_gen = ConfigGenerator(repo_root)
+        settings = config_gen.generate_claude_settings(hooks)
+
+        # Verify settings structure
+        assert "model" in settings, "settings should have 'model' key"
+        assert settings["model"] == "haiku", f"Expected model='haiku', got '{settings['model']}'"
+        print(f"✓ model: {settings['model']}")
+
+        assert "hooks" in settings, "settings should have 'hooks' key"
+        print(f"✓ hooks dict created")
+
+        assert "enabledPlugins" in settings, "settings should have 'enabledPlugins' key"
+        print(f"✓ enabledPlugins dict created")
+
+        # Verify hooks are organized by type
+        assert "PreCommit" in settings["hooks"], "PreCommit hooks should be present"
+        assert "UserPromptSubmit" in settings["hooks"], "UserPromptSubmit hooks should be present"
+        print(f"✓ Hooks organized by type: {list(settings['hooks'].keys())}")
+
+        # Verify hook entries
+        pre_commit_list = settings["hooks"]["PreCommit"]
+        assert len(pre_commit_list) > 0, "PreCommit hooks list should not be empty"
+        assert pre_commit_list[0]["type"] == "command", "Hook should have type='command'"
+        print(f"✓ PreCommit hooks: {len(pre_commit_list)} entry/entries")
+
+        prompt_list = settings["hooks"]["UserPromptSubmit"]
+        assert len(prompt_list) > 0, "UserPromptSubmit hooks list should not be empty"
+        print(f"✓ UserPromptSubmit hooks: {len(prompt_list)} entry/entries")
+
+        print("\n✓ TEST 17 PASSED")
+
+
+def test_generate_copilot_config():
+    """Test ConfigGenerator.generate_copilot_config() creates valid GitHub Copilot config."""
+    print("\n" + "=" * 70)
+    print("TEST 18: ConfigGenerator.generate_copilot_config()")
+    print("=" * 70)
+
+    from config_generator import ConfigGenerator
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+
+        # Create hooks directory
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create a pre-commit hook
+        hook1 = hooks_dir / "pre_commit.sh"
+        hook1.write_text(
+            """---
+name: Pre-Commit Hook
+version: 1.0.0
+description: Runs tests before commit
+hook_type: pre-commit
+applies_to:
+  - copilot
+---
+
+#!/bin/bash
+echo "Running pre-commit checks..."
+""",
+            encoding="utf-8",
+        )
+
+        # Create another hook
+        hook2 = hooks_dir / "format_check.py"
+        hook2.write_text(
+            """---
+name: Format Check Hook
+version: 1.0.0
+description: Checks code formatting
+hook_type: user-prompt-submit
+applies_to:
+  - copilot
+---
+
+#!/usr/bin/env python3
+print("Checking format...")
+""",
+            encoding="utf-8",
+        )
+
+        # Parse hooks
+        orchestrator = ExportOrchestrator(repo_root)
+        hooks = orchestrator.discover_hooks()
+        assert len(hooks) == 2, f"Expected 2 hooks, got {len(hooks)}"
+        print(f"✓ Parsed {len(hooks)} hooks")
+
+        # Generate Copilot config
+        config_gen = ConfigGenerator(repo_root)
+        config_yaml = config_gen.generate_copilot_config(hooks)
+
+        # Verify YAML structure
+        assert "version: 1" in config_yaml, "Config should have version: 1"
+        print(f"✓ YAML version: 1")
+
+        assert "hooks:" in config_yaml, "Config should have hooks section"
+        print(f"✓ hooks section present")
+
+        # Verify hook entries in YAML
+        assert "- name: " in config_yaml, "Config should have hook names"
+        assert "type: " in config_yaml, "Config should have hook types"
+        assert "path: " in config_yaml, "Config should have hook paths"
+        print(f"✓ YAML contains hook entries (name, type, path)")
+
+        # Verify specific hooks are mentioned
+        assert "pre_commit" in config_yaml, "Config should mention pre_commit hook"
+        assert "format_check" in config_yaml, "Config should mention format_check hook"
+        print(f"✓ Both hooks mentioned in config")
+
+        # Verify it's valid YAML by checking structure
+        lines = config_yaml.strip().split("\n")
+        assert lines[0].startswith("# Generated"), "First line should be comment"
+        print(f"✓ YAML properly formatted with comments")
+
+        print("\n✓ TEST 18 PASSED")
+
+
+def test_filter_hooks_by_name():
+    """Test filter_hooks() filters hooks by comma-separated names."""
+    print("\n" + "=" * 70)
+    print("TEST 19: filter_hooks_by_name()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        (repo_root / "skills").mkdir()
+        (repo_root / "agents").mkdir()
+
+        # Create hooks directory and hook files
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create first hook
+        hook1 = hooks_dir / "promptshield.sh"
+        hook1.write_text(
+            """---
+name: PromptShield
+version: 1.0
+hook_type: pre-commit
+---
+
+#!/bin/bash
+echo "PromptShield check"
+""",
+            encoding="utf-8",
+        )
+
+        # Create second hook
+        hook2 = hooks_dir / "test_runner.py"
+        hook2.write_text(
+            """---
+name: Test Runner
+version: 1.0
+hook_type: post-commit
+---
+
+print("Test runner")
+""",
+            encoding="utf-8",
+        )
+
+        # Create third hook
+        hook3 = hooks_dir / "code_formatter.sh"
+        hook3.write_text(
+            """---
+name: Code Formatter
+version: 1.0
+hook_type: pre-commit
+---
+
+#!/bin/bash
+echo "Formatting"
+""",
+            encoding="utf-8",
+        )
+
+        orchestrator = ExportOrchestrator(repo_root)
+        all_hooks = orchestrator.discover_hooks()
+        assert len(all_hooks) == 3, f"Expected 3 hooks, got {len(all_hooks)}"
+        print(f"✓ Discovered {len(all_hooks)} hooks")
+
+        # Filter by single hook name
+        filtered = orchestrator.filter_hooks(all_hooks, ["promptshield"])
+        assert len(filtered) == 1, f"Expected 1 hook, got {len(filtered)}"
+        assert filtered[0].slug == "promptshield", f"Expected slug 'promptshield', got {filtered[0].slug}"
+        print(f"✓ Filter by 'promptshield': {[h.slug for h in filtered]}")
+
+        # Filter by multiple hook names
+        filtered = orchestrator.filter_hooks(all_hooks, ["promptshield", "test_runner"])
+        assert len(filtered) == 2, f"Expected 2 hooks, got {len(filtered)}"
+        slugs = sorted([h.slug for h in filtered])
+        assert slugs == ["promptshield", "test_runner"], f"Expected ['promptshield', 'test_runner'], got {slugs}"
+        print(f"✓ Filter by 'promptshield,test_runner': {slugs}")
+
+        # Filter by partial match
+        filtered = orchestrator.filter_hooks(all_hooks, ["code"])
+        assert len(filtered) == 1, f"Expected 1 hook with 'code', got {len(filtered)}"
+        assert filtered[0].slug == "code_formatter", f"Expected slug 'code_formatter', got {filtered[0].slug}"
+        print(f"✓ Filter by 'code' (partial match): {[h.slug for h in filtered]}")
+
+        print("\n✓ TEST 19 PASSED")
+
+
+def test_filter_hooks_none_returns_all():
+    """Test filter_hooks() returns all hooks if no filter specified."""
+    print("\n" + "=" * 70)
+    print("TEST 20: filter_hooks_none_returns_all()")
+    print("=" * 70)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        (repo_root / "skills").mkdir()
+        (repo_root / "agents").mkdir()
+
+        # Create hooks directory and hook files
+        hooks_dir = repo_root / "hooks"
+        hooks_dir.mkdir()
+
+        # Create two hooks
+        hook1 = hooks_dir / "hook1.sh"
+        hook1.write_text(
+            """---
+name: Hook 1
+version: 1.0
+hook_type: pre-commit
+---
+
+echo "Hook 1"
+""",
+            encoding="utf-8",
+        )
+
+        hook2 = hooks_dir / "hook2.sh"
+        hook2.write_text(
+            """---
+name: Hook 2
+version: 1.0
+hook_type: pre-commit
+---
+
+echo "Hook 2"
+""",
+            encoding="utf-8",
+        )
+
+        orchestrator = ExportOrchestrator(repo_root)
+        all_hooks = orchestrator.discover_hooks()
+        assert len(all_hooks) == 2, f"Expected 2 hooks, got {len(all_hooks)}"
+        print(f"✓ Discovered {len(all_hooks)} hooks")
+
+        # Filter with empty list should return all
+        filtered = orchestrator.filter_hooks(all_hooks, [])
+        assert len(filtered) == 2, f"Expected 2 hooks with empty filter, got {len(filtered)}"
+        print(f"✓ Filter with empty list returns all hooks: {[h.slug for h in filtered]}")
+
+        # Filter with None should return all
+        filtered = orchestrator.filter_hooks(all_hooks, [])
+        assert len(filtered) == 2, f"Expected 2 hooks with None filter, got {len(filtered)}"
+        print(f"✓ Filter with None returns all hooks: {[h.slug for h in filtered]}")
+
+        print("\n✓ TEST 20 PASSED")
+
+
 if __name__ == "__main__":
     test_hookfile_from_path_valid()
     test_hookfile_missing_hook_type()
@@ -711,9 +1034,13 @@ if __name__ == "__main__":
     test_continue_exporter_hook_output_dir()
     test_openai_exporter_hook_output_dir()
     test_aider_exporter_hook_output_dir()
+    test_generate_claude_settings()
+    test_generate_copilot_config()
+    test_filter_hooks_by_name()
+    test_filter_hooks_none_returns_all()
 
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print("✓ All 16 tests PASSED")
+    print("✓ All 20 tests PASSED")
     print("=" * 70)
