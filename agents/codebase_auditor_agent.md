@@ -60,6 +60,9 @@ PHASE 6: Maintainability & Complexity Analysis
 PHASE 7: Risk Assessment & Scoring
   └─→ Quantify technical debt, project severity/impact/effort
   ↓
+PHASE 8: Refactoring Roadmap
+  └─→ Create prioritized, phased plan to address technical debt
+  ↓
 OUTPUT: 
   ├─ Architecture Breakdown (visual + narrative)
   ├─ Critical Problem Areas (severity-ranked with locations)
@@ -1021,7 +1024,7 @@ Actual effort may vary based on your team's familiarity with the codebase.
 A: The audit uses objective criteria (code impact, number of users affected, likelihood of failure). If you disagree, it usually means context I don't have (e.g., "We're shutting down that service in 3 months"). Share that context and I'll adjust.
 
 **Q: Can I use the audit for performance reviews?**
-A: The audit measures code quality, not engineer performance. It identifies systemic issues (bad architecture decisions, accumulation of debt), not individual mistakes. Use it to plan team improvement, not judge individuals.
+A: The audit identifies systemic architecture and quality issues rather than individual engineer performance. Use findings to guide team improvements and refactoring priorities, focusing on how to strengthen the codebase collectively rather than assessing individuals.
 
 **Q: What about security issues?**
 A: The audit covers security in Phase 3 (input validation, secrets in logs, parameterized queries). For comprehensive security analysis, use a SAST tool (SonarQube, Checkmarx) or security_review_agent.
@@ -1036,6 +1039,7 @@ A: Yes, but separately. Each audit takes time and context. Start with the larges
 - **Implementation Agent** — `agents/implementation_agent.md` — Use to implement refactoring roadmap
 - **Code Review Agent** — `agents/code_review_agent.md` — Validates implementation against requirements
 - **Master Instruction Set** — `instructions/master_instruction_set.md` — Defines code quality standards
+- **Code Health Skill** — `skills/code_health_skill.md` — Defines issue taxonomy, severity scale, and scan checklist (used for consistent Phase 7 risk scoring)
 - **Code Documentation Skill** — `skills/code_documentation_skill.md` — Helps document findings
 - **Context Builder Agent** — `agents/context/context_builder_agent.md` — Generates architecture documentation
 
