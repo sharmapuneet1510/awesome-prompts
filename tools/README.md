@@ -54,6 +54,23 @@ python tools/exporter.py --dry-run
 python tools/exporter.py --clean
 ```
 
+### Exporting Hooks
+
+Hooks are automatically discovered from the `hooks/` directory and exported to all platforms:
+
+```bash
+# Export hooks with skills and agents
+python3 tools/exporter.py
+
+# Export only specific hooks
+python3 tools/exporter.py --hooks promptshield,test-runner
+
+# Export hooks to specific platforms
+python3 tools/exporter.py --target claude copilot --hooks promptshield
+```
+
+See `hooks/README.md` for hook format and examples.
+
 **Output:**
 ```
 output/

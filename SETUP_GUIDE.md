@@ -99,7 +99,23 @@ cat task-completion.json | jq '.summary'
 # }
 ```
 
-### 5️⃣ Review Generated Code
+### 5️⃣ (Optional) Configure Hooks
+
+Hooks are security and development automation scripts that run at key moments.
+
+```bash
+# Export hooks to your Claude environment
+python3 tools/exporter.py --target claude --hooks promptshield,test-runner
+```
+
+After export, hooks will automatically run:
+- **Before you send messages** — security validation
+- **Before git commits** — test and format checking
+- **After commits** — cleanup and notifications
+
+See `hooks/README.md` for available hooks and how to create custom ones.
+
+### 6️⃣ Review Generated Code
 
 ```bash
 # View all generated files
