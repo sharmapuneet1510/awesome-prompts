@@ -1149,6 +1149,16 @@ FIX-1: Repository Throws Exception Instead of Returning Null
 ├─ Risk: MEDIUM (changes error handling contract, callers may need updates)
 └─ Testing: All calls to this method must handle DatabaseException
 
+Alternative using Optional (Java 8+):
+│ public Optional<List<Item>> findItemsByOrderId(Long orderId) {
+│     try {
+│         List<Item> items = entityManager.createQuery(...)...getResultList();
+│         return Optional.of(items.isEmpty() ? null : items);
+│     } catch (PersistenceException e) {
+│         return Optional.empty();
+│     }
+│ }
+
 FIX-2: Add Null-Check in validateItems()
 ├─ Current Code:
 │  public void validateItems(List<Item> items) {
@@ -1881,7 +1891,9 @@ Expected Test Results:
    ├─ Deploy fix to staging environment
    ├─ Run regression test suite (Phase 7 tests)
    ├─ Manual testing: Place orders, verify processing
-   └─ Load testing: Verify performance under load
+   ├─ Load testing: Verify performance under load
+   └─ Database: Run EXPLAIN PLAN comparison (before/after index)
+      └─ Verify query plan changed from full scan to index seek
    
    STEP 4: Monitor Production After Deploy
    ├─ Watch error rates (should drop to ~0)
@@ -2025,7 +2037,7 @@ The debug investigation is considered successful when:
 - ✅ Implementation plan is phased and risk-assessed
 - ✅ Root cause is definitively addressed (not just symptom)
 - ✅ Resilience improvements prevent similar failures
-- ✅ Monitoring/alerting plan enables early detection
+- ✅ Monitoring/alerting plan ensures early detection of similar issues
 
 ---
 
@@ -2043,7 +2055,7 @@ Use the **Production Debugger Agent** when:
 - Must trace complex multi-component failures
 
 **Don't use when:**
-- You need quick band-aid fix (use hotfix process instead, then debug later)
+- You need quick band-aid fix (apply quick band-aid fix immediately while investigating deeper causes)
 - Issue is simple (e.g., typo, off-by-one error)
 - You just need code style review (use code_review_agent)
 - You need refactoring suggestions (use codebase_auditor_agent)
