@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "hooks": {
+    "pre-commit": [
+      {
+        "name": "code-format-check",
+        "path": "hooks/code-format-check.sh",
+        "description": "Checks Python code formatting with black and isort"
+      },
+      {
+        "name": "test-hook",
+        "path": "hooks/test-hook.sh",
+        "description": "A test hook for validation"
+      },
+      {
+        "name": "test-runner-pre-commit",
+        "path": "hooks/test-runner-pre-commit.py",
+        "description": "Runs test suite before allowing commits"
+      }
+    ],
+    "user-prompt-submit": [
+      {
+        "name": "promptshield-check",
+        "path": "hooks/promptshield-check.sh",
+        "description": "Validates user prompts for security patterns and injection attempts"
+      }
+    ]
+  }
+}
