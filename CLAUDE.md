@@ -61,22 +61,21 @@ awesome-prompts/
 
 Agents are organized by responsibility using a role-based generic architecture. See `agents/README.md` for detailed descriptions.
 
-### Core Agents (v4.1.0)
+### All Agents (v5.0.0)
 
-| Role | Agent | File | Purpose | Tech-Agnostic |
-|------|-------|------|---------|---------------|
-| **Implementation** | Implementation Agent | `agents/implementation_agent.md` | Full-lifecycle feature builder (code + tests + docs) | ✅ Yes (delegates to skills) |
-| **Code Review** | Code Review Agent | `agents/code_review_agent.md` | Design patterns, SOLID principles, performance, security | ✅ Yes |
-| **Documentation** | Writer Agent | `agents/writer_agent.md` | Auto-generate API docs, README updates, changelogs | ✅ Yes |
-| **DevOps/CI-CD** | Integration Agent | `agents/integration_agent.md` | CI/CD pipelines, deployment automation, IaC, monitoring | ✅ Yes |
-| **Orchestration** | Autonomous Dev Agent | `agents/autonomous/autonomous_dev_agent.md` | Full-stack project generation (DB + API + UI + tests) | ✅ Yes |
-
-### Specialized Agents (Support)
-
-| Role | Agent | File | Purpose |
-|------|-------|------|---------|
-| **Context Analysis** | Context Builder Agent | `agents/context/context_builder_agent.md` | Interactive project analysis, architecture discovery |
-| **Test Generation** | Test Case Generator Agent | `agents/test_case_generator_agent.md` | 100% code coverage tests with JIRA validation |
+| # | Role | Agent | File | Purpose | Tech-Agnostic |
+|---|------|-------|------|---------|---------------|
+| 1 | **Startup Engineering Team** | Autonomous Dev Agent | `agents/autonomous/autonomous_dev_agent.md` | Full-stack project generation with database, API, UI, and tests. Orchestrates complete system creation from requirements through deployment. | ✅ Yes |
+| 2 | **Codebase Auditor** | Codebase Auditor Agent | `agents/codebase_auditor_agent.md` | Scans codebases for violations, security issues, and tech debt. Provides comprehensive analysis and remediation recommendations. | ✅ Yes |
+| 3 | **Production Debugger** | Production Debugger Agent | `agents/production_debugger_agent.md` | Deep root cause analysis for critical issues. Investigates stack traces, error patterns, and production anomalies. | ✅ Yes |
+| 4 | **Performance Optimizer** | Performance Optimizer Agent | `agents/performance_optimizer_agent.md` | Identifies performance bottlenecks and provides optimization strategies. Conducts benchmarking and suggests algorithmic improvements. | ✅ Yes |
+| 5 | **Architecture Refactorer** | Architecture Refactorer Agent | `agents/architecture_refactorer_agent.md` | Restructures messy production code into clean architecture. Plans zero-downtime migrations and maintains backward compatibility. | ✅ Yes |
+| 6 | **Backend Systems Architect** | Backend Systems Architect Agent | `agents/backend_systems_architect_agent.md` | Designs scalable API architecture, database patterns, and microservices. Handles distributed systems and integration patterns. | ✅ Yes |
+| 7 | **Senior Frontend Engineer** | Senior Frontend Engineer Agent | `agents/senior_frontend_engineer_agent.md` | Designs modern component architecture with React/TypeScript patterns. Manages state, performance optimization, and accessibility. | ✅ Yes |
+| 8 | **Technical Lead** | Technical Lead Agent | `agents/technical_lead_agent.md` | Strategic architecture review and technical decisions. Coordinates teams, manages trade-offs, and ensures deployment readiness. | ✅ Yes |
+| 9 | **Security Auditor** | Security Auditor Agent | `agents/security_auditor_agent.md` | Comprehensive security assessment including vulnerability scanning and threat modeling. Ensures OWASP compliance and data protection. | ✅ Yes |
+| 10 | **AI Engineering Team Coordinator** | AI Engineering Team Coordinator Agent | `agents/ai_engineering_team_coordinator_agent.md` | Orchestrates multi-agent collaboration with conflict resolution. Enforces quality gates and manages handoffs between specialized agents. | ✅ Yes |
+| 11 | **DevOps + Deployment** | Integration Agent | `agents/integration_agent.md` | CI/CD pipelines, containerization with Docker, Infrastructure as Code, and monitoring setup. Supports AWS, GCP, Azure, and Kubernetes. | ✅ Yes |
 
 ### Skill-Based Architecture
 
