@@ -39,6 +39,7 @@ Supported targets:
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import shutil
 import sys
@@ -1188,12 +1189,61 @@ def main() -> None:
             return
 
         # Otherwise, use the normal export flow
-        orchestrator.run(
+        results = orchestrator.run(
             targets      = args.target,
             skill_filter = args.skills,
             agent_filter = args.agents,
             dry_run      = args.dry_run,
         )
+
+        # Generate platform-specific config files with hook registrations
+        if not args.dry_run:
+            try:
+                from config_generator import ConfigGenerator
+                config_gen = ConfigGenerator(repo_root)
+                all_hooks = orchestrator.discover_hooks()
+
+                # Generate Claude settings.json
+                for result in results:
+                    if result.target == "claude":
+                        if all_hooks:
+                            settings = config_gen.generate_claude_settings(all_hooks)
+                            settings_file = repo_root / ".claude" / "settings.json"
+                            settings_file.parent.mkdir(parents=True, exist_ok=True)
+                            settings_file.write_text(
+                                json.dumps(settings, indent=2),
+                                encoding="utf-8"
+                            )
+                            print(f"  Generated .claude/settings.json with {len(all_hooks)} hook(s)")
+
+                    elif result.target == "copilot":
+                        if all_hooks:
+                            config = config_gen.generate_copilot_config(all_hooks)
+                            config_file = repo_root / ".github" / "copilot.yml"
+                            config_file.parent.mkdir(parents=True, exist_ok=True)
+                            config_file.write_text(config, encoding="utf-8")
+                            print(f"  Generated .github/copilot.yml with {len(all_hooks)} hook(s)")
+
+                    elif result.target == "cursor":
+                        if all_hooks:
+                            config = config_gen.generate_cursor_config(all_hooks)
+                            config_file = repo_root / ".cursor" / "cursor.config.json"
+                            config_file.parent.mkdir(parents=True, exist_ok=True)
+                            config_file.write_text(config, encoding="utf-8")
+                            print(f"  Generated .cursor/cursor.config.json with {len(all_hooks)} hook(s)")
+
+                    elif result.target == "windsurf":
+                        if all_hooks:
+                            config = config_gen.generate_windsurf_config(all_hooks)
+                            config_file = repo_root / ".windsurf" / "hooks.json"
+                            config_file.parent.mkdir(parents=True, exist_ok=True)
+                            config_file.write_text(config, encoding="utf-8")
+                            print(f"  Generated .windsurf/hooks.json with {len(all_hooks)} hook(s)")
+
+            except ImportError:
+                # config_generator not available, skip silently
+                pass
+
     except FileNotFoundError as err:
         print(f"\nERROR: {err}"); sys.exit(1)
     except KeyboardInterrupt:
