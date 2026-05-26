@@ -3,17 +3,19 @@
 > Complete guide to all AI agents in the Awesome Prompts system
 
 **Quick Navigation**
-| Agent | Purpose | Version | Status |
-|-------|---------|---------|--------|
-| [AI Engineering Team Coordinator](ai_engineering_team_coordinator_agent.md) | Multi-agent orchestration | v1.0 | ✅ NEW |
-| [Implementation](implementation_agent.md) | Feature builder | v3.0 | ✅ Ready |
-| [Code Review](code_review_agent.md) | Requirement validation | v3.0 | ✅ Ready |
-| [Test Generator](test_case_generator_agent.md) | 100% coverage tests | v1.0 | ✅ Ready |
-| [Writer](writer_agent.md) | Auto-documentation | v1.0 | ✅ Ready |
-| [Integration](integration_agent.md) | CI/CD automation | v1.0 | ✅ Ready |
-| [Autonomous Dev](autonomous/autonomous_dev_agent.md) | Full-stack | v1.0 | ✅ Ready |
-| [Tech Docs](technical_documentation_agent.md) | Architecture docs | v1.0 | ✅ Ready |
-| [Architecture Refactorer](architecture_refactorer_agent.md) | Code restructuring | v1.0 | ✅ Ready |
+| Agent | Role | Purpose | Version | Status |
+|-------|------|---------|---------|--------|
+| [Startup Engineering Team](autonomous/autonomous_dev_agent.md) | Orchestration | Full-stack project generation (DB + API + UI + tests) | v1.0 | ✅ Ready |
+| [Codebase Auditor](codebase_auditor_agent.md) | Code Quality | Scan for violations, security issues, tech debt | v1.0 | ✅ Ready |
+| [Production Debugger](production_debugger_agent.md) | Code Quality | Root cause analysis, stack trace investigation, issue resolution | v1.0 | ✅ Ready |
+| [Performance Optimizer](performance_optimizer_agent.md) | Code Quality | Bottleneck analysis, optimization suggestions, benchmarking | v1.0 | ✅ Ready |
+| [Architecture Refactorer](architecture_refactorer_agent.md) | Code Quality | Code restructuring, clean architecture, zero-downtime migrations | v1.0 | ✅ Ready |
+| [Backend Systems Architect](backend_systems_architect_agent.md) | System Design | Scalable API architecture, database design, microservices patterns | v1.0 | ✅ Ready |
+| [Senior Frontend Engineer](senior_frontend_engineer_agent.md) | System Design | React/TypeScript patterns, component design, state management | v1.0 | ✅ Ready |
+| [Technical Lead](technical_lead_agent.md) | Production & Security | Strategic decisions, architecture reviews, team coordination | v1.0 | ✅ Ready |
+| [Security Auditor](security_auditor_agent.md) | Production & Security | Vulnerability scanning, threat modeling, compliance validation | v1.0 | ✅ Ready |
+| [AI Engineering Team Coordinator](ai_engineering_team_coordinator_agent.md) | Orchestration | Multi-agent collaboration, conflict resolution, quality gates | v1.0 | ✅ Ready |
+| [DevOps + Deployment](integration_agent.md) | Deployment | CI/CD pipelines, containerization, IaC, monitoring | v1.0 | ✅ Ready |
 
 ---
 
@@ -230,6 +232,41 @@ Output (Production-Ready)
 
 ---
 
+## 🔗 Handoff Patterns
+
+Agent workflows follow structured handoff patterns for seamless collaboration:
+
+### 1. Code Quality Group
+Sequential pipeline for code health analysis and improvement:
+- **Codebase Auditor** → Initial scan for violations, tech debt, security issues
+- **Production Debugger** → Deep investigation of critical issues, root cause analysis
+- **Performance Optimizer** → Identify bottlenecks, provide optimization suggestions
+- **Architecture Refactorer** → Restructure code, apply clean architecture, plan migrations
+
+**Use when:** Dealing with legacy/production code requiring comprehensive review and improvement.
+
+### 2. System Design Group
+Parallel design for scalable systems:
+- **Backend Systems Architect** → Design API architecture, database patterns, microservices
+- **Senior Frontend Engineer** → Design UI/UX, component architecture, state management
+
+**Use when:** Building new systems requiring coordinated backend and frontend design.
+
+### 3. Production & Security Group
+Dual review for live systems:
+- **Technical Lead** → Strategic architecture review, team coordination, deployment decisions
+- **Security Auditor** → Vulnerability assessment, threat modeling, compliance validation
+
+**Use when:** Deploying to production or handling sensitive systems.
+
+### 4. Orchestration
+Central coordination:
+- **AI Engineering Team Coordinator** → Manages all agents, enforces quality gates, resolves conflicts
+
+**Use when:** Complex projects requiring multiple agents with formal handoffs and validation.
+
+---
+
 ## 📋 Agent Decision Matrix
 
 | Need | Agent | Time |
@@ -256,4 +293,4 @@ Output (Production-Ready)
 
 ---
 
-**Last Updated:** May 27, 2026 | **Version:** 4.3.0
+**Last Updated:** May 27, 2026 | **Version:** 5.0.0
