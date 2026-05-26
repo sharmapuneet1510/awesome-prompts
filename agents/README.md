@@ -5,6 +5,7 @@
 **Quick Navigation**
 | Agent | Purpose | Version | Status |
 |-------|---------|---------|--------|
+| [AI Engineering Team Coordinator](ai_engineering_team_coordinator_agent.md) | Multi-agent orchestration | v1.0 | ✅ NEW |
 | [Implementation](implementation_agent.md) | Feature builder | v3.0 | ✅ Ready |
 | [Code Review](code_review_agent.md) | Requirement validation | v3.0 | ✅ Ready |
 | [Test Generator](test_case_generator_agent.md) | 100% coverage tests | v1.0 | ✅ Ready |
@@ -12,7 +13,7 @@
 | [Integration](integration_agent.md) | CI/CD automation | v1.0 | ✅ Ready |
 | [Autonomous Dev](autonomous/autonomous_dev_agent.md) | Full-stack | v1.0 | ✅ Ready |
 | [Tech Docs](technical_documentation_agent.md) | Architecture docs | v1.0 | ✅ Ready |
-| [Architecture Refactorer](architecture_refactorer_agent.md) | Code restructuring | v1.0 | ✅ NEW |
+| [Architecture Refactorer](architecture_refactorer_agent.md) | Code restructuring | v1.0 | ✅ Ready |
 
 ---
 
@@ -84,7 +85,32 @@ Output (Production-Ready)
 
 ---
 
-## 🏗️ Architecture Refactorer Agent (v1.0) ⭐ NEW
+## 🤝 AI Engineering Team Coordinator Agent (v1.0) ⭐ NEW
+
+**File:** [`ai_engineering_team_coordinator_agent.md`](ai_engineering_team_coordinator_agent.md)
+
+| Aspect | Details |
+|--------|---------|
+| **Purpose** | Orchestrate 4 elite agents working together |
+| **Team** | Architect, Engineer, Reviewer, Optimizer |
+| **Workflow** | Design → Build → Review → Optimize |
+| **Output** | Complete architecture + implementation + review + optimized code |
+| **Pattern** | Multi-agent collaboration with conflict resolution |
+
+**Features:**
+- 🏛️ Architect designs scalable system architecture
+- 👨‍💻 Engineer builds complete implementation with tests
+- 🔍 Reviewer critiques code, performance, security
+- ⚡ Optimizer refines and hardens for production
+- 🤝 Seamless handoff and communication patterns
+- 🚨 Conflict resolution when agents disagree
+- 📊 Quality gates at each phase
+
+**When to use:** Complex systems requiring careful design, high-quality implementations, peer review throughout development
+
+---
+
+## 🏗️ Architecture Refactorer Agent (v1.0)
 
 **File:** [`architecture_refactorer_agent.md`](architecture_refactorer_agent.md)
 
@@ -215,6 +241,7 @@ Output (Production-Ready)
 | Setup CI/CD | Integration | 10-15 min |
 | Full system | Autonomous Dev | 20-30 min |
 | Architecture docs | Tech Docs | 5-10 min |
+| Multi-agent collaboration | Team Coordinator | 2-4 hours |
 | Refactor messy code | Architecture Refactorer | 30-120 min |
 
 ---
