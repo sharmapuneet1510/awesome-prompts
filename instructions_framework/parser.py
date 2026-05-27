@@ -78,7 +78,7 @@ def parse_instruction_file(file_path: Path) -> Instruction:
     provider_variants = _extract_provider_variants(body)
 
     # Build Instruction ID from filename and extract name
-    instruction_id = file_path.stem
+    instruction_id = file_path.stem.replace("-", "_")
     name = metadata_dict.get("description", instruction_id)
 
     # Determine category - default to CORE

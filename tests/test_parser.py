@@ -88,3 +88,24 @@ description: unclosed string
 
         with pytest.raises(ValueError):
             parse_instruction_file(invalid_file)
+
+    def test_parse_instruction_file_converts_hyphens_to_underscores(self, tmp_path):
+        """Parser converts filename hyphens to underscores in ID"""
+        # Create a temporary test file with hyphens
+        test_file = tmp_path / "test-with-hyphens.md"
+
+        content = """---
+version: "1.0.0"
+description: "Test Instruction"
+priority: 5
+applicability: ["claude"]
+precedence: "merge"
+scope: "global"
+---
+
+Test content with hyphens in filename
+"""
+        test_file.write_text(content)
+
+        instruction = parse_instruction_file(test_file)
+        assert instruction.id == "test_with_hyphens", f"Expected 'test_with_hyphens', got '{instruction.id}'"
