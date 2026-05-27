@@ -55,6 +55,10 @@ class InstructionMetadata:
             errors.append("priority must be 1-10")
         if not self.applicability:
             errors.append("applicability cannot be empty")
+        if not self.author or not self.author.strip():
+            errors.append("author cannot be empty")
+        if self.deprecated and not self.deprecation_notice:
+            errors.append("deprecation_notice is required when deprecated=True")
         return errors
 
 
@@ -87,6 +91,19 @@ class Instruction:
             errors.append("name is required")
         if not self.content:
             errors.append("content is required")
+
+        # Validate sections
+        for i, section in enumerate(self.sections):
+            if not section.heading or not section.heading.strip():
+                errors.append(f"section {i} heading cannot be empty")
+
+        # Validate provider_variants
+        for provider, variant in self.provider_variants.items():
+            if not isinstance(variant, dict):
+                errors.append(f"provider_variants[{provider}] must be a dict")
+            elif "content" not in variant:
+                errors.append(f"provider_variants[{provider}] missing 'content' key")
+
         errors.extend(self.metadata.validate())
         return errors
 
@@ -108,9 +125,13 @@ class Instruction:
             ],
             "metadata": {
                 "version": self.metadata.version,
+                "description": self.metadata.description,
                 "applicability": self.metadata.applicability,
                 "precedence": self.metadata.precedence.value,
                 "scope": self.metadata.scope.value,
+                "deprecated": self.metadata.deprecated,
+                "deprecation_notice": self.metadata.deprecation_notice,
+                "tags": self.metadata.tags,
                 "dependencies": self.metadata.depends_on,
                 "created": self.metadata.created,
                 "last_updated": self.metadata.last_updated,
