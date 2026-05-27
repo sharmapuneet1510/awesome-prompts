@@ -8,7 +8,8 @@ from .base import InstructionMiddleware
 class ValidationMiddleware(InstructionMiddleware):
     """Validates instructions and filters out invalid ones"""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize validation middleware with empty errors list."""
         self.errors: List[str] = []
 
     def process(self, instructions: List[Instruction]) -> List[Instruction]:
