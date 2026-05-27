@@ -12,6 +12,7 @@ from .schema import (
     InstructionSection,
 )
 from .parser import parse_instruction_file
+from .loader import InstructionLoader
 
 __all__ = [
     "InstructionCategory",
@@ -21,4 +22,5 @@ __all__ = [
     "InstructionSection",
     "Instruction",
     "parse_instruction_file",
+    "InstructionLoader",
 ]
