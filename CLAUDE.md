@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Purpose
 
-A collection of AI/LLM prompt templates, reusable skills, and full agent definitions for software engineering workflows, plus a Python-based code parser for field derivation analysis in multi-module Maven repositories.
+A collection of AI/LLM prompt templates, reusable skills, and full agent definitions for software engineering workflows, plus production-ready Python libraries (token_optimizer for intelligent query analysis) and a Python-based code parser for field derivation analysis in multi-module Maven repositories.
 
 ## Directory Structure
 
@@ -54,6 +54,19 @@ awesome-prompts/
 │   └── apache_pulsar_skill.md        ← Apache Pulsar messaging & streaming patterns
 │
 ├── parser/                           ← Python field derivation analysis tool
+│
+├── token_optimizer/                  ← Python library for intelligent query analysis
+│   ├── __init__.py                   ← Package exports
+│   ├── analyzer.py                   ← Main QueryAnalyzer orchestrator (120 lines)
+│   ├── models.py                     ← Data models: enums, dataclasses, type-safe output
+│   ├── config.py                     ← Configuration with default/strict/lenient modes
+│   ├── scoring.py                    ← Scoring engines: clarity, context, feasibility
+│   ├── detector.py                   ← Detection engines: web search, external data, tokens
+│   └── README.md                     ← Full documentation with examples
+│
+├── tests/
+│   └── test_token_optimizer.py       ← 35 comprehensive tests (all passing)
+│
 └── CLAUDE.md
 ```
 
@@ -119,6 +132,44 @@ Skills in `skills/` are reusable coding standard modules referenced by agents. T
 | `tools/task_generator.py` | Break down requirements into bite-sized task specifications |
 | `tools/graphify_integrator.py` | Generate knowledge graphs with token caching |
 | `tools/github_sync.py` | Create GitHub PRs with generated code |
+
+## Python Libraries
+
+### token_optimizer (v1.0.0)
+
+Production-ready library for intelligent query analysis before Claude dispatch.
+
+**Location:** `token_optimizer/` (package) + `tests/test_token_optimizer.py` (35 tests)
+
+**Features:**
+- Multi-dimensional query scoring (clarity, context, feasibility)
+- Web search detection for trending/current/live data
+- Intent classification (research, coding, analysis, creative, instruction)
+- Token estimation and smart routing recommendations
+- Structured feedback with actionable suggestions
+- Configurable thresholds (default/strict/lenient modes)
+
+**Installation:**
+```bash
+pip install -e token_optimizer/
+```
+
+**Quick Start:**
+```python
+from token_optimizer import QueryAnalyzer
+
+analyzer = QueryAnalyzer()
+result = analyzer.analyze("your query here")
+print(result.feedback.recommendation)  # 'claude', 'web_search', etc.
+```
+
+**Key Classes:**
+- `QueryAnalyzer` - Main orchestrator
+- `ScoringMetrics` - Clarity, context, feasibility scores
+- `QueryFeedback` - Status, issues, suggestions
+- `Config` - Configurable thresholds and weights
+
+See `token_optimizer/README.md` for full documentation and examples.
 
 ## Project Structure & Artifacts
 
