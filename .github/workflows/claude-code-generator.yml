@@ -6,6 +6,9 @@ on:
   issue_comment:
     types: [created]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   issues: write
   contents: write
