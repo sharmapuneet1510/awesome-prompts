@@ -1,6 +1,8 @@
 name: Claude Code Analysis
 
 on:
+  issues:
+    types: [opened, edited]
   issue_comment:
     types: [created, edited]
 
@@ -13,8 +15,10 @@ jobs:
   claude-analyze:
     runs-on: ubuntu-latest
 
-    # Only run if comment mentions @claude
-    if: contains(github.event.comment.body, '@claude')
+    # Run on issue creation/update OR when comment mentions @claude
+    if: |
+      github.event_name == 'issues' ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
 
     steps:
       - name: Checkout code
