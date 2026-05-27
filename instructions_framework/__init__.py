@@ -15,6 +15,7 @@ from .parser import parse_instruction_file
 from .loader import InstructionLoader
 from .pipeline import InstructionPipeline
 from .middleware import InstructionMiddleware
+from .exporters import BaseExporter, IntermediateExporter
 
 __all__ = [
     "InstructionCategory",
@@ -27,4 +28,6 @@ __all__ = [
     "InstructionLoader",
     "InstructionPipeline",
     "InstructionMiddleware",
+    "BaseExporter",
+    "IntermediateExporter",
 ]
