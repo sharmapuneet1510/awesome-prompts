@@ -32,10 +32,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install dependencies (if package.json exists)
+        run: |
+          if [ -f "package.json" ]; then
+            npm install
+          else
+            echo "No package.json found, skipping npm install"
+          fi
 
       - name: Extract issue details
         id: issue
@@ -177,12 +182,17 @@ jobs:
 
           echo "Generated files created successfully"
 
-      - name: Run tests
+      - name: Run tests (if npm project)
         id: test
         continue-on-error: true
         run: |
-          npm test 2>&1 | tee test-results.txt
-          echo "tests_passed=$?" >> $GITHUB_OUTPUT
+          if [ -f "package.json" ]; then
+            npm test 2>&1 | tee test-results.txt
+            echo "tests_passed=$?" >> $GITHUB_OUTPUT
+          else
+            echo "No package.json found, skipping tests"
+            echo "tests_passed=0" >> $GITHUB_OUTPUT
+          fi
 
       - name: Configure git
         run: |
