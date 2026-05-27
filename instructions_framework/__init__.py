@@ -13,6 +13,8 @@ from .schema import (
 )
 from .parser import parse_instruction_file
 from .loader import InstructionLoader
+from .pipeline import InstructionPipeline
+from .middleware import InstructionMiddleware
 
 __all__ = [
     "InstructionCategory",
@@ -23,4 +25,6 @@ __all__ = [
     "Instruction",
     "parse_instruction_file",
     "InstructionLoader",
+    "InstructionPipeline",
+    "InstructionMiddleware",
 ]
