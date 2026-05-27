@@ -16,6 +16,7 @@ from .loader import InstructionLoader
 from .pipeline import InstructionPipeline
 from .middleware import InstructionMiddleware
 from .exporters import BaseExporter, IntermediateExporter
+from .plugins import PluginRegistry, get_global_registry
 
 __all__ = [
     "InstructionCategory",
@@ -30,4 +31,6 @@ __all__ = [
     "InstructionMiddleware",
     "BaseExporter",
     "IntermediateExporter",
+    "PluginRegistry",
+    "get_global_registry",
 ]
