@@ -9,12 +9,16 @@ from .schema import (
     InstructionScope,
     InstructionMetadata,
     Instruction,
+    InstructionSection,
 )
+from .parser import parse_instruction_file
 
 __all__ = [
     "InstructionCategory",
     "InstructionPrecedence",
     "InstructionScope",
     "InstructionMetadata",
+    "InstructionSection",
     "Instruction",
+    "parse_instruction_file",
 ]
