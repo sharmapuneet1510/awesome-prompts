@@ -11,6 +11,10 @@ from context_builder.agents.rag_agent import RAGAgent
 from context_builder.agents.test_intelligence_agent import TestIntelligenceAgent
 from context_builder.agents.technical_debt_agent import TechnicalDebtAgent
 from context_builder.agents.maturity_agent import MaturityAgent
+from context_builder.agents.markdown_writer import MarkdownWriter
+from context_builder.agents.html_writer import HTMLWriter
+from context_builder.agents.graph_writer import GraphWriter
+from context_builder.agents.json_writer import JSONWriter
 
 __all__ = [
     "BaseAgent",
@@ -25,4 +29,8 @@ __all__ = [
     "TestIntelligenceAgent",
     "TechnicalDebtAgent",
     "MaturityAgent",
+    "MarkdownWriter",
+    "HTMLWriter",
+    "GraphWriter",
+    "JSONWriter",
 ]
