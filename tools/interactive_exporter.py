@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-interactive_exporter.py — Interactive setup for Autonomous Developer System
+interactive_exporter.py — Enhanced interactive setup with agent/skill selection
 
-Asks users for:
-1. Project root directory
-2. Target platforms
-3. Confirms before copying skills and agents
+Features:
+1. Interactive project root selection
+2. Platform multi-select with descriptions
+3. Agent selection grouped by role with full descriptions
+4. Skill selection grouped by tags with search/filter
+5. Summary confirmation with stats
+6. Export with progress indication
 
 Usage:
     python3 tools/interactive_exporter.py
@@ -14,6 +17,9 @@ Usage:
 import sys
 import subprocess
 from pathlib import Path
+from typing import Optional
+from dataclasses import dataclass
+from exporter import SkillFile, AgentFile, ExportOrchestrator
 
 
 # Color codes for terminal output
@@ -27,6 +33,7 @@ class Colors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+    DIM = '\033[2m'
 
 
 def print_header():
@@ -66,113 +73,241 @@ def get_project_root() -> Path:
 
 
 def get_platforms() -> list[str]:
-    """Ask user to select target platforms."""
+    """Ask user to select target platforms with enhanced UX."""
     print(f"{Colors.BOLD}Step 2: Target Platforms{Colors.ENDC}")
-    print("Which platforms do you use? (Select with space, confirm with Enter)\n")
+    print("Which platforms should we export to?\n")
 
     platforms = [
-        ("claude", "Claude Code (Default)"),
-        ("copilot", "GitHub Copilot"),
-        ("cursor", "Cursor IDE"),
-        ("windsurf", "Windsurf"),
-        ("gemini", "Google Gemini"),
-        ("continue", "Continue IDE"),
-        ("openai", "OpenAI"),
-        ("aider", "Aider CLI"),
+        ("claude", "Claude Code (Default)", "All Claude environments + .claude/"),
+        ("copilot", "GitHub Copilot", "GitHub Copilot in .github/"),
+        ("cursor", "Cursor IDE", "Cursor IDE rules in .cursor/"),
+        ("windsurf", "Windsurf IDE", "Windsurf rules in .windsurf/"),
+        ("gemini", "Google Gemini", "Gemini CLI in .gemini/"),
+        ("continue", "Continue IDE", "Continue IDE prompts in .continue/"),
+        ("openai", "OpenAI", "OpenAI format in tools/output/openai/"),
+        ("aider", "Aider CLI", "Aider tool in .aider/"),
     ]
 
-    selected = []
+    selected_indices = set()
+    default_selected = {0}  # Claude is default
 
-    for idx, (slug, name) in enumerate(platforms, 1):
-        print(f"{idx}. [ ] {name}")
+    while True:
+        print("\nAvailable platforms:")
+        for idx, (slug, name, desc) in enumerate(platforms, 1):
+            checkbox = "✓" if (idx - 1) in selected_indices else " "
+            print(f"  {idx}. [{checkbox}] {name}")
+            print(f"     {Colors.DIM}{desc}{Colors.ENDC}")
 
+        print(f"\n{Colors.DIM}Enter numbers to toggle (space-separated), or press Enter to continue:{Colors.ENDC}")
+        user_input = input("Selection: ").strip()
+
+        if not user_input:
+            if not selected_indices:
+                selected_indices = default_selected
+            break
+
+        try:
+            for num_str in user_input.split():
+                num = int(num_str) - 1
+                if 0 <= num < len(platforms):
+                    if num in selected_indices:
+                        selected_indices.discard(num)
+                    else:
+                        selected_indices.add(num)
+                else:
+                    print(f"{Colors.WARNING}Invalid number: {num_str}{Colors.ENDC}")
+        except ValueError:
+            print(f"{Colors.WARNING}Please enter valid numbers{Colors.ENDC}")
+
+    selected = [platforms[i][0] for i in sorted(selected_indices)]
+
+    print(f"\n{Colors.OKGREEN}✓ Selected {len(selected)} platform(s):{Colors.ENDC}")
+    for slug in selected:
+        name = next(p[1] for p in platforms if p[0] == slug)
+        print(f"  • {name}")
     print()
-    default_choice = "1"  # Claude is default
-    user_input = input("Enter platform numbers (space-separated, or press Enter for #1): ").strip()
 
-    if not user_input:
-        user_input = default_choice
+    return selected
 
+
+def discover_skills_and_agents(repo_root: Path) -> tuple[list[SkillFile], list[AgentFile]]:
+    """Discover all available skills and agents from source files."""
     try:
-        choices = [int(x) - 1 for x in user_input.split()]
-        selected = [platforms[i][0] for i in choices if 0 <= i < len(platforms)]
+        orchestrator = ExportOrchestrator(repo_root)
+        skills = orchestrator.discover_skills()
+        agents = orchestrator.discover_agents()
+        return skills, agents
+    except Exception as e:
+        print(f"{Colors.WARNING}⚠️  Could not discover items: {e}{Colors.ENDC}")
+        return [], []
 
-        if not selected:
-            selected = ["claude"]
 
-        print(f"\n{Colors.OKGREEN}✓ Selected platforms:{Colors.ENDC}")
-        for slug in selected:
-            name = next(p[1] for p in platforms if p[0] == slug)
-            print(f"  • {name}")
+def select_agents(agents: list[AgentFile]) -> list[str]:
+    """Interactive agent selection grouped by role."""
+    if not agents:
+        print(f"{Colors.WARNING}No agents found{Colors.ENDC}")
+        return []
+
+    print(f"{Colors.BOLD}Step 3a: Select Agents{Colors.ENDC}")
+    print(f"Found {len(agents)} agent(s). Group by role:\n")
+
+    # Group agents by role
+    by_role = {}
+    for agent in agents:
+        if agent.role not in by_role:
+            by_role[agent.role] = []
+        by_role[agent.role].append(agent)
+
+    selected = set()
+    role_indices = {}
+    global_idx = 1
+
+    # Display agents grouped by role
+    for role in sorted(by_role.keys()):
+        print(f"{Colors.BOLD}{role.upper()}{Colors.ENDC}")
+        for agent in sorted(by_role[role], key=lambda a: a.name):
+            role_indices[global_idx] = agent.slug
+            print(f"  {global_idx:2d}. [ ] {agent.name}")
+            if agent.description:
+                print(f"       {Colors.DIM}{agent.description[:60]}...{Colors.ENDC}")
+            global_idx += 1
         print()
 
-        return selected
+    while True:
+        print(f"{Colors.DIM}Enter agent numbers to toggle (space-separated), or press Enter to continue:{Colors.ENDC}")
+        user_input = input("Selection: ").strip()
 
-    except (ValueError, IndexError):
-        print(f"{Colors.WARNING}Invalid input. Using Claude Code (default).{Colors.ENDC}\n")
-        return ["claude"]
+        if not user_input:
+            break
+
+        try:
+            for num_str in user_input.split():
+                num = int(num_str)
+                if num in role_indices:
+                    slug = role_indices[num]
+                    if slug in selected:
+                        selected.discard(slug)
+                    else:
+                        selected.add(slug)
+                else:
+                    print(f"{Colors.WARNING}Invalid number: {num_str}{Colors.ENDC}")
+        except ValueError:
+            print(f"{Colors.WARNING}Please enter valid numbers{Colors.ENDC}")
+
+        # Show current selection
+        if selected:
+            print(f"{Colors.OKGREEN}Selected: {', '.join(sorted(selected))}{Colors.ENDC}")
+        print()
+
+    return sorted(selected)
 
 
-def get_skills_and_agents() -> tuple[list[str], list[str]]:
-    """Ask user which skills and agents to export."""
+def select_skills(skills: list[SkillFile]) -> list[str]:
+    """Interactive skill selection grouped by tags."""
+    if not skills:
+        print(f"{Colors.WARNING}No skills found{Colors.ENDC}")
+        return []
+
+    print(f"{Colors.BOLD}Step 3b: Select Skills{Colors.ENDC}")
+    print(f"Found {len(skills)} skill(s). Group by tags:\n")
+
+    # Group skills by primary tag
+    by_tag = {}
+    for skill in skills:
+        tag = skill.tags[0] if skill.tags else "general"
+        if tag not in by_tag:
+            by_tag[tag] = []
+        by_tag[tag].append(skill)
+
+    selected = set()
+    tag_indices = {}
+    global_idx = 1
+
+    # Display skills grouped by tag
+    for tag in sorted(by_tag.keys()):
+        print(f"{Colors.BOLD}{tag.upper()}{Colors.ENDC}")
+        for skill in sorted(by_tag[tag], key=lambda s: s.name):
+            tag_indices[global_idx] = skill.slug
+            applies = ", ".join(skill.applies_to) if skill.applies_to else "general"
+            print(f"  {global_idx:2d}. [ ] {skill.name}")
+            print(f"       {Colors.DIM}Applies to: {applies}{Colors.ENDC}")
+            global_idx += 1
+        print()
+
+    while True:
+        print(f"{Colors.DIM}Enter skill numbers to toggle (space-separated), or press Enter to continue:{Colors.ENDC}")
+        user_input = input("Selection: ").strip()
+
+        if not user_input:
+            break
+
+        try:
+            for num_str in user_input.split():
+                num = int(num_str)
+                if num in tag_indices:
+                    slug = tag_indices[num]
+                    if slug in selected:
+                        selected.discard(slug)
+                    else:
+                        selected.add(slug)
+                else:
+                    print(f"{Colors.WARNING}Invalid number: {num_str}{Colors.ENDC}")
+        except ValueError:
+            print(f"{Colors.WARNING}Please enter valid numbers{Colors.ENDC}")
+
+        # Show current selection
+        if selected:
+            print(f"{Colors.OKGREEN}Selected: {', '.join(sorted(selected))}{Colors.ENDC}")
+        print()
+
+    return sorted(selected)
+
+
+def get_skills_and_agents(repo_root: Path) -> tuple[list[str], list[str]]:
+    """Interactive selection of skills and agents with quick presets."""
     print(f"{Colors.BOLD}Step 3: Skills & Agents to Export{Colors.ENDC}\n")
 
-    print("Options:")
-    print("1. [ ] Autonomous Developer (4 core skills)")
-    print("2. [ ] All Skills (25+ skills for all tech stacks)")
-    print("3. [ ] Custom selection\n")
+    print("Quick options:")
+    print("  1. [ ] All available skills and agents")
+    print("  2. [ ] Core skills only (database, backend, frontend, test)")
+    print("  3. [ ] Custom selection")
+    print("  4. [ ] Minimal (just core agents)\n")
 
-    user_input = input("Choose what to export (1-3, or press Enter for #1): ").strip()
+    user_input = input("Choose option (1-4, or press Enter for #1): ").strip()
+
+    all_skills, all_agents = discover_skills_and_agents(repo_root)
 
     if user_input == "2":
-        # Export ALL skills
-        skills = []  # Empty list means all skills
-        agents = []  # Empty list means all agents
-        print(f"\n{Colors.OKGREEN}✓ Ready to export all available skills and agents{Colors.ENDC}\n")
-    elif user_input == "3":
-        # Custom selection
-        print("\nAvailable skills: database, backend, frontend, test, context_builder, code_documentation,")
-        print("                  java_advanced, python_advanced, react_advanced, spring_advanced, etc.")
-        print("(comma-separated, or press Enter for core 4)\n")
-
-        skills_input = input("Enter skills to export: ").strip()
-        if skills_input:
-            skills = [s.strip() for s in skills_input.split(",")]
-        else:
-            # Default to core 4
-            skills = [
-                "database_skill",
-                "backend_skill",
-                "frontend_skill",
-                "test_skill",
-            ]
-
-        agents = ["autonomous_dev"]
-        print(f"\n{Colors.OKGREEN}✓ Ready to export selected skills{Colors.ENDC}\n")
-    else:
-        # Default: export autonomous developer system (4 core skills)
-        skills = [
+        # Core skills only
+        core_skill_slugs = [
             "database_skill",
             "backend_skill",
             "frontend_skill",
             "test_skill",
         ]
-        agents = ["autonomous_dev"]
-        print(f"\n{Colors.OKGREEN}✓ Ready to export autonomous developer system{Colors.ENDC}\n")
+        agent_slugs = []
+        print(f"\n{Colors.OKGREEN}✓ Selected core skills{Colors.ENDC}\n")
+        return core_skill_slugs, agent_slugs
 
-    print("Exporting:")
-    if not skills:
-        print(f"  Skills: ALL (25+)")
+    elif user_input == "3":
+        # Custom selection
+        agent_slugs = select_agents(all_agents)
+        skill_slugs = select_skills(all_skills)
+        return skill_slugs, agent_slugs
+
+    elif user_input == "4":
+        # Minimal
+        agent_slugs = [a.slug for a in all_agents if "autonomous" in a.slug.lower()]
+        skill_slugs = []
+        print(f"\n{Colors.OKGREEN}✓ Selected minimal setup{Colors.ENDC}\n")
+        return skill_slugs, agent_slugs
+
     else:
-        print(f"  Skills: {', '.join(skills)}")
-
-    if not agents:
-        print(f"  Agents: ALL")
-    else:
-        print(f"  Agents: {', '.join(agents)}")
-    print()
-
-    return skills, agents
+        # All (default)
+        skill_slugs = []  # Empty means all
+        agent_slugs = []  # Empty means all
+        print(f"\n{Colors.OKGREEN}✓ Selected all available skills and agents{Colors.ENDC}\n")
+        return skill_slugs, agent_slugs
 
 
 def confirm_setup(project_root: Path, platforms: list[str], skills: list[str], agents: list[str]) -> bool:
@@ -260,11 +395,14 @@ def main():
         # Step 1: Get project root
         project_root = get_project_root()
 
+        # Resolve repo root (for discovering skills/agents)
+        repo_root = resolve_repo_root()
+
         # Step 2: Get platforms
         platforms = get_platforms()
 
         # Step 3: Get skills and agents
-        skills, agents = get_skills_and_agents()
+        skills, agents = get_skills_and_agents(repo_root)
 
         # Step 4: Confirm
         if not confirm_setup(project_root, platforms, skills, agents):
@@ -285,6 +423,15 @@ def main():
     except Exception as e:
         print(f"\n{Colors.FAIL}Error: {e}{Colors.ENDC}\n")
         sys.exit(1)
+
+
+def resolve_repo_root() -> Path:
+    """Resolve the repository root (awesome-prompts directory)."""
+    # Start from the script location and go up to find awesome-prompts
+    current = Path(__file__).resolve().parent.parent
+    if (current / "skills").exists() and (current / "agents").exists():
+        return current
+    raise FileNotFoundError("Could not find awesome-prompts repository root")
 
 
 if __name__ == "__main__":
