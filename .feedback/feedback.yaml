@@ -1,0 +1,107 @@
+# Feedback for Exporter Tool & AI System
+#
+# ADD YOUR FEEDBACK HERE!
+# See FEEDBACK_GUIDE.md for detailed instructions
+#
+# Quick template:
+# - date: YYYY-MM-DD
+#   category: exporter|interactive-mode|agents|skills|documentation|cli|performance
+#   type: bug|feature-request|improvement|performance|security|documentation
+#   title: "Short summary"
+#   description: "Detailed description"
+#   severity: critical|high|medium|low
+#   status: open|in-progress|resolved|duplicate|wontfix
+#   assignee: ""
+#   labels: [tag1, tag2]
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+# EXAMPLE FEEDBACK ITEMS (Delete these and add yours!)
+
+- date: 2026-06-01
+  category: interactive-mode
+  type: feature-request
+  title: "Add search/filter when selecting skills"
+  description: |
+    With 33 skills, it's hard to find the one you want.
+    Should be able to type to filter by name or tag.
+
+    Example: Type "python" and see only Python-related skills
+  severity: medium
+  status: open
+  assignee: ""
+  labels: [ux, search, filtering, interactive-mode]
+
+- date: 2026-06-01
+  category: exporter
+  type: improvement
+  title: "Add --export-dir flag to specify output"
+  description: |
+    Currently always exports to project root.
+    Would be nice to export to a specific directory.
+
+    Example: python exporter.py --export-dir ./out/
+  severity: low
+  status: open
+  assignee: ""
+  labels: [feature-request, exporter, cli]
+
+- date: 2026-06-01
+  category: documentation
+  type: documentation
+  title: "Add Go/Rust/C++ project examples"
+  description: |
+    EXPORTER_QUICK_START.md only shows Python and React examples.
+    Would help if there were examples for other languages.
+
+    Requested: Go, Rust, C++, TypeScript backend
+  severity: low
+  status: open
+  assignee: ""
+  labels: [docs, examples, languages]
+
+- date: 2026-06-01
+  category: performance
+  type: performance
+  title: "Skill discovery could be faster"
+  description: |
+    On first run, discovering 33 skills takes ~2 seconds.
+    Could be cached after first discovery.
+
+    Suggestion: Cache parsed skills in .feedback/.cache/skills.json
+  severity: low
+  status: open
+  assignee: ""
+  labels: [performance, optimization, caching]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RESOLVED FEEDBACK (Kept for reference)
+
+- date: 2026-05-25
+  category: interactive-mode
+  type: bug
+  title: "Platform selection loops on invalid input"
+  description: |
+    Entering invalid numbers (like "99") would keep asking forever.
+    Now shows error and lets you try again.
+  severity: high
+  status: resolved
+  assignee: ""
+  labels: [bug, interactive-mode, validation]
+  resolved_date: 2026-06-01
+  resolution: "Added input validation and error messages"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# YOUR FEEDBACK GOES HERE! 👇
+#
+# Add new feedback items below. Please include:
+# - date: Today's date (YYYY-MM-DD)
+# - category: What part of the system (see FEEDBACK_GUIDE.md)
+# - type: What kind of issue
+# - title: Short summary
+# - description: Detailed explanation
+# - severity: How important?
+# - status: Always "open" when first added
+# - labels: Tags for grouping
+#
+# Questions? See .feedback/FEEDBACK_GUIDE.md
