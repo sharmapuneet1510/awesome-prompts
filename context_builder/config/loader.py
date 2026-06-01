@@ -8,6 +8,15 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from .models import (
+    DEFAULT_SCAN_INCLUDES,
+    DEFAULT_SCAN_EXCLUDES,
+    DEFAULT_ANALYSIS_DEPTH,
+    DEFAULT_MATURITY_DIMENSIONS,
+    DEFAULT_TEST_COVERAGE_SOURCES,
+    DEFAULT_TEST_SCORING,
+)
+
 try:
     import yaml
 except ImportError:
@@ -29,86 +38,6 @@ class ConfigLoader:
         context_root: Path to the .context directory
         logger: Logger instance for configuration loading
     """
-
-    # Default values for scan configuration
-    DEFAULT_SCAN_INCLUDES = [
-        "**/*.java",
-        "**/*.py",
-        "**/*.ts",
-        "**/*.tsx",
-        "**/*.js",
-        "**/*.jsx",
-        "**/*.yaml",
-        "**/*.yml",
-        "**/*.xml",
-        "**/*.properties",
-        "**/*.sql",
-        "**/pom.xml",
-        "**/build.gradle",
-        "**/package.json",
-    ]
-
-    DEFAULT_SCAN_EXCLUDES = [
-        "**/target/**",
-        "**/build/**",
-        "**/node_modules/**",
-        "**/.git/**",
-        "**/logs/**",
-        "**/dist/**",
-        "**/.idea/**",
-        "**/.vscode/**",
-    ]
-
-    DEFAULT_ANALYSIS_DEPTH = {
-        "class_level": True,
-        "method_level": True,
-        "flow_level": True,
-        "config_level": True,
-        "db_analysis": True,
-        "middleware_analysis": True,
-        "exception_flow": True,
-        "test_quality": True,
-        "technical_debt": True,
-    }
-
-    # Default values for maturity configuration (8 dimensions)
-    DEFAULT_MATURITY_DIMENSIONS = {
-        "project_structure": {"weight": 8},
-        "code_understanding": {"weight": 15},
-        "flow_understanding": {"weight": 18},
-        "data_understanding": {"weight": 12},
-        "middleware_understanding": {"weight": 12},
-        "test_intelligence": {"weight": 15},
-        "documentation_quality": {"weight": 10},
-        "risk_analysis": {"weight": 10},
-    }
-
-    # Default values for test quality configuration
-    DEFAULT_TEST_COVERAGE_SOURCES = {
-        "java": [
-            "**/target/site/jacoco/jacoco.xml",
-            "**/target/surefire-reports/*.xml",
-        ],
-        "javascript": [
-            "**/coverage/lcov.info",
-            "**/jest-report.json",
-        ],
-        "python": [
-            "**/coverage.xml",
-            "**/pytest-report.xml",
-        ],
-    }
-
-    DEFAULT_TEST_SCORING = {
-        "line_coverage": 10,
-        "branch_coverage": 15,
-        "critical_flow_coverage": 25,
-        "assertion_quality": 15,
-        "negative_test_coverage": 10,
-        "integration_test_coverage": 10,
-        "boundary_case_coverage": 10,
-        "test_maintainability": 5,
-    }
 
     def __init__(self, context_root: Path):
         """Initialize ConfigLoader.
@@ -221,9 +150,9 @@ class ConfigLoader:
             self.logger.info("scan-config.yaml not found, using comprehensive defaults")
             # Return defaults in flat structure
             return {
-                "include": self.DEFAULT_SCAN_INCLUDES,
-                "exclude": self.DEFAULT_SCAN_EXCLUDES,
-                "analysis_depth": self.DEFAULT_ANALYSIS_DEPTH,
+                "include": DEFAULT_SCAN_INCLUDES,
+                "exclude": DEFAULT_SCAN_EXCLUDES,
+                "analysis_depth": DEFAULT_ANALYSIS_DEPTH,
                 "incremental": True,
             }
 
@@ -232,20 +161,20 @@ class ConfigLoader:
             scan_config = data["scan"]
             # Fill in missing defaults
             if "include" not in scan_config:
-                scan_config["include"] = self.DEFAULT_SCAN_INCLUDES
+                scan_config["include"] = DEFAULT_SCAN_INCLUDES
             if "exclude" not in scan_config:
-                scan_config["exclude"] = self.DEFAULT_SCAN_EXCLUDES
+                scan_config["exclude"] = DEFAULT_SCAN_EXCLUDES
             if "analysis_depth" not in scan_config:
-                scan_config["analysis_depth"] = self.DEFAULT_ANALYSIS_DEPTH
+                scan_config["analysis_depth"] = DEFAULT_ANALYSIS_DEPTH
             if "incremental" not in scan_config:
                 scan_config["incremental"] = True
             return scan_config
 
         # Handle flat structure
         return {
-            "include": data.get("include", self.DEFAULT_SCAN_INCLUDES),
-            "exclude": data.get("exclude", self.DEFAULT_SCAN_EXCLUDES),
-            "analysis_depth": data.get("analysis_depth", self.DEFAULT_ANALYSIS_DEPTH),
+            "include": data.get("include", DEFAULT_SCAN_INCLUDES),
+            "exclude": data.get("exclude", DEFAULT_SCAN_EXCLUDES),
+            "analysis_depth": data.get("analysis_depth", DEFAULT_ANALYSIS_DEPTH),
             "incremental": data.get("incremental", True),
         }
 
@@ -266,7 +195,7 @@ class ConfigLoader:
             return {
                 "target_score": 80,
                 "max_iterations": 5,
-                "dimensions": self.DEFAULT_MATURITY_DIMENSIONS,
+                "dimensions": DEFAULT_MATURITY_DIMENSIONS,
             }
 
         # Handle nested structure (maturity: {...})
@@ -278,14 +207,14 @@ class ConfigLoader:
             if "max_iterations" not in maturity_config:
                 maturity_config["max_iterations"] = 5
             if "dimensions" not in maturity_config:
-                maturity_config["dimensions"] = self.DEFAULT_MATURITY_DIMENSIONS
+                maturity_config["dimensions"] = DEFAULT_MATURITY_DIMENSIONS
             return maturity_config
 
         # Handle flat structure
         return {
             "target_score": data.get("target_score", 80),
             "max_iterations": data.get("max_iterations", 5),
-            "dimensions": data.get("dimensions", self.DEFAULT_MATURITY_DIMENSIONS),
+            "dimensions": data.get("dimensions", DEFAULT_MATURITY_DIMENSIONS),
         }
 
     def load_test_quality_config(self) -> Dict[str, Any]:
@@ -304,8 +233,8 @@ class ConfigLoader:
             # Return defaults in flat structure
             return {
                 "target_score": 80,
-                "coverage_sources": self.DEFAULT_TEST_COVERAGE_SOURCES,
-                "scoring": self.DEFAULT_TEST_SCORING,
+                "coverage_sources": DEFAULT_TEST_COVERAGE_SOURCES,
+                "scoring": DEFAULT_TEST_SCORING,
             }
 
         # Handle nested structure (test_quality: {...})
@@ -315,16 +244,16 @@ class ConfigLoader:
             if "target_score" not in tq_config:
                 tq_config["target_score"] = 80
             if "coverage_sources" not in tq_config:
-                tq_config["coverage_sources"] = self.DEFAULT_TEST_COVERAGE_SOURCES
+                tq_config["coverage_sources"] = DEFAULT_TEST_COVERAGE_SOURCES
             if "scoring" not in tq_config:
-                tq_config["scoring"] = self.DEFAULT_TEST_SCORING
+                tq_config["scoring"] = DEFAULT_TEST_SCORING
             return tq_config
 
         # Handle flat structure
         return {
             "target_score": data.get("target_score", 80),
-            "coverage_sources": data.get("coverage_sources", self.DEFAULT_TEST_COVERAGE_SOURCES),
-            "scoring": data.get("scoring", self.DEFAULT_TEST_SCORING),
+            "coverage_sources": data.get("coverage_sources", DEFAULT_TEST_COVERAGE_SOURCES),
+            "scoring": data.get("scoring", DEFAULT_TEST_SCORING),
         }
 
     def load_all_configs(self) -> Dict[str, Dict[str, Any]]:
