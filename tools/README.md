@@ -6,7 +6,8 @@
 
 | Tool | Purpose | Usage | Output |
 |------|---------|-------|--------|
-| [Exporter](exporter.py) | Export to 9 platforms | `python exporter.py` | Agents & skills for Claude, Copilot, Cursor, etc. |
+| **[Interactive Exporter](interactive_exporter.py)** | **Guided agent/skill selection → Export to 8 platforms** | **`python interactive_exporter.py`** | **User-friendly setup wizard** |
+| [Exporter](exporter.py) | Batch export to 8 platforms (CLI mode) | `python exporter.py --target claude copilot` | Platform-specific agent & skill files |
 | [Context Builder](context_builder.py) | Generate architecture docs | `python context_builder.py` | architecture.md, tech-stack.md, context.json |
 | [Report Generator](code_review_generator.py) | Create HTML reports | `ReviewReportGenerator().generate()` | Interactive HTML reviews |
 | [Comment Formatter](code_review_reporter.py) | Format MR comments | `MRCommentFormatter.format_comment()` | Markdown comments |
@@ -17,28 +18,103 @@
 
 ## 🚀 Exporter Tool
 
-**File:** `exporter.py`
+**Files:** `exporter.py` + `interactive_exporter.py`
 
-**Purpose:** Export agents and skills to 9 platforms
+**Purpose:** Export agents and skills to 8 platforms
 
 **Supported Platforms:**
-- Claude Code
-- GitHub Copilot
-- Cursor
-- Windsurf
-- VS Code
-- Gemini CLI
-- Continue.dev
-- OpenAI
-- Aider
+- Claude Code — `.claude/`
+- GitHub Copilot — `.github/`
+- Cursor IDE — `.cursor/`
+- Windsurf IDE — `.windsurf/`
+- Google Gemini — `.gemini/`
+- Continue IDE — `.continue/`
+- OpenAI — `tools/output/openai/`
+- Aider CLI — `.aider/`
 
-**Usage:**
+### Quick Start: Interactive Mode (Recommended)
+
+The enhanced interactive exporter guides you through the process with visual menus:
 
 ```bash
-# Export all
+python3 tools/interactive_exporter.py
+```
+
+**What you'll see:**
+```
+Step 1: Project Root Directory
+Where should the autonomous developer system be set up?
+
+Step 2: Target Platforms
+Available platforms:
+  1. [✓] Claude Code (Default)
+  2. [ ] GitHub Copilot
+  3. [ ] Cursor IDE
+  ... (8 total)
+
+Step 3: Skills & Agents
+Quick options:
+  1. [ ] All available skills and agents (33 + 18)
+  2. [ ] Core skills only (4 essential skills)
+  3. [ ] Custom selection (interactive multi-select)
+  4. [ ] Minimal (just core agents)
+
+Step 4: Summary & Confirmation
+Project Root:    /path/to/my/project
+Platforms:       2 selected (Claude, Copilot)
+Skills:          33 skills
+Agents:          18 agents
+
+Step 5: Export!
+✓ Exporting to 2 platform(s)...
+```
+
+**Features:**
+- ✅ Dynamic discovery of all 33 skills and 18 agents
+- ✅ Interactive multi-select with visual checkmarks
+- ✅ Grouped by role (agents) and tags (skills)
+- ✅ Four quick presets for different use cases
+- ✅ Summary before export
+- ✅ Color-coded output with helpful hints
+
+### Interactive Mode: Custom Selection
+
+Choose option 3 for custom selection:
+
+```
+Step 3a: Select Agents
+
+Found 18 agent(s). Group by role:
+
+DEVELOPER
+   1. [ ] Implementation Agent
+       Takes requirements and builds complete...
+   2. [ ] Autonomous Developer Agent
+       Full-stack project generation with...
+
+REVIEWER
+   3. [ ] Code Review Agent
+   4. [ ] Security Auditor Agent
+   ... (18 total)
+
+Selection: 1 2 5
+Selected: autonomous_dev_agent, code_review_agent, ...
+```
+
+**How to use:**
+- Type numbers separated by spaces: `1 3 5`
+- Type same number again to deselect: `1` → deselects
+- Press Enter with no input to confirm
+
+### Command-Line Mode (For Automation)
+
+If you prefer command-line:
+
+```bash
+# Export all to all platforms
 python tools/exporter.py
 
-# Export specific platforms
+# Export to specific platforms
 python tools/exporter.py --target claude copilot cursor
 
 # Export specific items
@@ -50,8 +126,114 @@ python tools/exporter.py --list
 # Dry run (preview)
 python tools/exporter.py --dry-run
 
-# Clean up
+# Clean up previous exports
 python tools/exporter.py --clean
+```
+
+### Interactive Exporter Usage Examples
+
+**Example 1: Export everything to Claude**
+```bash
+$ python3 tools/interactive_exporter.py
+
+Step 2: Target Platforms
+Selection: 1  # Claude
+Selection: 
+✓ Selected platforms:
+  • Claude Code (Default)
+
+Step 3: Skills & Agents
+Choose option: 1  # All available
+
+Step 4: Summary & Confirmation
+Project Root:    /Users/me/my-project
+Platforms:       1 selected
+Skills:          33 skills
+Agents:          18 agents
+Proceed with setup? (y/n): y
+
+✓ Exporting...
+✓ Setup Complete!
+```
+
+**Example 2: Export to multiple platforms with core skills**
+```bash
+$ python3 tools/interactive_exporter.py
+
+Step 2: Target Platforms
+Selection: 1 2 3  # Claude, Copilot, Cursor
+Selection: 
+✓ Selected platforms:
+  • Claude Code
+  • GitHub Copilot
+  • Cursor IDE
+
+Step 3: Skills & Agents
+Choose option: 2  # Core skills only
+
+✓ Selected 4 core skills (database, backend, frontend, test)
+
+Proceed? (y/n): y
+✓ Export complete to 3 platforms!
+```
+
+**Example 3: Custom agent + skill selection**
+```bash
+$ python3 tools/interactive_exporter.py
+
+Step 3: Skills & Agents
+Choose option: 3  # Custom selection
+
+Step 3a: Select Agents
+DEVELOPER
+   1. [ ] Implementation Agent
+   2. [ ] Autonomous Developer Agent
+REVIEWER
+   3. [ ] Code Review Agent
+   4. [ ] Security Auditor Agent
+...
+
+Selection: 1 2 3
+Selected: autonomous_dev_agent, code_review_agent, implementation_agent
+
+Step 3b: Select Skills
+BACKEND
+   1. [ ] Backend API Generation Skill
+   2. [ ] Database Skill
+TESTING
+   3. [ ] Test Generation Skill
+...
+
+Selection: 1 2 3
+Selected: backend_skill, database_skill, test_skill
+
+✓ Ready to export selected items
+```
+
+### Export Output Structure
+
+When exporting to a project directory:
+
+```
+my-project/
+├── .claude/
+│   ├── skills/
+│   │   ├── backend_skill.md
+│   │   ├── database_skill.md
+│   │   └── ...
+│   └── agents/
+│       ├── implementation_agent.md
+│       ├── code_review_agent.md
+│       └── ...
+├── .github/
+│   ├── instructions/
+│   │   ├── backend_skill.instructions.md
+│   │   └── ...
+│   └── agents/
+├── .cursor/
+│   └── rules/
+│       └── ...
+└── ... (other platforms)
 ```
 
 ### Exporting Hooks
@@ -71,18 +253,110 @@ python3 tools/exporter.py --target claude copilot --hooks promptshield
 
 See `hooks/README.md` for hook format and examples.
 
-**Output:**
+---
+
+## 🎯 Interactive Exporter (Enhanced)
+
+**File:** `interactive_exporter.py`
+
+**Purpose:** User-friendly guided setup with dynamic agent/skill discovery and selection
+
+**Key Features:**
+
+1. **Dynamic Discovery** (Automatic)
+   - Scans source files for all skills and agents
+   - Parses metadata from YAML frontmatter
+   - Groups by role and tags for easy browsing
+   - Results: 33 skills, 18 agents discovered
+
+2. **Interactive Platform Selection**
+   - Visual display with checkmarks: `[✓] Claude Code`
+   - Toggle with numbers: `1 3 5` (space-separated)
+   - Descriptions for each platform
+   - Reusable — add more platforms to existing project
+
+3. **Four Selection Presets**
+   - **All available:** 33 skills + 18 agents (comprehensive)
+   - **Core skills:** 4 essentials (database, backend, frontend, test)
+   - **Custom:** Interactive multi-select per agent and skill
+   - **Minimal:** Just core agents for lightweight setup
+
+4. **Interactive Multi-Select (Custom mode)**
+   - Agents grouped by role with descriptions
+   - Skills grouped by technology tags
+   - Number-based toggle (same number = deselect)
+   - Real-time selection feedback
+   - Press Enter to confirm
+
+5. **Summary & Confirmation**
+   - Shows exact stats before export
+   - Lists all platforms, skills, agents
+   - One final confirmation before writing
+
+6. **User-Friendly UX**
+   - Color-coded output (green = success, yellow = warning)
+   - Helpful hints and descriptions
+   - Clear step progression
+   - Keyboard interrupt support (Ctrl+C)
+
+**Complete Workflow:**
+
 ```
-output/
-├── claude/
-│   ├── implementation_agent.md
-│   ├── code_review_agent.md
-│   └── ...skills...
-├── copilot/
-│   └── [same files]
-└── cursor/
-    └── [same files]
+┌─────────────────────────────────┐
+│ Step 1: Project Root            │  ← Choose destination
+├─────────────────────────────────┤
+│ Step 2: Platform Selection       │  ← Toggle with numbers
+├─────────────────────────────────┤
+│ Step 3: Skills & Agents         │  ← Choose preset or custom
+├─────────────────────────────────┤
+│ Step 3a: Agent Selection (opt)  │  ← Interactive if custom
+├─────────────────────────────────┤
+│ Step 3b: Skill Selection (opt)  │  ← Interactive if custom
+├─────────────────────────────────┤
+│ Step 4: Summary & Confirmation  │  ← Review before export
+├─────────────────────────────────┤
+│ Step 5: Export                  │  ← Files written
+├─────────────────────────────────┤
+│ Step 6: Next Steps              │  ← Usage instructions
+└─────────────────────────────────┘
 ```
+
+**Selection Mechanics:**
+
+```
+Available platforms:
+  1. [ ] Claude Code
+  2. [✓] GitHub Copilot         (already selected)
+  3. [ ] Cursor IDE
+
+Input: 1 3                      (select 1 and 3)
+Input: 2                        (deselect 2)
+Input: (press Enter)            (confirm selection)
+```
+
+**Documentation:**
+
+See `INTERACTIVE_EXPORTER_README.md` for:
+- Detailed feature descriptions
+- Complete workflow examples
+- Troubleshooting guide
+- Advanced usage (batch export, CI/CD integration)
+- Programmatic usage examples
+
+**Statistics:**
+
+- **Skills discovered:** 33
+  - Backend: 6 (database, backend, REST, task, etc.)
+  - Frontend: 3 (React, TypeScript, UI components)
+  - Advanced: 15+ (Java, Python, Spring, Pulsar, etc.)
+  - Cross-cutting: 9+ (testing, docs, review, etc.)
+
+- **Agents discovered:** 18
+  - Developers: Implementation, Autonomous Dev
+  - Reviewers: Code Review, Security Auditor
+  - Architects: Architecture Refactorer, Systems Architect
+  - Coordinators: AI Engineering Team Coordinator
+  - And more...
 
 ---
 
@@ -320,15 +594,16 @@ Task 10: Deploy to production
 
 ## Tool Comparison
 
-| Tool | Input | Output | Use Case |
-|------|-------|--------|----------|
-| Exporter | All agents/skills | Platform-specific files | Multi-platform distribution |
-| Context Builder | Project structure | Docs + JSON + HTML | Architecture documentation |
-| Report Generator | Review data | HTML file | Code review reports |
-| Comment Formatter | Review data | Markdown text | MR/PR comments |
-| Requirement Parser | Various formats | Structured requirement | Requirement processing |
-| Task Generator | Requirement | Task list | Task breakdown |
-| Design HTML | Project info | Interactive HTML | Visualization |
+| Tool | Input | Output | Use Case | Mode |
+|------|-------|--------|----------|------|
+| **Interactive Exporter** | **User choices** | **Platform dirs** | **First-time setup (recommended)** | **GUI/Interactive** |
+| Exporter | CLI args | Platform dirs | Batch export, automation | CLI |
+| Context Builder | Project structure | Docs + JSON + HTML | Architecture documentation | CLI |
+| Report Generator | Review data | HTML file | Code review reports | Library |
+| Comment Formatter | Review data | Markdown text | MR/PR comments | Library |
+| Requirement Parser | Various formats | Structured requirement | Requirement processing | CLI/Library |
+| Task Generator | Requirement | Task list | Task breakdown | CLI |
+| Design HTML | Project info | Interactive HTML | Visualization | CLI |
 
 ---
 
@@ -357,22 +632,50 @@ from tools.code_review_reporter import MRCommentFormatter
 
 ## Workflow Examples
 
-### Example 1: Export to All Platforms
+### Example 1: Interactive Export (Recommended for First-Time Setup)
+
+```bash
+# From anywhere in your project
+python3 /path/to/awesome-prompts/tools/interactive_exporter.py
+
+# Follow the guided wizard:
+# - Choose where to install (your project directory)
+# - Select platforms (Claude, Copilot, Cursor, etc.)
+# - Choose skills & agents (quick presets or custom)
+# - Confirm summary
+# - Done! Files are installed
+
+# Result: Your project now has .claude/, .github/, .cursor/, etc.
+# with all the agents and skills ready to use
+```
+
+**Use cases:**
+- ✅ First-time setup (easiest way to start)
+- ✅ New team member onboarding
+- ✅ Adding new platforms to existing project
+- ✅ Learning what's available
+
+### Example 2: Batch Export to All Platforms (Command-Line)
 
 ```bash
 cd awesome-prompts/tools
 
-# Export all agents and skills
+# Export all agents and skills to all 8 platforms
 python exporter.py
 
 # Use in your tools:
-# - Claude Code: Copy from output/claude/
-# - Copilot: Copy from output/copilot/
-# - Cursor: Copy from output/cursor/
+# - Claude Code: Copy from .claude/
+# - Copilot: Copy from .github/
+# - Cursor: Copy from .cursor/
 # - etc.
 ```
 
-### Example 2: Generate Architecture Docs
+**Use cases:**
+- ✅ Automation and CI/CD
+- ✅ Bulk export without interaction
+- ✅ Scripted deployments
+
+### Example 3: Generate Architecture Docs
 
 ```bash
 cd awesome-prompts/tools
@@ -470,4 +773,4 @@ result = tool.process(data)
 
 ---
 
-**Last Updated:** May 25, 2026 | **Version:** 4.2.0
+**Last Updated:** June 1, 2026 | **Version:** 5.0.0 (Interactive Exporter added)
