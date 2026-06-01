@@ -7,6 +7,14 @@ from context_builder.models import (
     Graph,
     Node,
     NodeType,
+    Report,
+    WorkspaceConfig,
+    ProjectConfig,
+    TechAliases,
+    ScanConfig,
+    MaturityConfig,
+    TestQualityConfig,
+    AgentOutput,
 )
 
 __all__ = [
@@ -16,6 +24,14 @@ __all__ = [
     "ExecutionContext",
     "NodeType",
     "EdgeType",
+    "Report",
+    "WorkspaceConfig",
+    "ProjectConfig",
+    "TechAliases",
+    "ScanConfig",
+    "MaturityConfig",
+    "TestQualityConfig",
+    "AgentOutput",
 ]
 
 __version__ = "1.0.0"

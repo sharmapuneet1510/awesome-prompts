@@ -3,6 +3,7 @@
 import pytest
 from typing import Dict, List
 from datetime import datetime
+from pathlib import Path
 
 from context_builder.models import (
     Node,
@@ -11,6 +12,14 @@ from context_builder.models import (
     ExecutionContext,
     NodeType,
     EdgeType,
+    Report,
+    WorkspaceConfig,
+    ProjectConfig,
+    TechAliases,
+    ScanConfig,
+    MaturityConfig,
+    TestQualityConfig,
+    AgentOutput,
 )
 
 
@@ -309,33 +318,70 @@ class TestExecutionContext:
     def test_execution_context_creation(self):
         """Test creating an ExecutionContext."""
         graph = Graph()
-        context = ExecutionContext(graph=graph)
+        context = ExecutionContext(
+            workspace_config=None,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
+            graph=graph,
+        )
         assert context.graph is graph
-        assert context.configs == {}
         assert context.reports == {}
         assert context.iteration == 0
         assert context.generated_files == []
-        assert context.cache == {}
         assert context.logger is not None
 
-    def test_execution_context_with_configs(self):
-        """Test ExecutionContext with configurations."""
+    def test_execution_context_with_workspace_config(self):
+        """Test ExecutionContext with WorkspaceConfig."""
         graph = Graph()
-        configs = {"timeout": 30, "debug": True}
-        context = ExecutionContext(graph=graph, configs=configs)
-        assert context.configs == configs
+        workspace = WorkspaceConfig(
+            id="ws-1",
+            name="TestWorkspace",
+            description="Test",
+            context_root=Path("/tmp"),
+        )
+        context = ExecutionContext(
+            workspace_config=workspace,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
+            graph=graph,
+        )
+        assert context.workspace_config == workspace
 
     def test_execution_context_with_reports(self):
         """Test ExecutionContext with reports."""
         graph = Graph()
-        reports = {"analysis": "summary", "metrics": "data"}
-        context = ExecutionContext(graph=graph, reports=reports)
+        report = Report(name="test_report", content="Test content")
+        reports = {"analysis": report}
+        context = ExecutionContext(
+            workspace_config=None,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
+            graph=graph,
+            reports=reports,
+        )
         assert context.reports == reports
 
     def test_execution_context_iteration_tracking(self):
         """Test ExecutionContext iteration tracking."""
         graph = Graph()
-        context = ExecutionContext(graph=graph)
+        context = ExecutionContext(
+            workspace_config=None,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
+            graph=graph,
+        )
         assert context.iteration == 0
         context.iteration += 1
         assert context.iteration == 1
@@ -343,18 +389,35 @@ class TestExecutionContext:
     def test_execution_context_generated_files_tracking(self):
         """Test ExecutionContext generated files tracking."""
         graph = Graph()
-        context = ExecutionContext(graph=graph)
+        context = ExecutionContext(
+            workspace_config=None,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
+            graph=graph,
+        )
         assert context.generated_files == []
-        context.generated_files.append("models.py")
-        context.generated_files.append("__init__.py")
+        context.generated_files.append(Path("models.py"))
+        context.generated_files.append(Path("__init__.py"))
         assert len(context.generated_files) == 2
-        assert "models.py" in context.generated_files
+        assert Path("models.py") in context.generated_files
 
     def test_execution_context_cache(self):
         """Test ExecutionContext cache functionality."""
         graph = Graph()
-        context = ExecutionContext(graph=graph)
-        assert context.cache == {}
+        context = ExecutionContext(
+            workspace_config=None,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
+            graph=graph,
+            cache={"initial": "value"},
+        )
+        assert context.cache == {"initial": "value"}
         context.cache["key1"] = "value1"
         assert context.cache["key1"] == "value1"
 
@@ -364,21 +427,20 @@ class TestExecutionContext:
         node = Node(id="node1", type=NodeType.CLASS, name="UserService")
         graph.add_node(node)
 
-        configs = {"timeout": 30}
-        reports = {"status": "running"}
-        generated_files = ["file1.py"]
-
+        generated_files = [Path("file1.py")]
         context = ExecutionContext(
+            workspace_config=None,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
             graph=graph,
-            configs=configs,
-            reports=reports,
             iteration=1,
             generated_files=generated_files,
         )
 
         assert len(context.graph.nodes) == 1
-        assert context.configs["timeout"] == 30
-        assert context.reports["status"] == "running"
         assert context.iteration == 1
         assert len(context.generated_files) == 1
         assert context.logger is not None
@@ -386,6 +448,269 @@ class TestExecutionContext:
     def test_execution_context_logger_exists(self):
         """Test ExecutionContext has a logger."""
         graph = Graph()
-        context = ExecutionContext(graph=graph)
+        context = ExecutionContext(
+            workspace_config=None,
+            project_config=None,
+            tech_aliases=None,
+            scan_config=None,
+            maturity_config=None,
+            test_quality_config=None,
+            graph=graph,
+        )
         assert context.logger is not None
         assert hasattr(context.logger, "info") or hasattr(context.logger, "debug")
+
+
+class TestReport:
+    """Tests for Report class."""
+
+    def test_report_creation_minimal(self):
+        """Test creating a Report with minimal attributes."""
+        report = Report(
+            name="analysis_report",
+            content="Sample analysis content",
+        )
+        assert report.name == "analysis_report"
+        assert report.content == "Sample analysis content"
+        assert report.file_path is None
+        assert report.metrics == {}
+
+    def test_report_creation_full(self):
+        """Test creating a Report with all attributes."""
+        file_path = Path("/tmp/report.md")
+        metrics = {"accuracy": 0.95, "coverage": 0.85}
+        report = Report(
+            name="analysis_report",
+            content="Sample analysis content",
+            file_path=file_path,
+            metrics=metrics,
+        )
+        assert report.name == "analysis_report"
+        assert report.content == "Sample analysis content"
+        assert report.file_path == file_path
+        assert report.metrics == metrics
+
+
+class TestWorkspaceConfig:
+    """Tests for WorkspaceConfig class."""
+
+    def test_workspace_config_creation_minimal(self):
+        """Test creating a WorkspaceConfig with minimal attributes."""
+        config = WorkspaceConfig(
+            id="ws-001",
+            name="MyWorkspace",
+            description="Test workspace",
+            context_root=Path("/workspace"),
+        )
+        assert config.id == "ws-001"
+        assert config.name == "MyWorkspace"
+        assert config.description == "Test workspace"
+        assert config.context_root == Path("/workspace")
+        assert config.repositories == []
+        assert config.gitlab_enabled is False
+        assert config.gitlab_base_url is None
+        assert config.gitlab_group is None
+
+    def test_workspace_config_creation_full(self):
+        """Test creating a WorkspaceConfig with all attributes."""
+        repositories = [{"name": "repo1", "url": "https://github.com/user/repo1"}]
+        config = WorkspaceConfig(
+            id="ws-001",
+            name="MyWorkspace",
+            description="Test workspace",
+            context_root=Path("/workspace"),
+            repositories=repositories,
+            gitlab_enabled=True,
+            gitlab_base_url="https://gitlab.com",
+            gitlab_group="my-group",
+        )
+        assert config.id == "ws-001"
+        assert config.repositories == repositories
+        assert config.gitlab_enabled is True
+        assert config.gitlab_base_url == "https://gitlab.com"
+        assert config.gitlab_group == "my-group"
+
+
+class TestProjectConfig:
+    """Tests for ProjectConfig class."""
+
+    def test_project_config_creation_minimal(self):
+        """Test creating a ProjectConfig with minimal attributes."""
+        config = ProjectConfig()
+        assert config.projects == []
+
+    def test_project_config_creation_with_projects(self):
+        """Test creating a ProjectConfig with projects."""
+        projects = [
+            {"name": "project1", "path": "/path/to/project1"},
+            {"name": "project2", "path": "/path/to/project2"},
+        ]
+        config = ProjectConfig(projects=projects)
+        assert config.projects == projects
+        assert len(config.projects) == 2
+
+
+class TestTechAliases:
+    """Tests for TechAliases class."""
+
+    def test_tech_aliases_creation_minimal(self):
+        """Test creating a TechAliases with minimal attributes."""
+        aliases = TechAliases()
+        assert aliases.aliases == []
+
+    def test_tech_aliases_creation_with_aliases(self):
+        """Test creating a TechAliases with alias mappings."""
+        alias_list = [
+            {"tech": "java", "aliases": ["Java", "JAVA"]},
+            {"tech": "python", "aliases": ["Python", "py"]},
+        ]
+        aliases = TechAliases(aliases=alias_list)
+        assert aliases.aliases == alias_list
+        assert len(aliases.aliases) == 2
+
+
+class TestScanConfig:
+    """Tests for ScanConfig class."""
+
+    def test_scan_config_creation_minimal(self):
+        """Test creating a ScanConfig with defaults."""
+        config = ScanConfig()
+        assert len(config.include_patterns) > 0
+        assert len(config.exclude_patterns) > 0
+        assert isinstance(config.analysis_depth, dict)
+        assert config.incremental is True
+
+    def test_scan_config_include_patterns(self):
+        """Test that ScanConfig has required include patterns."""
+        config = ScanConfig()
+        assert "**/*.java" in config.include_patterns
+        assert "**/*.py" in config.include_patterns
+        assert "**/pom.xml" in config.include_patterns
+
+    def test_scan_config_exclude_patterns(self):
+        """Test that ScanConfig has required exclude patterns."""
+        config = ScanConfig()
+        assert "**/target/**" in config.exclude_patterns
+        assert "**/node_modules/**" in config.exclude_patterns
+        assert "**/.git/**" in config.exclude_patterns
+
+    def test_scan_config_analysis_depth_defaults(self):
+        """Test that ScanConfig has all required analysis depth flags."""
+        config = ScanConfig()
+        required_keys = [
+            "class_level", "method_level", "flow_level", "config_level",
+            "db_analysis", "middleware_analysis", "exception_flow",
+            "test_quality", "technical_debt",
+        ]
+        for key in required_keys:
+            assert key in config.analysis_depth
+            assert isinstance(config.analysis_depth[key], bool)
+
+
+class TestMaturityConfig:
+    """Tests for MaturityConfig class."""
+
+    def test_maturity_config_creation_minimal(self):
+        """Test creating a MaturityConfig with defaults."""
+        config = MaturityConfig()
+        assert config.target_score == 80
+        assert config.max_iterations == 5
+        assert isinstance(config.dimensions, dict)
+
+    def test_maturity_config_dimensions(self):
+        """Test that MaturityConfig has all required dimensions."""
+        config = MaturityConfig()
+        required_dims = [
+            "project_structure", "code_understanding", "flow_understanding",
+            "data_understanding", "middleware_understanding", "test_intelligence",
+            "documentation_quality", "risk_analysis",
+        ]
+        for dim in required_dims:
+            assert dim in config.dimensions
+            assert "weight" in config.dimensions[dim]
+
+    def test_maturity_config_custom_target(self):
+        """Test creating a MaturityConfig with custom target score."""
+        config = MaturityConfig(target_score=90, max_iterations=10)
+        assert config.target_score == 90
+        assert config.max_iterations == 10
+
+
+class TestTestQualityConfig:
+    """Tests for TestQualityConfig class."""
+
+    def test_test_quality_config_creation_minimal(self):
+        """Test creating a TestQualityConfig with defaults."""
+        config = TestQualityConfig()
+        assert config.target_score == 80
+        assert isinstance(config.coverage_sources, dict)
+        assert isinstance(config.scoring, dict)
+
+    def test_test_quality_config_coverage_sources(self):
+        """Test that TestQualityConfig has required coverage sources."""
+        config = TestQualityConfig()
+        assert "java" in config.coverage_sources
+        assert "javascript" in config.coverage_sources
+        assert "python" in config.coverage_sources
+
+    def test_test_quality_config_scoring_dimensions(self):
+        """Test that TestQualityConfig has all required scoring dimensions."""
+        config = TestQualityConfig()
+        required_scoring = [
+            "line_coverage", "branch_coverage", "critical_flow_coverage",
+            "assertion_quality", "negative_test_coverage", "integration_test_coverage",
+            "boundary_case_coverage", "test_maintainability",
+        ]
+        for scoring_key in required_scoring:
+            assert scoring_key in config.scoring
+            assert isinstance(config.scoring[scoring_key], int)
+
+    def test_test_quality_config_custom_target(self):
+        """Test creating a TestQualityConfig with custom target score."""
+        config = TestQualityConfig(target_score=90)
+        assert config.target_score == 90
+
+
+class TestAgentOutput:
+    """Tests for AgentOutput class."""
+
+    def test_agent_output_creation_minimal(self):
+        """Test creating an AgentOutput with minimal attributes."""
+        output = AgentOutput(
+            status="success",
+            message="Task completed",
+        )
+        assert output.status == "success"
+        assert output.message == "Task completed"
+        assert output.artifacts == []
+        assert output.metrics == {}
+        assert output.errors == []
+
+    def test_agent_output_creation_full(self):
+        """Test creating an AgentOutput with all attributes."""
+        artifacts = [Path("/tmp/file1.py"), Path("/tmp/file2.py")]
+        metrics = {"execution_time": 2.5, "files_generated": 2}
+        errors = ["Warning: deprecated API used"]
+        output = AgentOutput(
+            status="success",
+            message="Task completed",
+            artifacts=artifacts,
+            metrics=metrics,
+            errors=errors,
+        )
+        assert output.status == "success"
+        assert output.message == "Task completed"
+        assert output.artifacts == artifacts
+        assert output.metrics == metrics
+        assert output.errors == errors
+
+    def test_agent_output_with_errors(self):
+        """Test creating an AgentOutput with error status."""
+        output = AgentOutput(
+            status="failed",
+            message="Task failed",
+            errors=["File not found", "Invalid configuration"],
+        )
+        assert output.status == "failed"
+        assert len(output.errors) == 2
+        assert "File not found" in output.errors
