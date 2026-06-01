@@ -17,6 +17,14 @@ from .pipeline import InstructionPipeline
 from .middleware import InstructionMiddleware
 from .exporters import BaseExporter, IntermediateExporter
 from .plugins import PluginRegistry, get_global_registry
+from .analyzers import (
+    JavaAnalyzer,
+    PythonAnalyzer,
+    TypeScriptAnalyzer,
+    ConfigAnalyzer,
+    DatabaseAnalyzer,
+    MiddlewareAnalyzer,
+)
 
 __all__ = [
     "InstructionCategory",
@@ -33,4 +41,10 @@ __all__ = [
     "IntermediateExporter",
     "PluginRegistry",
     "get_global_registry",
+    "JavaAnalyzer",
+    "PythonAnalyzer",
+    "TypeScriptAnalyzer",
+    "ConfigAnalyzer",
+    "DatabaseAnalyzer",
+    "MiddlewareAnalyzer",
 ]
