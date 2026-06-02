@@ -92,6 +92,129 @@
   resolution: "Added input validation and error messages"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# NEW FEATURES: JIRA Change Request Assessment System (2026-06-02)
+
+- date: 2026-06-02
+  category: agents
+  type: feature-request
+  title: "Add JIRA Change Request Assessment scoring to Code Review Agent"
+  description: |
+    Want to add comprehensive JIRA ticket assessment with weighted scoring:
+
+    8 Categories with Weights:
+    1. Acceptance Criteria (25%) - GWT coverage, test scenarios
+    2. Description Quality (20%) - User story format, technical notes
+    3. Naming Conventions (15%) - Title length (5-15 words), clarity
+    4. Linking (15%) - Parent/child relationships, tracks
+    5. Labels (10%) - Recommended 3-5 labels per ticket
+    6. Version Management (8%) - Fix version set for sprint tracking
+    7. Priority (5%) - Priority level assessment
+    8. Story Points (2%) - Estimation completeness
+
+    Scoring Rules:
+    - Pass Threshold: 60/100
+    - Blocker Threshold: 40/100
+    - Each category has max 100 points
+    - Final score = sum(category_score * weight)
+
+    Features:
+    ✓ Detailed findings for each category
+    ✓ "Strengths" and "Violations" breakdown
+    ✓ "Quick Wins" (easy fixes) with point improvements
+    ✓ Threshold analysis (minimum, blocker)
+    ✓ Recommendations for improvement
+    ✓ Potential score projection
+
+    Example:
+    - Current: 71.50/100 (PASS)
+    - Quick wins available: +17.75 points
+    - Projected: 89.25/100 (after 3 easy fixes)
+  severity: high
+  status: open
+  assignee: ""
+  labels: [code-review, jira, scoring, agents, requirements]
+
+- date: 2026-06-02
+  category: agents
+  type: feature-request
+  title: "Add Quick Wins recommendation system to Code Review"
+  description: |
+    Implement "Quick Wins" feature that identifies easy-to-fix improvements:
+
+    Example Quick Wins:
+    1. Set Fix Version → +8.00 points
+    2. Add 2-3 more labels → +6.00 points
+    3. Shorten title → +3.75 points
+
+    Benefits:
+    - Shows impact of each fix (points gained)
+    - Helps teams prioritize improvements
+    - Provides actionable next steps
+    - Shows potential score after fixes
+
+    Implementation:
+    - Scan ticket for common issues
+    - Calculate point impact for each fix
+    - Rank by effort vs impact
+    - Show projected new score
+  severity: medium
+  status: open
+  assignee: ""
+  labels: [code-review, recommendations, jira, agents]
+
+- date: 2026-06-02
+  category: agents
+  type: feature-request
+  title: "Add detailed category validation rules to Code Review Agent"
+  description: |
+    Enhance Code Review Agent with specific validation for each category:
+
+    Acceptance Criteria (25% weight):
+    - Check for Given-When-Then format
+    - Verify positive and negative scenarios
+    - Count criteria (should have multiple)
+    - Mark as ✓ if excellent coverage
+
+    Description Quality (20% weight):
+    - Require: User Story format ("As a...")
+    - Require: Technical Notes section
+    - Require: Files to Modify list
+    - Penalty if sections missing
+
+    Naming Conventions (15% weight):
+    - Check title length (5-15 words for stories)
+    - Warn if > 22 words
+    - Flag special characters (pipes, etc.)
+    - Recommend shortened version
+
+    Linking (15% weight):
+    - Verify parent ticket exists
+    - Check "tracks" relationships
+    - Validate child linkages
+
+    Labels (10% weight):
+    - Count labels (recommend 3-5)
+    - Suggest missing labels (data-quality, validation, etc.)
+    - Flag if only 1 label
+
+    Version Management (8% weight):
+    - Check if Fix Version set
+    - Verify sprint assignment
+    - Penalty if missing
+
+    Priority (5% weight):
+    - Validate priority level set
+    - Check against project standards
+
+    Story Points (2% weight):
+    - Verify estimation provided
+    - Warn if missing
+  severity: high
+  status: open
+  assignee: ""
+  labels: [code-review, jira, validation, agents, rules]
+
+# ─────────────────────────────────────────────────────────────────────────────
 # YOUR FEEDBACK GOES HERE! 👇
 #
 # Add new feedback items below. Please include:
