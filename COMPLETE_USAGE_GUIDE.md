@@ -10,10 +10,14 @@
 ## 📋 Table of Contents
 
 1. [Quick Reference](#quick-reference)
-2. [18 Agents — Complete Usage](#18-agents--complete-usage)
-3. [34 Skills — Complete Usage](#34-skills--complete-usage)
-4. [Tools & Commands](#tools--commands)
-5. [Acceptance Criteria Checklist](#acceptance-criteria-checklist)
+2. [Workflow Walkthroughs](#workflow-walkthroughs)
+   - [How to Review Code — Step by Step](#how-to-review-code--step-by-step)
+   - [How to Generate Context — Step by Step](#how-to-generate-context--step-by-step)
+3. [Quick Integration Guide](#quick-integration-guide-code-review--context)
+4. [18 Agents — Complete Usage](#18-agents--complete-usage)
+5. [34 Skills — Complete Usage](#34-skills--complete-usage)
+6. [Tools & Commands](#tools--commands)
+7. [Acceptance Criteria Checklist](#acceptance-criteria-checklist)
 
 ---
 
@@ -27,6 +31,339 @@ python3 tools/interactive_exporter.py
 
 # Or use CLI
 python3 tools/exporter.py --target claude copilot
+```
+
+### Platform Comparison
+
+| Feature | Claude Code | GitHub Copilot |
+|---------|-----------|-----------------|
+| **Agent Access** | `"Use [Agent Name] to..."` | `@[agent-name]` in chat/comment |
+| **Context** | Auto-discovers from docs/ | Via @symbols and repo files |
+| **File Access** | Full project workspace | Current file + project context |
+| **Code Review** | Full PR review + scoring | PR comment integration |
+| **Context Building** | Interactive with Q&A | Automatic analysis mode |
+| **Output** | HTML reports, MD comments | PR comments, suggestions |
+| **Best For** | Deep analysis, full workflows | Quick inline suggestions |
+
+### Which Platform to Use?
+
+**Use Claude Code if you want:**
+- ✅ Comprehensive code reviews with JIRA assessment
+- ✅ Full project context generation
+- ✅ Interactive agent workflows
+- ✅ HTML reports and detailed analysis
+- ✅ End-to-end feature implementation
+
+**Use GitHub Copilot if you want:**
+- ✅ Quick inline code suggestions
+- ✅ PR comment-based reviews
+- ✅ IDE integration (VS Code, JetBrains)
+- ✅ Lightweight agent interactions
+- ✅ No context switching from IDE
+
+---
+
+# 🔄 Workflow Walkthroughs
+
+## How to Review Code — Step by Step
+
+**Purpose:** Senior-level code review with JIRA assessment, quality scoring, and actionable feedback.
+
+### Step 1: Prepare Your PR/MR
+
+- Have PR/MR number ready (e.g., #123)
+- Have JIRA ticket number if available (e.g., PROJ-456)
+- Know what branch to review
+
+### Step 2: In Claude Code
+
+```
+@code-review-agent
+
+Review PR #123 against PROJ-456 requirements
+```
+
+Agent will ask:
+- "Which PR/MR should I review?"
+- "What JIRA ticket is this addressing?"
+- "Any specific areas of concern?"
+
+Answer the questions, agent will proceed.
+
+### Step 2: In GitHub Copilot
+
+```
+/code-review-agent PROJ-456 PR-123
+```
+
+Or in PR comment:
+```
+@code-review-agent
+Please review this pull request for:
+- Requirement coverage against PROJ-456
+- Code quality and SOLID principles
+- Test coverage completeness
+- Security vulnerabilities
+```
+
+### Step 3: Review Phases (Automatic)
+
+The agent runs 6 phases:
+
+**Phase 1: JIRA Assessment** (8 categories)
+- ✅ Acceptance Criteria (25%)
+- ✅ Description Quality (20%)
+- ✅ Naming Conventions (15%)
+- ✅ Linking (15%)
+- ✅ Labels (10%)
+- ✅ Version Management (8%)
+- ✅ Priority (5%)
+- ✅ Story Points (2%)
+
+**Phase 2: Code Quality** (SOLID, patterns, security)
+- Single Responsibility Principle
+- Open/Closed Principle
+- Liskov Substitution Principle
+- Interface Segregation
+- Dependency Inversion
+- Design patterns
+- Security vulnerabilities
+
+**Phase 3: Test Coverage** (unit, integration, edge cases)
+- Unit test count
+- Integration test count
+- Edge case coverage
+- Mock/stub verification
+- Coverage percentage
+
+**Phase 4: Documentation** (docstrings, examples)
+- Function/method documentation
+- Parameter descriptions
+- Return value documentation
+- Usage examples
+- README updates
+
+**Phase 5: Scoring** (A-F grade)
+- Requirement Met: X%
+- Code Quality: X%
+- Test Coverage: X%
+- Documentation: X%
+- Final Grade: X/F
+
+**Phase 6: Report** (HTML + PR comment)
+- Interactive HTML report
+- MR/PR comment summary
+- Action items checklist
+- Quick wins (+points possible)
+
+### Step 4: Review Output
+
+You'll receive:
+- 📄 **Interactive HTML Report** (saved locally)
+- 💬 **PR/MR Comment** (posted automatically)
+- ✅ **Actionable Items** (ranked by impact)
+
+### Example Workflow
+
+```
+Start: "Review PR #99 against AUTH-789"
+       ↓
+Agent: "Analyzing PR #99 and JIRA AUTH-789..."
+       ↓
+Phase 1: JIRA Assessment Score: 71.5/100
+       ↓
+Phase 2: Code Quality Score: 85/100
+       ↓
+Phase 3: Test Coverage: 72%
+       ↓
+Phase 4: Documentation: 65%
+       ↓
+Phase 5: Final Grade: B (84.4/100)
+       ↓
+Phase 6: HTML Report + PR Comment
+       ↓
+End: Review Complete ✅
+```
+
+---
+
+## How to Generate Context — Step by Step
+
+**Purpose:** Generate comprehensive project architecture and technical context documentation.
+
+### Step 1: Ensure You're in Project Root
+
+```bash
+cd /path/to/your/project
+```
+
+### Step 2: In Claude Code
+
+**Option A: Via Agent**
+```
+@context-builder-agent
+
+Generate complete project context and architecture documentation for this project
+```
+
+Agent will:
+1. Scan project structure
+2. Detect tech stack (Java, Python, React, etc.)
+3. Extract architecture patterns
+4. Map dependencies and relationships
+5. Identify entry points and key components
+6. Generate documentation
+
+**Option B: Via CLI Tool**
+```bash
+python3 tools/context_builder.py
+```
+
+### Step 3: In GitHub Copilot
+
+```
+@context-builder-agent
+Please analyze this project and generate:
+- architecture.md (design narrative)
+- context.json (machine-readable metadata)
+- tech-stack.md (technology reference)
+- design.html (interactive visualization)
+```
+
+### Step 4: Context Generation Phases
+
+**Phase 1: Project Scanning**
+- Reads directory structure
+- Identifies file types
+- Counts components
+
+**Phase 2: Tech Stack Detection**
+- Detects language (Java, Python, Go, Node.js, etc.)
+- Identifies frameworks (Spring, FastAPI, React, etc.)
+- Finds databases (PostgreSQL, MongoDB, etc.)
+- Detects build tools (Maven, Gradle, npm, etc.)
+
+**Phase 3: Architecture Analysis**
+- Identifies main components
+- Maps relationships
+- Extracts patterns
+- Documents design decisions
+
+**Phase 4: Documentation Generation**
+```
+docs/context/
+├── context.json              (Machine-readable metadata)
+├── architecture.md           (Design narrative + C4 diagrams)
+├── tech-stack.md            (Technology reference table)
+└── design.html              (Interactive visualization)
+```
+
+### Step 5: Use Generated Context
+
+The generated context files are used by:
+- 📝 **Implementation Agent** — understands project structure before coding
+- 🔍 **Code Review Agent** — knows architecture before reviewing
+- 🏗️ **Autonomous Developer** — has full context before generating
+- 🛡️ **Security Auditor** — analyzes with tech-stack awareness
+
+### Output Structure
+
+**context.json Example:**
+```json
+{
+  "project_name": "awesome-prompts",
+  "description": "AI/LLM prompt templates and agent system",
+  "tech_stack": {
+    "language": "Python, JavaScript, Java",
+    "frameworks": ["FastAPI", "React", "Spring Boot"],
+    "databases": ["PostgreSQL", "MongoDB"],
+    "tools": ["Docker", "Kubernetes"]
+  },
+  "components": [
+    {
+      "name": "Core API",
+      "path": "src/api/",
+      "type": "backend",
+      "tech": "FastAPI"
+    },
+    {
+      "name": "Web UI",
+      "path": "src/frontend/",
+      "type": "frontend",
+      "tech": "React"
+    }
+  ],
+  "entry_points": ["main.py", "index.js"],
+  "architecture_pattern": "Microservices"
+}
+```
+
+**architecture.md Example:**
+```markdown
+# Architecture Overview
+
+## System Context
+[C4 Level 1 Diagram]
+
+## Container Diagram
+[C4 Level 2 Diagram]
+
+## Components
+- API Server (FastAPI)
+- Database (PostgreSQL)
+- Frontend (React)
+- Cache (Redis)
+
+## Data Flow
+Request → API → Service Layer → Database → Response
+```
+
+**tech-stack.md Example:**
+```markdown
+| Layer | Technology | Version | Purpose |
+|-------|-----------|---------|---------|
+| Language | Python | 3.11+ | Backend |
+| Framework | FastAPI | 0.104+ | API Framework |
+| Database | PostgreSQL | 15+ | Data Storage |
+| Frontend | React | 18+ | UI Framework |
+| Build | Docker | 24+ | Containerization |
+```
+
+**design.html:**
+Interactive visual explorer with:
+- Architecture diagram (Mermaid)
+- Technology stack graph
+- File tree visualization
+- API endpoints explorer
+- Component relationships
+
+### Example Complete Workflow
+
+```
+Command: "Generate context for this project"
+         ↓
+Step 1: Scan project files
+        ↓ Found: 234 Python files, 89 React components
+         ↓
+Step 2: Detect tech stack
+        ↓ Python (FastAPI), React, PostgreSQL, Docker
+         ↓
+Step 3: Extract architecture
+        ↓ 3 main services, 2 frontends, 5 databases
+         ↓
+Step 4: Generate documentation
+        ↓ Writing context.json, architecture.md, tech-stack.md
+         ↓
+Step 5: Create visualizations
+        ↓ Building design.html with D3/Mermaid
+         ↓
+Complete: docs/context/ created ✅
+         ↓
+Output:
+  ✅ context.json (metadata)
+  ✅ architecture.md (C4 diagrams)
+  ✅ tech-stack.md (technology table)
+  ✅ design.html (interactive explorer)
 ```
 
 ---
@@ -56,9 +393,25 @@ Agent will:
 7. Generate documentation
 ```
 
-### Via Command
+### Via Command Line
 ```bash
 /autonomous-developer "Build e-commerce product catalog"
+```
+
+### In GitHub Copilot
+```
+@autonomous-developer
+Build a full-stack shopping cart system with:
+- Database schema
+- REST APIs
+- React UI components
+- Comprehensive tests
+- Docker setup
+```
+
+Or in IDE:
+```
+/autonomous-developer Build e-commerce product catalog
 ```
 
 ### Expected Input
@@ -185,6 +538,17 @@ Agent will:
 ### Via Free Text
 ```
 "Build a payment processing module with Stripe integration"
+```
+
+### In GitHub Copilot
+```
+@implementation-agent
+Implement user registration with:
+- Email validation
+- Password hashing
+- Database storage
+- Unit tests
+- API documentation
 ```
 
 ### Expected Input
@@ -847,12 +1211,33 @@ Agent will:
 5. Generate documentation
 ```
 
+### In GitHub Copilot
+```
+@context-builder-agent
+Please analyze this project and generate complete documentation:
+- architecture.md with C4 diagrams
+- context.json with metadata
+- tech-stack.md with technology reference
+- design.html with interactive visualization
+```
+
+Or via command:
+```bash
+/context-builder-agent --full
+```
+
+### Expected Input
+- Project root directory path
+- Optional: specific modules to analyze
+- Optional: focus areas (architecture, dependencies, patterns)
+
 ### Expected Output
 ```
-✅ context.json (machine-readable)
-✅ architecture.md (design narrative)
-✅ tech-stack.md (technology reference)
-✅ design.html (interactive visualization)
+docs/context/
+├── context.json (machine-readable metadata)
+├── architecture.md (design narrative + C4 diagrams)
+├── tech-stack.md (technology reference table)
+└── design.html (interactive Mermaid/D3 visualization)
 ```
 
 **Use Cases:**
@@ -860,6 +1245,8 @@ Agent will:
 - Architecture documentation
 - Team knowledge building
 - System understanding
+- Before running Code Review Agent
+- Before running Implementation Agent
 
 **Time to Complete:** 10-20 minutes
 
@@ -890,6 +1277,17 @@ Agent will:
 9. Generate reports
 ```
 
+### In GitHub Copilot
+```
+@super-agent-orchestrator
+Analyze all repositories in this workspace:
+- Generate code graphs
+- Build architecture diagrams
+- Evaluate test quality
+- Score technical maturity
+- Detect dependencies between repos
+```
+
 ### Expected Output
 ```
 ✅ Multi-repo analysis
@@ -908,6 +1306,44 @@ Agent will:
 - Portfolio analysis
 
 **Time to Complete:** 30-60 minutes per repository
+
+---
+
+## Quick Integration Guide: Code Review + Context
+
+**Most Common Workflow:** Review code with full project context
+
+### Option 1: Claude Code
+```bash
+# Step 1: Generate project context (one-time)
+"Use Context Builder Agent to analyze this project"
+# Output: docs/context/ with architecture.md, context.json, etc.
+
+# Step 2: Review PRs with context awareness
+"Code Review Agent, review PR #123 with PROJ-456 requirements"
+# Agent uses generated context for better analysis
+```
+
+### Option 2: GitHub Copilot
+```bash
+# Step 1: Generate context
+@context-builder-agent
+Generate complete project documentation
+
+# Step 2: Review PR
+@code-review-agent
+Review this PR against the project requirements
+```
+
+### Option 3: Combined CLI
+```bash
+# Generate context once
+python3 tools/context_builder.py
+
+# Then use agents for reviews
+"Code Review Agent, review PR #123"
+# Agent automatically uses generated context
+```
 
 ---
 
