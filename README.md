@@ -5,9 +5,9 @@
 <div align="center">
 
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge&logo=checkmarx)](https://github.com/sharmapuneet1510/awesome-prompts)
-[![Version](https://img.shields.io/badge/Version-4.2.0-blueviolet?style=for-the-badge&logo=semanticrelease)](https://github.com/sharmapuneet1510/awesome-prompts/releases)
+[![Version](https://img.shields.io/badge/Version-2.0-blueviolet?style=for-the-badge&logo=semanticrelease)](https://github.com/sharmapuneet1510/awesome-prompts/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge&logo=opensourceinitiative)](LICENSE)
-[![Updated](https://img.shields.io/badge/Updated-May%202026-darkblue?style=for-the-badge&logo=calendar)](https://github.com/sharmapuneet1510/awesome-prompts/commits/main)
+[![Updated](https://img.shields.io/badge/Updated-June%202026-darkblue?style=for-the-badge&logo=calendar)](https://github.com/sharmapuneet1510/awesome-prompts/commits/main)
 [![Platform](https://img.shields.io/badge/Platforms-9+-ff69b4?style=for-the-badge&logo=electron)](docs/)
 
 **Compatible with:** Claude Code • GitHub Copilot • Cursor • Windsurf • VS Code • Gemini CLI • Continue.dev • OpenAI • Aider
@@ -18,17 +18,46 @@
 
 ## 🚀 Quick Overview
 
-**Awesome Prompts** is a comprehensive, **production-ready system** of **5 AI agents** and **7 reusable skills** that transform requirements into enterprise-grade code with:
+**Awesome Prompts v2.0** is a comprehensive, **production-ready system** of **13 role-based AI agents** and **22 reusable skills** that transform requirements into enterprise-grade code with:
 
 | Feature | Details |
 |---------|---------|
+| 🎯 **54+ Callable Functions** | `agent:function` syntax for targeted workflows (see [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md)) |
 | 🧪 **100% Test Coverage** | Unit, integration, and E2E tests with business validation |
-| 📚 **Auto-Documentation** | JSDoc, docstrings, Javadoc (100% API coverage) |
-| 🎯 **JIRA Integration** | Fetch requirements, validate acceptance criteria |
+| 📚 **Auto-Documentation** | JSDoc, docstrings, Javadoc + architecture guides + HTML sites |
+| 🎯 **JIRA Integration** | Parse JIRA JSON/CSV → interactive HTML backlog reports |
 | 🏗️ **Multi-Tech Support** | Java • Python • React • TypeScript • Node.js • SQL |
 | 🤝 **MCP Servers** | JIRA, VCS, GitHub integrations via MCP |
 | 🧠 **Auto-Context** | Generate architecture.md, tech-stack.md, context.json |
-| ⚙️ **Full Orchestration** | Build complete systems (DB + API + UI + tests) |
+| ⚙️ **Full Orchestration** | Build complete systems (DB + API + UI + tests) + refactor monoliths |
+
+---
+
+## 💡 New in v2.0: Function Dispatch Interface
+
+Use `agent:function` syntax to call specific agent workflows without full scope selection:
+
+```bash
+# Documentation agent
+documentation:context path=./my-project          # Build context.json + architecture.md
+documentation:code path=./src                    # Generate code docs only
+documentation:api path=./backend                 # Generate OpenAPI spec only
+
+# Architecture agent
+architecture:design requirements="..." scale="..." # Design new system
+architecture:refactor path=./monolith             # Refactor brownfield system
+
+# Business analyst
+ba:report file=jira-export.json                  # Parse JIRA → HTML backlog
+ba:parse file=jira-export.csv                    # Parse JIRA → JSON
+
+# And 48+ more functions across all agents...
+security:audit path=./src
+test:generate files=src/**
+autonomous:build file=requirements.txt
+```
+
+**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 54 functions.**
 
 ---
 
@@ -51,25 +80,37 @@ awesome-prompts/
 │   ├── incident-management/           ← Production issue investigation
 │   └── reporting/                     ← HTML report generation
 │
-├── 🤖 agents/                          ← Full agent definitions (role-based)
-│   ├── implementation_agent.md        ← Feature builder (code + tests + docs)
-│   ├── code_review_agent.md           ← Design patterns & SOLID review [NEW v3.0]
-│   ├── writer_agent.md                ← API docs, README, changelog
-│   ├── integration_agent.md           ← CI/CD, deployment, monitoring
-│   ├── test_case_generator_agent.md   ← 100% coverage tests + validation
-│   ├── technical_documentation_agent.md ← Auto-generate project documentation
-│   └── autonomous/
-│       ├── autonomous_dev_agent.md    ← Full-stack orchestrator
-│       └── README.md                  ← Autonomous development guide
+├── 🤖 agents/                          ← 13 role-based agents (v2.0 consolidated)
+│   ├── autonomous/autonomous_dev_agent.md ← Full-stack orchestrator
+│   ├── implementation_agent.md        ← Feature builder (build, test, doc)
+│   ├── documentation_agent.md         ← Code docs + architecture + API specs [MERGED]
+│   ├── architecture_agent.md          ← System design + refactoring [MERGED]
+│   ├── business_analyst_agent.md      ← JIRA → HTML backlog reports [NEW]
+│   ├── code_review_agent.md           ← PR validation + quality scoring
+│   ├── test_case_generator_agent.md   ← 100% coverage tests + JIRA validation
+│   ├── security_auditor_agent.md      ← Vulnerability scanning + threat modeling
+│   ├── codebase_auditor_agent.md      ← Tech debt + violation scanning
+│   ├── performance_optimizer_agent.md ← Bottleneck analysis + optimization
+│   ├── production_debugger_agent.md   ← Root cause analysis + edge cases
+│   ├── integration_agent.md           ← CI/CD + Docker + IaC + monitoring
+│   ├── technical_lead_agent.md        ← Architecture reviews + tech decisions
+│   ├── senior_frontend_engineer_agent.md ← Component design + a11y + testing
+│   └── README.md                      ← Agent guide with function dispatch syntax
 │
-├── 🛠️ skills/                          ← Reusable implementation modules
-│   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc
-│   ├── database_skill.md              ← SQL schema + migrations
-│   ├── backend_skill.md               ← REST API generation
-│   ├── frontend_skill.md              ← React component generation
-│   ├── test_skill.md                  ← Test generation (unit/integration)
-│   ├── code_review_skill.md           ← 6-phase code review [NEW v3.0]
-│   └── [7 more skills...]            ← Language/framework specific
+├── 🛠️ skills/                          ← 22 reusable implementation modules (v2.0)
+│   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc (100% coverage)
+│   ├── database_skill.md              ← SQL schema + migrations + indexing
+│   ├── backend_skill.md               ← REST API generation wrapper
+│   ├── frontend_skill.md              ← React component generation wrapper
+│   ├── test_skill.md                  ← Test suite generation orchestrator
+│   ├── code_review_skill.md           ← 6-phase code review + scoring
+│   ├── context_builder_skill.md       ← Architecture analysis + context.json
+│   ├── java_advanced_skill.md         ← Java 17/21 + Spring Boot patterns
+│   ├── python_advanced_skill.md       ← Python 3.11+ + async patterns
+│   ├── react_advanced_skill.md        ← React 18+ + TypeScript + a11y
+│   ├── security_auditor_skill.md      ← OWASP audit + threat modeling
+│   ├── jira_html_report_skill.md      ← Parse JIRA → HTML backlog [NEW v2.0]
+│   └── [10 more skills...]            ← Code health, error handling, messaging, etc.
 │
 ├── 🔧 tools/                           ← Utility scripts & generators
 │   ├── exporter.py                    ← Export to 9 platforms
