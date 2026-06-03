@@ -1,6 +1,7 @@
-# 🤖 AI Agents Directory (v2.0 — Consolidated)
+# 🤖 AI Agents Directory (v2.0 — Consolidated with Function Dispatch)
 
-> Role-based AI agents using reusable skills. 13 agents, 23 skills, zero overlap.
+> Role-based AI agents using reusable skills. 13 agents, 22 skills, zero overlap.  
+> **New:** Use `agent_name:function` syntax to call specific agent workflows (see [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md))
 
 ## Quick Navigation (13 Agents)
 
@@ -22,12 +23,35 @@
 
 ---
 
+## 🎯 Function Dispatch Syntax (v2.0 NEW)
+
+**Call specific agent functions** instead of full workflows:
+
+```
+agent_name:function [path=...] [option=value]
+
+Examples:
+  documentation:context path=./my-project         → Build project context only
+  documentation:code path=./src                   → Generate code docs only
+  architecture:design requirements="e-commerce"  → Design new system
+  ba:report file=jira-export.json                 → Parse JIRA → HTML backlog
+  implementation:build requirement="..."         → Build code only
+  security:audit path=./src                      → Full security audit
+  test:generate files=src/**                      → Generate tests only
+  autonomous:build file=requirements.txt         → Full-stack generation
+```
+
+**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 54 callable functions with inputs, outputs, and examples.**
+
+---
+
 ## 🎯 Agent Organization (Role-Based)
 
 **Consolidated Structure (v2.0):**
 - **19 agents → 13 agents** (removed 7 overlapping agents)
-- **34 skills → 23 skills** (removed 12 orphaned skills)
+- **34 skills → 22 skills** (removed 12 orphaned skills)
 - **Zero role overlap** (each agent has a single, clear responsibility)
+- **54 callable functions** (agent:function dispatch for targeted workflows)
 
 ### Removed in Consolidation
 
