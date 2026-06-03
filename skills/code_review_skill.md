@@ -803,17 +803,23 @@ Every issue must include these fields:
 {
   "category": "Security|Design|SOLID|Patterns|Performance|Testing|Documentation",
   "severity": "P0|P1|P2|P3",
+  "blocks_merge": true,
   "file": "src/auth/register.py",
   "line_range": "42-45",
   "title": "SQL injection vulnerability in user lookup",
   "description": "User input not parameterized in SQL query",
   "why_it_matters": "Attacker can inject SQL to read/modify/delete arbitrary data",
-  "suggested_fix": "Use parameterized query with bound parameters",
-  "code_example": "stmt = connection.prepareStatement('SELECT * FROM users WHERE id = ?'); stmt.setInt(1, userId);",
+  "before_code": "cur.execute('SELECT * FROM users WHERE id = ' + str(user_id))",
+  "after_code": "cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))",
   "references": "OWASP Top 10 #1: Injection",
   "effort_to_fix": "15 minutes"
 }
 ```
+
+**New v3.0 fields:**
+- `blocks_merge` (boolean) — whether this issue must be fixed before PR can merge (typically true for P0/P1)
+- `before_code` (string) — current/broken code that needs fixing
+- `after_code` (string) — corrected code (replaces `suggested_fix`)
 
 ### Severity Scale
 
@@ -824,12 +830,24 @@ Every issue must include these fields:
 | Medium | P2 | Causes intermittent issues or technical debt that compounds | Fix in next sprint | ⚠️ Case-by-case |
 | Low | P3 | Code smell, maintainability, minor inefficiency | Fix when touching code | ❌ No |
 
-### Triage Rules
+### Triage Rules & Merge Blocking
 
-- **P0**: Always block merge. Examples: SQL injection, unhandled exception, data corruption risk
-- **P1**: Usually block merge unless minor. Examples: Missing test, missing doc, poor performance, API design issue
-- **P2**: Acceptable with acknowledgment. Examples: Code duplication, magic numbers, suboptimal but working
-- **P3**: Informational. Examples: Style issues, minor refactoring suggestions, linting hints
+- **P0** (`blocks_merge: true`): Always block merge. Examples: SQL injection, unhandled exception, data corruption risk
+  - Status in report: 🔴 CRITICAL — FIX REQUIRED BEFORE MERGE
+- **P1** (`blocks_merge: true` unless explicitly marked as advisory): Usually block merge. Examples: Missing test, missing doc, poor performance, API design issue
+  - Status in report: 🟠 HIGH — RECOMMEND FIX BEFORE MERGE
+- **P2** (`blocks_merge: false`): Acceptable with acknowledgment. Examples: Code duplication, magic numbers, suboptimal but working
+  - Status in report: 🟡 MEDIUM — FIX IN NEXT SPRINT (optional)
+- **P3** (`blocks_merge: false`): Informational. Examples: Style issues, minor refactoring suggestions, linting hints
+  - Status in report: 🟢 LOW — NICE-TO-HAVE (FIX LATER)
+
+### Context-Aware Review Rules
+
+When context parameters are provided to quality:review:
+- `review-scope`: Only deeply review files matching scope; label others "OUT OF SCOPE — not reviewed"
+- `success-criteria`: Treat each criterion as an additional AC to validate in PHASE 2
+- `business-justification`: Weight security/compliance issues more heavily when compliance is cited (e.g., SOC 2)
+- `context`: Surface in every phase output header so the reviewer understands the WHY
 
 ---
 

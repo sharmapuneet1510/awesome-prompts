@@ -95,44 +95,167 @@ OUTPUT:
 
 > **Absorbed from:** code_review_agent.md (full 6-phase review framework)
 
-**Purpose:** Validate PR/code against requirements, assess code quality, verify test coverage.
+**Purpose:** Validate PR/code against requirements, assess code quality, verify test coverage. Supports context-driven reviews with auto-detected JIRA tickets and detailed per-issue code fixes.
+
+### Parameters
+
+| Parameter | Required | Description | Example |
+|-----------|----------|-------------|---------|
+| `pr` | Recommended | PR or MR number | `pr=456` |
+| `ticket` | Optional | JIRA ticket key (auto-detected from git commit if omitted) | `ticket=PROJ-123` |
+| `context` | Optional | Why this change exists (business/technical reason) | `context="OAuth2 security hardening"` |
+| `business-justification` | Optional | Business impact or compliance driver | `business-justification="SOC 2 compliance, Q3 deadline"` |
+| `review-scope` | Optional | What areas to focus review on | `review-scope="Auth layer only, skip UI"` |
+| `success-criteria` | Optional | What success looks like for this change | `success-criteria="No unvalidated redirects, all inputs sanitized"` |
+| `path` | Optional | Source directory to review | `path=./src` |
 
 ### Workflow Phases
+
+**PHASE 0: Context & Ticket Resolution**
+
+Step 0a — **Resolve JIRA ticket:**
+- IF `ticket=` provided → use it directly
+- ELSE → inspect git commit messages in this PR:
+  - Search commit titles for JIRA key patterns: `[A-Z]{2,10}-\d+` (e.g., PROJ-123, AUTH-789)
+  - Also match: `[PROJ-123]`, `(AUTH-789)`, `"PROJ-123: fix..."`, `feat/PROJ-123-auth`
+  - If found → auto-extract ticket key, use for JIRA lookup
+  - If not found → continue without JIRA, note "No ticket found" in report header
+
+Step 0b — **Build review context block:**
+Combine all provided parameters into a REVIEW CONTEXT section prepended to every phase:
+```
+┌─────────────────────────────────────────────────┐
+│ REVIEW CONTEXT                                  │
+│ Ticket:       PROJ-123 (auto-detected)         │
+│ Context:      OAuth2 security hardening        │
+│ Business:     SOC 2 compliance, Q3 deadline    │
+│ Scope:        Auth layer only (skip UI)        │
+│ Success:      No unvalidated redirects, input  │
+│               validation enforced              │
+└─────────────────────────────────────────────────┘
+```
+
+Step 0c — **Focus the review (if scope provided):**
+- Only deeply review files matching `review-scope` description
+- Flag other files as "OUT OF SCOPE — not reviewed"
+- If `success-criteria` provided: treat each criterion as an additional AC to validate in PHASE 2
 
 **PHASE 1: Requirement Analysis**
 - Extract acceptance criteria from JIRA/requirements
 - Parse into testable requirements
 - Identify scope boundaries (in/out of scope)
 
-**PHASE 2: Requirement Validation**
+**Output format:**
+```
+Per AC row in table:
+  | AC# | Description | Status | Coverage | Implementation | File:Line |
+  Status: ✅ PASS / ⚠️ PARTIAL / ❌ MISSING
+  Coverage: 0-100%
+  Implementation: Which class/method implements it (if found)
+  File:Line: src/module/Class.java:45
+```
+
+**PHASE 2: Requirement Validation (Detailed Per-AC Breakdown)**
 - Map code changes to acceptance criteria
 - Score each AC (0-100%)
 - Calculate coverage percentage
 
-**PHASE 3: Code Quality Review**
+**Output format (per AC deep dive):**
+```
+AC#N: [description]
+├─ Status: ✅ PASS / ⚠️ PARTIAL / ❌ MISSING
+├─ What was done: [file, method, lines]
+├─ What was missed: [specific gap]
+├─ Risk of gap: CRITICAL / HIGH / MEDIUM / LOW
+└─ Recommended fix: [concrete action + file + estimated time]
+```
+
+**PHASE 3: Code Quality Review (Detailed Per-Issue)**
 - 6-category analysis: Structure, SOLID, Patterns, Performance, Security, Testing/Docs
 - Score each category
-- Identify anti-patterns
+- Identify anti-patterns with specific file/line numbers
+
+**Output format (per issue):**
+```
+Issue #N: [title]
+├─ Severity: 🔴 P0-CRITICAL / 🟠 P1-HIGH / 🟡 P2-MEDIUM / 🟢 P3-LOW
+├─ Blocks merge: YES / NO
+├─ File: src/auth/oauth.py (line 95)
+├─ Problem: [what the code does wrong]
+├─ Why it matters: [impact on user/security/performance]
+├─ Before: [current broken code block]
+├─ After:  [corrected code block]
+└─ Estimated fix time: [X minutes/hours]
+```
 
 **PHASE 4: Test Coverage Analysis**
 - Measure test-to-code ratio
 - Analyze test scenarios (happy path, errors, edges, security)
-- Identify gaps
+- Identify gaps with file/line references
+
+**Output format:**
+```
+Production files: N files, M lines
+Test files: X files, Y lines
+Coverage ratio: Z%
+Missing scenarios:
+  ├─ Happy path: [describe]
+  ├─ Error cases: [describe]
+  ├─ Edge cases: [describe]
+  └─ Security scenarios: [describe]
+```
 
 **PHASE 5: Documentation Analysis**
 - Check Javadoc/docstrings completeness
 - Verify parameters, return types, exceptions documented
-- Identify undocumented complex logic
+- Identify undocumented complex logic with file/line references
 
-**PHASE 6: Scorecard Calculation**
+**Output format:**
+```
+Javadoc/docstring coverage: X%
+Missing documentation:
+  ├─ Public method Foo.bar() [line 45] — missing @throws
+  ├─ Class User [line 12] — missing class-level comment
+  └─ Field password [line 30] — no explanation of validation rules
+```
+
+**PHASE 6: Scorecard Calculation + Verdict**
 - Weighted scoring: Requirements (40%), Code Quality (30%), Testing (20%), Docs (10%)
 - Final grade (A-F)
-- Actionable recommendations
+- Actionable recommendations with fix time estimates
+
+**Output format:**
+```
+│ Category          │ Score │ Grade │ Notes
+│ Requirements      │  85%  │   B   │ 1 AC missing (rate limiting)
+│ Code Quality      │  72%  │   C+  │ 3 P1 issues (1 hardcoded secret)
+│ Security          │  60%  │   D   │ 2 critical vulnerabilities
+│ Test Coverage     │  88%  │   B+  │ Missing error path tests
+│ Documentation     │  95%  │   A   │ Excellent inline docs
+│ ─────────────────────────────────────
+│ OVERALL           │  74%  │   C+  │
+
+Verdict: ✅ APPROVE / ⚠️ APPROVE WITH COMMENTS / 🔴 REQUEST CHANGES
+Blockers: 3 issues must be fixed (2-3 hours total)
+Non-blocking: 2 improvements recommended (nice-to-have)
+```
 
 ### Example Invocation
 
 ```bash
-quality:review ticket=PROJ-123 pr=456 path=./src
+# Minimal (auto-detect ticket from git commit)
+quality:review pr=456
+
+# With explicit JIRA ticket
+quality:review pr=456 ticket=PROJ-123
+
+# Full context-aware detailed review
+quality:review pr=456 ticket=PROJ-123 \
+  context="OAuth2 security hardening for enterprise customers" \
+  business-justification="SOC 2 compliance required by Q3" \
+  review-scope="Authentication layer only (skip frontend)" \
+  success-criteria="No unvalidated redirects, all inputs sanitized" \
+  path=./src
 ```
 
 ---
