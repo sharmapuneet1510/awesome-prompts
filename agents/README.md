@@ -1,103 +1,124 @@
-# 🤖 AI Agents Directory (v2.0 — Consolidated with Function Dispatch)
+# 🤖 AI Agents Directory (v3.0 — 4-Role Architecture)
 
-> Role-based AI agents using reusable skills. 13 agents, 22 skills, zero overlap.  
-> **New:** Use `agent_name:function` syntax to call specific agent workflows (see [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md))
+> Lean, role-based AI agents with function dispatch. **5 agents, 22 skills, 28 callable functions.**  
+> **New in v3.0:** Consolidated 13 specialized agents into 4 primary roles + 1 utility agent. Linear execution pipeline prevents context loss.
 
-## Quick Navigation (13 Agents)
+## Quick Navigation (5 Agents)
 
-| # | Agent | Role | Purpose | Version | Status |
-|---|-------|------|---------|---------|--------|
-| 1 | [Autonomous Dev](autonomous/autonomous_dev_agent.md) | Orchestrator | Full-stack project generation (DB + API + UI + tests) | v1.0 | ✅ Ready |
-| 2 | [Implementation Engineer](implementation_agent.md) | Feature Builder | Code + tests + docs for single features or modules | v3.0 | ✅ Ready |
-| 3 | [Systems Architect](architecture_agent.md) | Architecture | Design new systems or refactor existing ones (greenfield + brownfield) | v2.0 | ✅ Ready |
-| 4 | [Code Reviewer](code_review_agent.md) | QA | PR validation against JIRA requirements, quality scoring | v3.0 | ✅ Ready |
-| 5 | [Test Engineer](test_case_generator_agent.md) | Testing | 100% coverage tests with business validation | v1.0 | ✅ Ready |
-| 6 | [Security Auditor](security_auditor_agent.md) | Security | Vulnerability scanning, threat modeling, OWASP compliance | v1.0 | ✅ Ready |
-| 7 | [Performance Optimizer](performance_optimizer_agent.md) | Performance | Bottleneck analysis, optimization strategies, benchmarking | v1.0 | ✅ Ready |
-| 8 | [Production Debugger](production_debugger_agent.md) | Debugging | Root cause analysis, stack trace investigation, edge cases | v1.0 | ✅ Ready |
-| 9 | [Codebase Auditor](codebase_auditor_agent.md) | Code Health | Scan for violations, tech debt, security issues, roadmaps | v1.0 | ✅ Ready |
-| 10 | [DevOps Engineer](integration_agent.md) | Deployment | CI/CD pipelines, containerization (Docker), IaC (Terraform), monitoring | v1.0 | ✅ Ready |
-| 11 | [Documentation Engineer](documentation_agent.md) | Documentation | Code docs (Javadoc/docstrings), architecture guides, API specs, HTML sites | v2.0 | ✅ Ready |
-| 12 | [Technical Lead](technical_lead_agent.md) | Strategy | Architecture reviews, tech decisions, team coordination | v1.0 | ✅ Ready |
-| 13 | [Business Analyst](business_analyst_agent.md) | Backlog | JIRA parsing, HTML backlog reports, filtering, stats | v1.0 | ✅ Ready |
+| # | Agent | Role | Functions | Purpose | Version | Status |
+|---|-------|------|-----------|---------|---------|--------|
+| 1 | [Orchestrator](orchestrator_agent.md) | Strategy & Orchestration | plan, build, context, pr, review, tradeoff, risk | Full-stack generation & technical leadership | v3.0 | ✅ Ready |
+| 2 | [Architect](architect_agent.md) | Architecture & Design | design, refactor, frontend, schema, api, a11y | System topology, API contracts, DB schema, UI architecture | v3.0 | ✅ Ready |
+| 3 | [Implementer](implementer_agent.md) | Implementation & Execution | build, test, doc, pipeline, docker, iac, full | Code generation, testing, documentation, deployment | v3.0 | ✅ Ready |
+| 4 | [Quality](quality_agent.md) | QA, Security & Performance | review, audit, security, perf, debug, report | PR validation, security audit, optimization, debugging | v3.0 | ✅ Ready |
+| 5 | [Business Analyst](business_analyst_agent.md) | Utility — Backlog | report, parse | JIRA parsing, backlog visualization | v1.0 | ✅ Ready |
 
 ---
 
-## 🎯 Function Dispatch Syntax (v2.0 NEW)
-
-**Call specific agent functions** instead of full workflows:
-
-```
-agent_name:function [path=...] [option=value]
-
-Examples:
-  documentation:context path=./my-project         → Build project context only
-  documentation:code path=./src                   → Generate code docs only
-  architecture:design requirements="e-commerce"  → Design new system
-  ba:report file=jira-export.json                 → Parse JIRA → HTML backlog
-  implementation:build requirement="..."         → Build code only
-  security:audit path=./src                      → Full security audit
-  test:generate files=src/**                      → Generate tests only
-  autonomous:build file=requirements.txt         → Full-stack generation
-```
-
-**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 54 callable functions with inputs, outputs, and examples.**
-
----
-
-## 🎯 Agent Organization (Role-Based)
-
-**Consolidated Structure (v2.0):**
-- **19 agents → 13 agents** (removed 7 overlapping agents)
-- **34 skills → 22 skills** (removed 12 orphaned skills)
-- **Zero role overlap** (each agent has a single, clear responsibility)
-- **54 callable functions** (agent:function dispatch for targeted workflows)
-
-### Removed in Consolidation
-
-**Overlapping Agents Merged:**
-- ❌ `ai_engineering_team_coordinator_agent` → Merged into `autonomous_dev_agent` (orchestration)
-- ❌ `super_agent_orchestrator` → Merged into `autonomous_dev_agent` (orchestration)
-- ❌ `context_builder_agent` → Wrapper; logic in `context_builder_skill`
-- ❌ `writer_agent` → Merged into `documentation_agent`
-- ❌ `technical_documentation_agent` → Merged into `documentation_agent`
-- ❌ `backend_systems_architect_agent` → Merged into `architecture_agent`
-- ❌ `architecture_refactorer_agent` → Merged into `architecture_agent`
-
-**Orphaned Skills Removed:**
-- ❌ `documentation_skill` (duplicate of `code_documentation_skill`)
-- ❌ `java11_skill`, `java17_skill` (subsumed by `java_advanced_skill`)
-- ❌ `rest_api_java_skill`, `rest_api_python_skill` (subsumed by `backend_skill`)
-- ❌ `testing_junit5_skill`, `testing_pytest_skill`, `testing_react_skill` (subsumed by `test_skill`)
-- ❌ `camel_exception_handling_skill`, `camel_pulsar_integration_skill`, `spring_camel_integration_skill` (consolidated into `apache_camel_skill`)
-- ❌ `sonarqube_vulnerability_skill` (consolidated into `code_health_skill`)
-
----
-
-## 🎯 Architecture Pattern
+## Linear Execution Pipeline
 
 ```
 User Requirement
     ↓
-Orchestration Layer (Agent)
-    ├─ Parse requirement
-    ├─ Detect tech stack
-    ├─ Apply skill
-    └─ Generate + test + document
+orchestrator:plan          ← Parse requirement, break into tasks
     ↓
-Skill Layer (Reusable)
-    ├─ Code Documentation
-    ├─ Database
-    ├─ Backend API
-    ├─ Frontend
-    ├─ Testing
+architect:design           ← System topology, API contracts, DB schema
+    ↓
+implementer:full           ← BUILD + TEST + DOC (same context window, no loss)
+    ↓
+quality:review             ← Validate, score, generate report
+    ↓
+orchestrator:pr            ← Package and open GitHub PR
+```
+
+**Key Innovation:** `implementer:full` runs build → test → doc in a single execution, maintaining full context awareness through all phases. This prevents the state-transfer overhead that existed in v2.0.
+
+---
+
+## 🎯 Function Dispatch Syntax (v3.0)
+
+**Invoke specific agent functions** instead of full workflows:
+
+```
+agent:function [path=...] [option=value]
+
+Examples:
+  orchestrator:plan                    → Parse requirement, create task breakdown
+  orchestrator:build path=./design     → Full-stack generation
+  architect:design                     → Greenfield system design
+  architect:refactor path=./src        → Brownfield migration plan
+  implementer:build path=./api-spec    → Generate code only
+  implementer:test path=./src          → Generate tests only
+  implementer:doc path=./src           → Generate docs only
+  implementer:full path=./design       → Build + test + doc (no context loss)
+  quality:review pr=123                → PR validation & scoring
+  quality:audit path=./src             → Full codebase audit
+  quality:security path=./src          → OWASP security audit
+  quality:perf path=./src              → Performance optimization analysis
+  quality:debug stack_trace="..."      → Root cause analysis
+  quality:report pr=123                → Unified quality synthesis
+  ba:report path=./jira-export.json    → Parse JIRA → HTML backlog
+```
+
+**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 28 callable functions with detailed inputs, outputs, and examples.**
+
+---
+
+## 🎯 Consolidation Summary (v2.0 → v3.0)
+
+**Reduction from 13 agents to 5:**
+
+### Merged Into Orchestrator (2 agents)
+- `autonomous_dev_agent` → orchestrator (plan, build, context, pr)
+- `technical_lead_agent` → orchestrator (review, tradeoff, risk)
+
+### Merged Into Architect (2 agents)
+- `architecture_agent` → architect (design, refactor, schema, api)
+- `senior_frontend_engineer_agent` → architect (frontend, a11y)
+
+### Merged Into Implementer (4 agents)
+- `implementation_agent` → implementer (build)
+- `integration_agent` → implementer (pipeline, docker, iac)
+- `test_case_generator_agent` → implementer (test)
+- `documentation_agent` → implementer (doc)
+
+### Merged Into Quality (5 agents)
+- `code_review_agent` → quality (review)
+- `codebase_auditor_agent` → quality (audit)
+- `security_auditor_agent` → quality (security)
+- `performance_optimizer_agent` → quality (perf)
+- `production_debugger_agent` → quality (debug)
+
+### Kept Unchanged (1 agent)
+- `business_analyst_agent` → ba (report, parse)
+
+---
+
+## Architecture Pattern
+
+```
+User Requirement
+    ↓
+Role-Based Agent (Orchestrator, Architect, Implementer, Quality)
+    ├─ Parse context
+    ├─ Dispatch to specific function (agent:function syntax)
+    ├─ Apply skill(s)
+    └─ Generate + validate + document
+    ↓
+Reusable Skills Layer (22 skills)
+    ├─ Code Documentation (Javadoc, docstrings, JSDoc)
+    ├─ Database (DDL, migrations, schema design)
+    ├─ Backend API (REST, OpenAPI)
+    ├─ Frontend (React, TypeScript)
+    ├─ Testing (JUnit5, pytest, Jest)
+    ├─ Advanced patterns (Java, Python, React, T-SQL, Spring, Camel, Pulsar, etc.)
     └─ [etc.]
     ↓
 Output (Production-Ready)
-    ├─ Code
-    ├─ Tests (100% coverage)
-    ├─ Documentation
-    └─ GitHub PR
+    ├─ Code (with master_instruction_set compliance)
+    ├─ Tests (95%+ coverage with business validation)
+    ├─ Documentation (inline + architecture + API)
+    └─ GitHub PR (ready for review)
 ```
 
 ---

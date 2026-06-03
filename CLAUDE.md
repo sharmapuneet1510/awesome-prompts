@@ -24,26 +24,15 @@ awesome-prompts/
 │   ├── incident-management/          ← Production issue investigation
 │   └── reporting/                    ← HTML report generation
 │
-├── agents/                           ← Role-based agent definitions (13 agents)
-│   ├── implementation_agent.md       ← Full-lifecycle feature builder
-│   ├── code_review_agent.md          ← PR validation + quality scoring
-│   ├── documentation_agent.md        ← Code docs + architecture docs + HTML sites
-│   ├── architecture_agent.md         ← Design new systems OR refactor existing
-│   ├── business_analyst_agent.md     ← JIRA parsing + HTML backlog reports
-│   ├── test_case_generator_agent.md  ← 100% coverage tests with business validation
-│   ├── security_auditor_agent.md     ← Vulnerability scanning + threat modeling
-│   ├── performance_optimizer_agent.md ← Bottleneck analysis + optimization
-│   ├── production_debugger_agent.md  ← Root cause analysis + edge case discovery
-│   ├── codebase_auditor_agent.md     ← Tech debt + violations scanning
-│   ├── integration_agent.md          ← CI/CD + Docker + Terraform + monitoring
-│   ├── technical_lead_agent.md       ← Architecture reviews + tech decisions
-│   ├── senior_frontend_engineer_agent.md ← React/TypeScript component design
-│   ├── autonomous/
-│   │   ├── autonomous_dev_agent.md   ← Full-stack orchestrator (DB + API + UI + tests)
-│   │   └── README.md                 ← Autonomous development guide
-│   └── README.md                     ← Agent directory (consolidated v2.0)
+├── agents/                           ← Role-based agent definitions (5 agents, v3.0)
+│   ├── orchestrator_agent.md         ← Strategy & Orchestration (plan, build, context, pr, review, tradeoff, risk)
+│   ├── architect_agent.md            ← Architecture & Design (design, refactor, frontend, schema, api, a11y)
+│   ├── implementer_agent.md          ← Implementation & Execution (build, test, doc, pipeline, docker, iac, full)
+│   ├── quality_agent.md              ← QA & Security (review, audit, security, perf, debug, report)
+│   ├── business_analyst_agent.md     ← Utility — Backlog (report, parse)
+│   └── README.md                     ← Agent directory (v3.0 with linear pipeline)
 │
-├── skills/                           ← Reusable implementation skills (23 skills)
+├── skills/                           ← Reusable implementation skills (22 skills)
 │   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
 │   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
 │   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
@@ -85,54 +74,61 @@ awesome-prompts/
 └── CLAUDE.md
 ```
 
-## Agents by Role (v2.0 — Consolidated)
+## Agents by Role (v3.0 — 4-Role Architecture)
 
-Agents are organized by responsibility using a **role-based generic architecture**. See `agents/README.md` for detailed descriptions.
+Agents are organized by responsibility using a **lean, role-based architecture**. See `agents/README.md` and `AGENTS_FUNCTIONS.md` for detailed descriptions and function dispatch.
 
-**Total: 13 agents (down from 19) — zero role overlap**
+**Total: 5 agents (down from 13) + 28 callable functions — zero role overlap**
 
-| # | Role | Agent | File | Purpose | Tech-Agnostic |
-|---|------|-------|------|---------|---------------|
-| 1 | **Orchestrator** | Autonomous Dev | `agents/autonomous/autonomous_dev_agent.md` | Full-stack project generation (DB + API + UI + tests from requirements) | ✅ Yes |
-| 2 | **Feature Builder** | Implementation Engineer | `agents/implementation_agent.md` | Code + tests + docs for single features/modules | ✅ Yes |
-| 3 | **Systems Architect** | Architecture | `agents/architecture_agent.md` | Design new systems OR refactor existing ones (greenfield + brownfield) | ✅ Yes |
-| 4 | **QA / Code Review** | Code Reviewer | `agents/code_review_agent.md` | PR validation against JIRA, quality scoring, HTML reports | ✅ Yes |
-| 5 | **Testing** | Test Engineer | `agents/test_case_generator_agent.md` | 100% coverage tests with business validation | ✅ Yes |
-| 6 | **Security** | Security Auditor | `agents/security_auditor_agent.md` | Vulnerability scanning, threat modeling, OWASP compliance | ✅ Yes |
-| 7 | **Performance** | Performance Optimizer | `agents/performance_optimizer_agent.md` | Bottleneck analysis, optimization strategies, benchmarking | ✅ Yes |
-| 8 | **Debugging** | Production Debugger | `agents/production_debugger_agent.md` | Root cause analysis, stack trace investigation, edge cases | ✅ Yes |
-| 9 | **Code Health** | Codebase Auditor | `agents/codebase_auditor_agent.md` | Scan for violations, tech debt, security issues, roadmaps | ✅ Yes |
-| 10 | **DevOps/Deployment** | DevOps Engineer | `agents/integration_agent.md` | CI/CD pipelines, Docker, Terraform, monitoring (AWS/GCP/Azure/K8s) | ✅ Yes |
-| 11 | **Documentation** | Documentation Engineer | `agents/documentation_agent.md` | Code docs, architecture guides, API specs, HTML sites | ✅ Yes |
-| 12 | **Strategy** | Technical Lead | `agents/technical_lead_agent.md` | Architecture reviews, tech decisions, team coordination | ✅ Yes |
-| 13 | **Backlog Analysis** | Business Analyst | `agents/business_analyst_agent.md` | JIRA parsing, HTML backlog reports, filtering, stats | ✅ Yes |
+| # | Role | Agent | Functions | Purpose | Tech-Agnostic |
+|---|------|-------|-----------|---------|---------------|
+| 1 | **Strategy & Orchestration** | Orchestrator | plan, build, context, pr, review, tradeoff, risk | Full-stack generation + technical leadership + requirements parsing | ✅ Yes |
+| 2 | **Architecture & Design** | Architect | design, refactor, frontend, schema, api, a11y | System topology, greenfield/brownfield design, API contracts, DB schema, UI architecture, accessibility | ✅ Yes |
+| 3 | **Implementation & Execution** | Implementer | build, test, doc, pipeline, docker, iac, full | Code generation, testing, documentation, CI/CD, containerization, infrastructure (key: `full` runs build+test+doc with no context loss) | ✅ Yes |
+| 4 | **QA, Security & Performance** | Quality | review, audit, security, perf, debug, report | PR validation, codebase audit, OWASP security scan, performance optimization, RCA, unified quality synthesis | ✅ Yes |
+| 5 | **Utility — Backlog** | Business Analyst | report, parse | JIRA parsing + HTML backlog visualization | ✅ Yes |
 
 ### Skill-Based Architecture
 
-Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **generic role-based agents** that delegate to **reusable skills**:
+Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (22 total):
 
 ```
-implementation_agent (generic)
+orchestrator:plan → orchestrator:build
     ↓
-    Detects tech stack
+architect:design (topology, API, schema)
     ↓
-    Applies appropriate skill:
-    • java_advanced_skill (for Java/Spring Boot)
-    • python_advanced_skill (for Python/FastAPI)
-    • react_advanced_skill (for React/TypeScript)
-    • mssql_advanced_skill (for SQL Server/T-SQL)
-    • database_skill (for database design)
-    • backend_skill (for REST API generation)
-    • frontend_skill (for UI component generation)
-    • code_documentation_skill (for JSDoc/docstrings/Javadoc)
-    ✓ Generates complete code + tests + documentation
+implementer:full (runs in same context window)
+    ├─ implementer:build (detects tech stack)
+    │   ↓
+    │   Applies appropriate skill:
+    │   • java_advanced_skill (for Java/Spring Boot)
+    │   • python_advanced_skill (for Python/FastAPI)
+    │   • react_advanced_skill (for React/TypeScript)
+    │   • database_skill (for DB design)
+    │   • backend_skill (for REST APIs)
+    │   • frontend_skill (for React components)
+    │   ↓ Generates code
+    │
+    ├─ implementer:test
+    │   ↓ Generates tests (95%+ coverage)
+    │
+    └─ implementer:doc
+        ↓ Generates docs + architecture + API reference
+        
+    ✓ Complete code + tests + documentation (no context loss between phases)
+    ↓
+quality:review (validate + score)
+    ↓
+orchestrator:pr (open GitHub PR)
 ```
 
 **Benefits:**
-- ✅ Less duplication (one agent per role, not per tech)
-- ✅ Easier to maintain (update skill, all agents benefit)
-- ✅ Simpler to extend (add new skill = all agents can use it)
-- ✅ Clear separation of concerns (agent = orchestration, skill = implementation)
+- ✅ **Fewer agents** (5 vs 13) = lower token cost
+- ✅ **Linear pipeline** = explicit handoffs with full context
+- ✅ **implementer:full** = no state transfer loss between build/test/doc
+- ✅ **22 reusable skills** = no duplication across agents
+- ✅ **28 callable functions** = fine-grained control via `agent:function` syntax
+- ✅ Clear separation: agent = orchestration + dispatch, skill = implementation
 
 ## Skills
 

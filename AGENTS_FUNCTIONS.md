@@ -1,53 +1,141 @@
-# Agent Functions Reference (v2.0)
+# Agent Functions Reference — v3.0
 
-**Quick-call syntax:** `agent_name:function [path=...] [option=value]`
-
-When you invoke an agent with a function, it runs only that specific workflow, skipping intro questions and scope selection.
+**Version:** 3.0  
+**Date:** June 3, 2026  
+**Total Agents:** 5 (4 role-based + 1 utility)  
+**Total Functions:** 28 callable functions
 
 ---
 
-## Documentation Agent (`documentation`)
+## Quick Function Index
 
-### documentation:context
-**Prefix:** `documentation` | **Function:** `context`  
-**Input:** Project directory path (required)  
-**Output:** context.json, architecture.md, tech-stack.md, design.html  
-**Usage:**
-```
-documentation:context path=./my-project
-documentation:context path=./backend include-tests=true
-```
-**What it does:** Scans codebase, extracts tech stack and key files, generates machine-readable context.json and visual architecture.md with Mermaid diagrams, tech-stack reference table, and interactive HTML visualization.
+| Agent | Prefix | Functions | Use When |
+|-------|--------|-----------|----------|
+| **Orchestrator** | `orchestrator` | plan, build, review, tradeoff, risk, context, pr | Start new project or generate full-stack system |
+| **Architect** | `architect` | design, refactor, frontend, schema, api, a11y | Design system topology, DB schema, API contracts |
+| **Implementer** | `implementer` | build, test, doc, pipeline, docker, iac, full | Write code, generate tests, auto-document, deploy |
+| **Quality** | `quality` | review, audit, security, perf, debug, report | Validate PRs, scan codebase, find bugs, optimize |
+| **Business Analyst** | `ba` | report, parse | Parse JIRA backlog, generate filterable reports |
 
-### documentation:code
-**Prefix:** `documentation` | **Function:** `code`  
-**Input:** Codebase path, target language(s)  
-**Output:** Updated source files with Javadoc/docstrings/JSDoc  
-**Usage:**
-```
-documentation:code path=./src target=java,typescript
-documentation:code path=./src 
-```
-**What it does:** Scans codebase for undocumented methods/functions/classes and adds 100% coverage documentation (Javadoc for Java, docstrings for Python, JSDoc for JavaScript/TypeScript) with parameters, return types, exceptions, and usage examples.
+---
 
-### documentation:api
-**Prefix:** `documentation` | **Function:** `api`  
-**Input:** Backend codebase (routes/controllers/endpoints)  
-**Output:** OpenAPI 3.0 specification + HTML API reference  
-**Usage:**
-```
-documentation:api path=./backend framework=spring
-documentation:api path=./api framework=fastapi
-```
-**What it does:** Extracts all endpoints/routes, generates OpenAPI 3.0 specification with request/response schemas, authentication details, error codes, and creates an interactive API reference with examples in cURL, JavaScript, and Python.
+## Linear Execution Pipeline
 
-### documentation:readme
-**Prefix:** `documentation` | **Function:** `readme`  
-**Input:** Project directory + architecture context  
-**Output:** README.md with project overview, setup, and quick-start  
-**Usage:**
 ```
-documentation:readme path=./project
+Requirement
+    ↓
+orchestrator:plan       ← Parse requirement, break into tasks
+    ↓
+architect:design        ← System topology, API, schema, deployment stubs
+    ↓
+implementer:full        ← Write code, generate tests, auto-docs (no context loss)
+    ↓
+quality:review          ← Validate, score, generate report
+    ↓
+orchestrator:pr         ← Package deliverables, open GitHub PR
+```
+
+---
+
+# ORCHESTRATOR AGENT (7 functions)
+
+**Prefix:** `orchestrator`
+
+### orchestrator:plan
+Parse requirements in 5 formats, break into tasks. Outputs: requirements.md, task-breakdown.json, execution-order.txt
+
+### orchestrator:build
+Full-stack generation (architect → implementer → quality end-to-end). Outputs: complete system artifacts.
+
+### orchestrator:context
+Build project context (architecture.md, tech-stack.md, context.json, design.html visualization).
+
+### orchestrator:pr
+Package deliverables and create GitHub PR with comprehensive description.
+
+### orchestrator:review
+Strategic architecture review with challenge questions and 5-year assessment.
+
+### orchestrator:tradeoff
+Generate 3-option complexity analysis with ranked recommendation.
+
+### orchestrator:risk
+Risk assessment (operational, data, scaling, team, integration) with mitigation strategies.
+
+---
+
+# ARCHITECT AGENT (6 functions)
+
+**Prefix:** `architect`
+
+### architect:design
+Design complete system topology (C4, API contract, DB schema, deployment infrastructure).
+
+### architect:refactor
+Brownfield refactoring (assess current state, diagnose, phased migration + rollback procedures).
+
+### architect:frontend
+Component architecture design (React, TypeScript, state management, composition patterns).
+
+### architect:schema
+Database DDL with indexes, constraints, migrations, partitioning strategy.
+
+### architect:api
+REST API contracts (OpenAPI 3.0 spec, request/response schemas, auth, rate limits).
+
+### architect:a11y
+Accessibility audit (WCAG 2.1 AA) with semantic HTML, ARIA, keyboard navigation.
+
+---
+
+# IMPLEMENTER AGENT (7 functions)
+
+**Prefix:** `implementer`
+
+### implementer:build
+Generate production-ready code from architecture. Auto-detects tech stack, applies skill.
+
+### implementer:test
+Generate test suite (unit + integration + E2E, 95%+ coverage with business validation).
+
+### implementer:doc
+Code documentation (Javadoc/docstrings/JSDoc) + architecture + API reference + HTML site.
+
+### implementer:pipeline
+CI/CD pipeline generation (GitHub Actions, GitLab CI, Jenkins, CircleCI, Azure).
+
+### implementer:docker
+Dockerfile + docker-compose (multi-stage, health checks, security best practices).
+
+### implementer:iac
+Infrastructure as Code (Terraform, CloudFormation, Kubernetes manifests).
+
+### implementer:full
+**Complete lifecycle:** build → test → doc in single context (no context loss).
+
+---
+
+# QUALITY AGENT (6 functions)
+
+**Prefix:** `quality`
+
+### quality:review
+PR validation against JIRA ACs, 6-category scoring, HTML report + PR comment.
+
+### quality:audit
+Full codebase audit (SOLID violations, duplication, complexity, tech debt roadmap).
+
+### quality:security
+OWASP Top 10 security audit (auth, injection, data protection, infrastructure).
+
+### quality:perf
+Performance bottleneck analysis with before/after code and benchmark data.
+
+### quality:debug
+Root cause analysis from stack trace, failure mechanism explanation, regression tests.
+
+### quality:report
+**NEW (v3.0):** Unified synthesis of all 5 quality functions into single HTML report.
 documentation:readme path=./project include-contributing=true
 ```
 **What it does:** Writes a comprehensive README with project summary, prerequisites, local setup, running tests, project structure, key concepts, and troubleshooting guide. Target: new developers onboard in < 5 minutes.
