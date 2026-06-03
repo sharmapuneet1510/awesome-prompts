@@ -5,7 +5,7 @@
 <div align="center">
 
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge&logo=checkmarx)](https://github.com/sharmapuneet1510/awesome-prompts)
-[![Version](https://img.shields.io/badge/Version-2.0-blueviolet?style=for-the-badge&logo=semanticrelease)](https://github.com/sharmapuneet1510/awesome-prompts/releases)
+[![Version](https://img.shields.io/badge/Version-3.0-blueviolet?style=for-the-badge&logo=semanticrelease)](https://github.com/sharmapuneet1510/awesome-prompts/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge&logo=opensourceinitiative)](LICENSE)
 [![Updated](https://img.shields.io/badge/Updated-June%202026-darkblue?style=for-the-badge&logo=calendar)](https://github.com/sharmapuneet1510/awesome-prompts/commits/main)
 [![Platform](https://img.shields.io/badge/Platforms-9+-ff69b4?style=for-the-badge&logo=electron)](docs/)
@@ -18,11 +18,11 @@
 
 ## 🚀 Quick Overview
 
-**Awesome Prompts v2.0** is a comprehensive, **production-ready system** of **13 role-based AI agents** and **22 reusable skills** that transform requirements into enterprise-grade code with:
+**Awesome Prompts v3.0** is a comprehensive, **production-ready system** of **5 role-based AI agents** and **23 reusable skills** that transform requirements into enterprise-grade code with:
 
 | Feature | Details |
 |---------|---------|
-| 🎯 **54+ Callable Functions** | `agent:function` syntax for targeted workflows (see [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md)) |
+| 🎯 **28 Callable Functions** | `agent:function` syntax for targeted workflows (see [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md)) |
 | 🧪 **100% Test Coverage** | Unit, integration, and E2E tests with business validation |
 | 📚 **Auto-Documentation** | JSDoc, docstrings, Javadoc + architecture guides + HTML sites |
 | 🎯 **JIRA Integration** | Parse JIRA JSON/CSV → interactive HTML backlog reports |
@@ -33,31 +33,37 @@
 
 ---
 
-## 💡 New in v2.0: Function Dispatch Interface
+## 💡 New in v3.0: 4-Role Architecture + Context Preservation
 
-Use `agent:function` syntax to call specific agent workflows without full scope selection:
+**v3.0 reduces agents from 13 → 5 and eliminates context loss:**
 
 ```bash
-# Documentation agent
-documentation:context path=./my-project          # Build context.json + architecture.md
-documentation:code path=./src                    # Generate code docs only
-documentation:api path=./backend                 # Generate OpenAPI spec only
+# Orchestrator — Plan & orchestrate
+orchestrator:plan requirements="Build user auth"    # Parse requirement, create tasks
+orchestrator:build path=./design                    # Full-stack generation end-to-end
 
-# Architecture agent
-architecture:design requirements="..." scale="..." # Design new system
-architecture:refactor path=./monolith             # Refactor brownfield system
+# Architect — Design systems
+architect:design requirements="..."                 # Greenfield system topology
+architect:refactor path=./monolith                  # Brownfield migration plan
 
-# Business analyst
-ba:report file=jira-export.json                  # Parse JIRA → HTML backlog
-ba:parse file=jira-export.csv                    # Parse JIRA → JSON
+# Implementer — Code + tests + docs (same context, no loss!)
+implementer:build path=./api-spec                   # Generate code
+implementer:test path=./src                        # Generate tests (95%+ coverage)
+implementer:doc path=./src                         # Auto-generate documentation
+implementer:full path=./design                     # BUILD + TEST + DOC in one pass
 
-# And 48+ more functions across all agents...
-security:audit path=./src
-test:generate files=src/**
-autonomous:build file=requirements.txt
+# Quality — Validate & optimize
+quality:review pr=123                              # PR validation + scoring
+quality:audit path=./src                           # Codebase audit
+quality:security path=./src                        # OWASP security scan
+quality:perf path=./src                            # Performance optimization
+
+# Business Analyst — Backlog management
+ba:report file=jira-export.json                    # Parse JIRA → HTML backlog
+ba:create path=./requirements.txt                  # Parse text → JIRA + BDD HTML cards
 ```
 
-**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 54 functions.**
+**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 28 functions.**
 
 ---
 
@@ -80,24 +86,15 @@ awesome-prompts/
 │   ├── incident-management/           ← Production issue investigation
 │   └── reporting/                     ← HTML report generation
 │
-├── 🤖 agents/                          ← 13 role-based agents (v2.0 consolidated)
-│   ├── autonomous/autonomous_dev_agent.md ← Full-stack orchestrator
-│   ├── implementation_agent.md        ← Feature builder (build, test, doc)
-│   ├── documentation_agent.md         ← Code docs + architecture + API specs [MERGED]
-│   ├── architecture_agent.md          ← System design + refactoring [MERGED]
-│   ├── business_analyst_agent.md      ← JIRA → HTML backlog reports [NEW]
-│   ├── code_review_agent.md           ← PR validation + quality scoring
-│   ├── test_case_generator_agent.md   ← 100% coverage tests + JIRA validation
-│   ├── security_auditor_agent.md      ← Vulnerability scanning + threat modeling
-│   ├── codebase_auditor_agent.md      ← Tech debt + violation scanning
-│   ├── performance_optimizer_agent.md ← Bottleneck analysis + optimization
-│   ├── production_debugger_agent.md   ← Root cause analysis + edge cases
-│   ├── integration_agent.md           ← CI/CD + Docker + IaC + monitoring
-│   ├── technical_lead_agent.md        ← Architecture reviews + tech decisions
-│   ├── senior_frontend_engineer_agent.md ← Component design + a11y + testing
-│   └── README.md                      ← Agent guide with function dispatch syntax
+├── 🤖 agents/                          ← 5 role-based agents (v3.0 consolidated)
+│   ├── orchestrator_agent.md          ← Strategy & Orchestration (plan, build, review, tradeoff, risk, context, pr)
+│   ├── architect_agent.md             ← Architecture & Design (design, refactor, frontend, schema, api, a11y)
+│   ├── implementer_agent.md           ← Implementation & Execution (build, test, doc, pipeline, docker, iac, full)
+│   ├── quality_agent.md               ← QA & Security (review, audit, security, perf, debug, report)
+│   ├── business_analyst_agent.md      ← Utility — Backlog (report, parse, create)
+│   └── README.md                      ← Agent guide with function dispatch syntax + linear pipeline
 │
-├── 🛠️ skills/                          ← 22 reusable implementation modules (v2.0)
+├── 🛠️ skills/                          ← 23 reusable implementation modules (v3.0)
 │   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc (100% coverage)
 │   ├── database_skill.md              ← SQL schema + migrations + indexing
 │   ├── backend_skill.md               ← REST API generation wrapper
@@ -108,9 +105,9 @@ awesome-prompts/
 │   ├── java_advanced_skill.md         ← Java 17/21 + Spring Boot patterns
 │   ├── python_advanced_skill.md       ← Python 3.11+ + async patterns
 │   ├── react_advanced_skill.md        ← React 18+ + TypeScript + a11y
-│   ├── security_auditor_skill.md      ← OWASP audit + threat modeling
-│   ├── jira_html_report_skill.md      ← Parse JIRA → HTML backlog [NEW v2.0]
-│   └── [10 more skills...]            ← Code health, error handling, messaging, etc.
+│   ├── jira_html_report_skill.md      ← Parse JIRA JSON/CSV → HTML backlog
+│   ├── ba_create_skill.md             ← Parse text requirements → JIRA + BDD HTML [NEW v3.0]
+│   └── [11 more skills...]            ← Code health, error handling, OOP, Camel, Pulsar, etc.
 │
 ├── 🔧 tools/                           ← Utility scripts & generators
 │   ├── exporter.py                    ← Export to 9 platforms
