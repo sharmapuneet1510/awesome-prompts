@@ -1,8 +1,8 @@
 # 🛠️ Skills Directory (v2.0 — Consolidated)
 
-> Reusable, tech-specific implementation modules used by agents. 22 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 23 skills, zero orphans.
 
-## Quick Navigation (22 Skills)
+## Quick Navigation (23 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -28,7 +28,7 @@
 | 20 | [Logger](logger_skill.md) | SLF4J, Logback, structured logging | Java | All Java agents |
 | 21 | [Lombok](lombok_skill.md) | @Data, @Builder, boilerplate reduction | Java | Advanced Java |
 | 22 | [JIRA HTML Report](jira_html_report_skill.md) | Parse JIRA, generate HTML backlog | Language-agnostic | Business Analyst |
-| 23 | [Senior Frontend](senior_frontend_engineer_agent.md) | Component design, accessibility, state mgmt | React/TypeScript | Senior Frontend Engineer |
+| 23 | [BA Create](ba_create_skill.md) | Parse plain-text requirements → JIRA JSON + BDD HTML cards | Language-agnostic | Business Analyst |
 
 ---
 
@@ -56,7 +56,10 @@
 - `code_health_skill` — Issue taxonomy
 - `code_review_skill` — PR analysis
 - `code_formatting_skill` — Code style
-- `jira_html_report_skill` — Backlog reporting
+
+### Business Analyst Skills (Backlog & Requirements)
+- `jira_html_report_skill` — Parse JIRA exports, generate HTML backlog reports
+- `ba_create_skill` — Parse plain-text requirements, generate JIRA JSON + BDD HTML cards
 
 ---
 

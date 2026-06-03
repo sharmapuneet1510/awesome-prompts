@@ -30,11 +30,13 @@ Invoke a specific function using `ba:function`. When triggered this way, skip al
 |----------|--------------|
 | `ba:parse` | Parse JIRA export (JSON or CSV) and normalize fields, extract metadata |
 | `ba:report` | Generate interactive HTML backlog report with stats, filters, sorting, export options |
+| `ba:create` | Parse plain-text requirements file → structured JIRA issues with BDD ACs + HTML requirement cards |
 
 ### Dispatch Rules
 - **With function:** `ba:function` → run only that function's steps (skip file prompt in STEP 0)
-- **Without function:** Full agent workflow with file request (STEP 0 asks for JIRA export)
-- **With path:** `ba:function path=./file.json` → parse specific JIRA file directly, skip file selection
+- **Without function:** Full agent workflow with file request (STEP 0 asks for JIRA export or requirements file)
+- **With path:** `ba:function path=./file.json` → parse specific file directly, skip file selection
+- **ba:create syntax:** `ba:create path=./requirements.txt` → auto-detect format, generate requirements.json + requirements-cards.html
 
 ---
 
@@ -260,6 +262,98 @@ Click any row to expand:
    - Click any row to see full details
    - Right-click → Save as CSV to export filtered results
    ```
+
+---
+
+### STEP 5 — Parse Plain-Text Requirements File
+
+> **Function:** `ba:create` — Parse requirements file, auto-detect format, generate JIRA issues with BDD ACs
+
+**Goal:** Convert natural-language requirements into structured JIRA-ready JSON
+
+**Process:**
+
+1. **Auto-detect input format:**
+   - If file contains `Feature:`, `Scenario:`, `Given/When/Then` keywords → **Gherkin** format
+   - If file contains `##` headings, `---` separators, or numbered lists → **Markdown** format
+   - Otherwise → **Free-form prose** (default)
+
+2. **Split into individual requirements:**
+   - Scan for separator pattern (headings, rules, numbering, Gherkin blocks)
+   - Split file by detected separator
+   - Each block becomes one requirement
+
+3. **Parse each requirement block:**
+   - Extract `summary` (first sentence or heading)
+   - Detect `type` (Story, Bug, Task, Epic) from keywords
+   - Detect `priority` (Critical, High, Medium, Low) from keywords
+   - Extract `description`, `labels`, `story_points`
+   - Calculate `confidence` score (0.0–1.0) for parsing quality
+
+4. **Apply `ba_create_skill`:**
+   - Generate `requirements.json` (JIRA-importable format)
+   - Save to same directory as input file
+
+**Output:** `requirements.json` with structure:
+```json
+{
+  "generated_at": "ISO timestamp",
+  "source_file": "requirements.txt",
+  "total": 3,
+  "stats": { "by_type": {...}, "by_priority": {...}, "total_story_points": 9 },
+  "issues": [
+    {
+      "key": "REQ-001",
+      "summary": "...",
+      "type": "Story",
+      "priority": "High",
+      "acceptance_criteria": [
+        { "scenario": "...", "given": "...", "when": "...", "then": "..." },
+        ...
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### STEP 6 — Generate HTML Requirement Cards
+
+> **Function:** `ba:create` — Render requirements as interactive HTML card view
+
+**Goal:** Visualize requirements with expandable BDD acceptance criteria
+
+**Process:**
+
+1. **Build HTML page structure:**
+   - Gradient header (title, source, generated date)
+   - Stats bar (total, by type, by priority, story points)
+   - Filter bar (type, priority, search, BDD completeness)
+   - CSS Grid card layout (responsive: 1-3 cards per row)
+
+2. **Render each requirement as expandable card:**
+   - Collapsed view: key, type icon, priority badge, summary, story points
+   - Click to expand: full description + 3 BDD scenarios (✅ ⚠ ❌)
+   - Inline buttons: [Edit] [Delete] [+ Add Scenario] [Copy JSON]
+
+3. **Add interactive JavaScript (no external libraries):**
+   - Toggle expand/collapse on click
+   - Filter by type, priority, search text (real-time)
+   - Edit card: make fields contentEditable, Save/Cancel
+   - Delete card: remove from DOM
+   - Add Scenario: append new Given-When-Then block
+   - Copy JSON: send issue to clipboard
+   - Export All: download requirements.json (current state)
+   - Export Filtered: download only visible cards
+
+4. **Apply `ba_create_skill` HTML phase:**
+   - Generate single self-contained HTML file
+   - All CSS and JavaScript inline (no external CDN)
+   - Color-coded badges (type icons, priority colors, scenario icons)
+   - Save as `requirements-cards.html`
+
+**Output:** `requirements-cards.html` — Interactive dashboard
 
 ---
 
