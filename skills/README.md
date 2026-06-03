@@ -1,33 +1,93 @@
-# 🛠️ Skills Directory
+# 🛠️ Skills Directory (v2.0 — Consolidated)
 
-> Reusable implementation modules used by all agents
+> Reusable, tech-specific implementation modules used by agents. 22 skills, zero orphans.
 
-**Quick Navigation**
+## Quick Navigation (22 Skills)
 
-| Skill | Purpose | Language | Used By |
-|-------|---------|----------|---------|
-| [Code Documentation](code_documentation_skill.md) | JSDoc/docstrings/Javadoc | JS/Python/Java | All agents |
-| [Database](database_skill.md) | SQL schema + migrations | PostgreSQL/MySQL | Autonomous Dev |
-| [Backend API](backend_skill.md) | REST API generation | FastAPI/Spring | Implementation |
-| [Frontend](frontend_skill.md) | React components | React/TS | Implementation |
-| [Testing](test_skill.md) | Unit/integration tests | JUnit5/pytest | Test Generator |
-| [Code Review](code_review_skill.md) | 6-phase analysis | Language-agnostic | Code Review |
-| [Apache Camel](apache_camel_skill.md) | Integration patterns | Apache Camel | Advanced |
+| # | Skill | Purpose | Language | Used By |
+|---|-------|---------|----------|---------|
+| 1 | [Code Documentation](code_documentation_skill.md) | Javadoc, docstrings, JSDoc | Java/Python/JS | Most agents |
+| 2 | [Code Review](code_review_skill.md) | 6-phase PR analysis + scoring | All languages | Code Reviewer |
+| 3 | [Code Health](code_health_skill.md) | Issue taxonomy, severity scoring | All languages | Codebase Auditor |
+| 4 | [Code Formatting](code_formatting_skill.md) | Indentation, line length, naming | Java/Python/JS | All agents |
+| 5 | [Database](database_skill.md) | SQL schema, migrations, indexing | PostgreSQL/MySQL/MSSQL | Autonomous Dev, Architecture |
+| 6 | [Backend API](backend_skill.md) | REST API generation (wrapper) | FastAPI/Spring Boot | Implementation |
+| 7 | [Frontend](frontend_skill.md) | React components (wrapper) | React/TypeScript | Implementation |
+| 8 | [Testing](test_skill.md) | Unit/integration/E2E tests | JUnit5/pytest/Jest | Test Engineer |
+| 9 | [Context Builder](context_builder_skill.md) | Project scanning, architecture.md | All stacks | All agents |
+| 10 | [Error Handling](error_handling_skill.md) | Try-catch, exceptions, recovery | Java/Python/JavaScript | All agents |
+| 11 | [Java Advanced](java_advanced_skill.md) | Java 17/21, Spring Boot 3.x | Java | Implementation |
+| 12 | [Python Advanced](python_advanced_skill.md) | Python 3.11+, async, FastAPI | Python | Implementation |
+| 13 | [React Advanced](react_advanced_skill.md) | React 18+, TypeScript, hooks | React/TypeScript | Implementation, Frontend Engineer |
+| 14 | [MSSQL Advanced](mssql_advanced_skill.md) | T-SQL, stored procedures, optimization | SQL Server | Implementation |
+| 15 | [OOP Patterns](oop_skill.md) | Encapsulation, inheritance, polymorphism, SOLID | All languages | All agents |
+| 16 | [Apache Camel](apache_camel_skill.md) | EIP patterns, routes, components | Java/Spring Boot | Advanced integrations |
+| 17 | [Apache Pulsar](apache_pulsar_skill.md) | Messaging, producers, consumers | Java/Python | Advanced messaging |
+| 18 | [Spring Advanced](spring_advanced_skill.md) | Spring Framework, Spring Boot internals | Java/Spring Boot | Advanced Java |
+| 19 | [OpenTelemetry](opentelemetry_skill.md) | Tracing, metrics, observability | Java/Spring Boot | Advanced monitoring |
+| 20 | [Logger](logger_skill.md) | SLF4J, Logback, structured logging | Java | All Java agents |
+| 21 | [Lombok](lombok_skill.md) | @Data, @Builder, boilerplate reduction | Java | Advanced Java |
+| 22 | [JIRA HTML Report](jira_html_report_skill.md) | Parse JIRA, generate HTML backlog | Language-agnostic | Business Analyst |
+| 23 | [Senior Frontend](senior_frontend_engineer_agent.md) | Component design, accessibility, state mgmt | React/TypeScript | Senior Frontend Engineer |
 
 ---
 
-## 📚 Skills Overview
+## 🎯 Skill Organization
 
-Skills are **reusable, tech-specific modules** that agents delegate to for implementation. Each skill handles language idioms, best practices, and quality standards.
+### Core Skills (Used by Most Agents)
+- `code_documentation_skill` — Code docs
+- `context_builder_skill` — Project context
+- `test_skill` — Testing
+- `backend_skill` — REST APIs
+- `frontend_skill` — UI components
 
-### Architecture
+### Language-Specific Skills
+- **Java:** `java_advanced_skill`, `spring_advanced_skill`, `logger_skill`, `lombok_skill`
+- **Python:** `python_advanced_skill`
+- **React/TypeScript:** `react_advanced_skill`
+- **SQL/Database:** `database_skill`, `mssql_advanced_skill`
+
+### Advanced/Specialized Skills
+- `apache_camel_skill` — Integration patterns
+- `apache_pulsar_skill` — Messaging
+- `opentelemetry_skill` — Observability
+- `error_handling_skill` — Exception handling
+- `oop_skill` — Design patterns
+- `code_health_skill` — Issue taxonomy
+- `code_review_skill` — PR analysis
+- `code_formatting_skill` — Code style
+- `jira_html_report_skill` — Backlog reporting
+
+---
+
+## 📝 Consolidated in v2.0
+
+**Removed (12 Orphaned Skills):**
+- ❌ `documentation_skill` — Duplicate of `code_documentation_skill`
+- ❌ `java11_skill`, `java17_skill` — Subsumed by `java_advanced_skill`
+- ❌ `rest_api_java_skill`, `rest_api_python_skill` — Subsumed by `backend_skill`
+- ❌ `testing_junit5_skill`, `testing_pytest_skill`, `testing_react_skill` — Subsumed by `test_skill`
+- ❌ `camel_exception_handling_skill` — Consolidated into `apache_camel_skill`
+- ❌ `camel_pulsar_integration_skill` — Consolidated into `apache_camel_skill`
+- ❌ `spring_camel_integration_skill` — Consolidated into `apache_camel_skill`
+- ❌ `sonarqube_vulnerability_skill` — Consolidated into `code_health_skill`
+
+**New Skills Added:**
+- ✅ `jira_html_report_skill` — Parse JIRA exports, generate HTML backlog reports
+
+---
+
+## 🏗️ Skills Architecture
 
 ```
 Implementation Agent
     ↓
-Detect tech stack (Java, Python, React, etc.)
-    ↓
-Select appropriate skill
+Detect tech stack
+    ├─ Java? → java_advanced_skill + spring_advanced_skill
+    ├─ Python? → python_advanced_skill
+    ├─ React? → react_advanced_skill
+    ├─ SQL? → database_skill + mssql_advanced_skill
+    └─ All → code_documentation_skill + test_skill + error_handling_skill
     ↓
 Skill executes implementation
     ├─ Code patterns
@@ -40,367 +100,62 @@ Generate complete code
 
 ---
 
-## 📝 Code Documentation Skill (v1.0)
-
-**File:** [`code_documentation_skill.md`](code_documentation_skill.md)
-
-**Generates:**
-- JSDoc (JavaScript/TypeScript)
-- docstrings (Python)
-- Javadoc (Java)
-
-**Coverage:**
-- ✅ All public methods documented
-- ✅ Parameters with types
-- ✅ Return values documented
-- ✅ Exceptions documented
-- ✅ Usage examples provided
-- ✅ Complex logic explained
-
-**Format Examples:**
-```javascript
-/**
- * Register a new user with email and password
- * @param {string} email - User email address
- * @param {string} password - Plain-text password
- * @returns {Promise<User>} Created user object
- * @throws {ValueError} If email format invalid
- * @example
- * const user = await registerUser("john@example.com", "secure");
- */
-```
-
-**When to use:** All agents use this for documentation
-
----
-
-## 🗄️ Database Skill (v1.0)
-
-**File:** [`database_skill.md`](database_skill.md)
-
-**Supports:**
-- PostgreSQL
-- MySQL
-- MongoDB
-- SQLite
-
-**Generates:**
-- Schema design
-- Migration scripts
-- Query optimization
-- Index strategies
-- Transaction handling
-
-**Output:**
-```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT valid_email CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$')
-);
-
-CREATE INDEX idx_users_email ON users(email);
-```
-
-**When to use:** Autonomous Dev, building APIs with databases
-
----
-
-## 🔌 Backend API Skill (v1.0)
-
-**File:** [`backend_skill.md`](backend_skill.md)
-
-**Supports:**
-- FastAPI (Python)
-- Spring Boot (Java)
-- Express (Node.js)
-
-**Generates:**
-- REST endpoints
-- Request validation
-- Error handling
-- Authentication
-- Rate limiting
-- OpenAPI specs
-
-**Example Output:**
-```python
-@app.post("/users/register")
-async def register_user(
-    email: EmailStr,
-    password: str = Field(..., min_length=8)
-) -> UserResponse:
-    """
-    Register a new user.
-    
-    - **email**: Valid email address
-    - **password**: Min 8 characters, must include uppercase + number
-    """
-    # Validation
-    if await User.get_by_email(email):
-        raise HTTPException(status_code=409, detail="Email already registered")
-    
-    # Hash password
-    hashed = hash_password(password)
-    
-    # Create user
-    user = await User.create(email=email, password_hash=hashed)
-    
-    return UserResponse.from_orm(user)
-```
-
-**When to use:** Building APIs, implementing backend logic
-
----
-
-## ⚛️ Frontend Skill (v1.0)
-
-**File:** [`frontend_skill.md`](frontend_skill.md)
-
-**Supports:**
-- React 18+
-- TypeScript
-- Tailwind CSS
-- Hooks patterns
-
-**Generates:**
-- Functional components
-- Custom hooks
-- State management
-- Form handling
-- API integration
-- Testing utilities
-
-**Example Output:**
-```typescript
-interface UserRegistrationProps {
-  onSuccess?: (user: User) => void;
-}
-
-export const UserRegistration: React.FC<UserRegistrationProps> = ({
-  onSuccess
-}) => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const user = await registerUser(formData);
-      onSuccess?.(user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Form fields */}
-    </form>
-  );
-};
-```
-
-**When to use:** Building React frontends, UI components
-
----
-
-## 🧪 Testing Skill (v1.0)
-
-**File:** [`test_skill.md`](test_skill.md)
-
-**Supports:**
-- JUnit 5 (Java)
-- pytest (Python)
-- Jest (TypeScript/JavaScript)
-
-**Standards:**
-- AAA Pattern (Arrange-Act-Assert)
-- Comprehensive coverage
-- Edge case testing
-- Error scenario testing
-- Integration testing
-
-**Example Output:**
-```python
-class TestUserRegistration:
-    """Test user registration endpoint"""
-    
-    @pytest.fixture
-    def clean_db(self):
-        """Setup and teardown database"""
-        yield
-        User.delete_all()
-    
-    def test_register_with_valid_credentials(self, clean_db):
-        """Given valid email/password, when registering, then user created"""
-        # Arrange
-        email = "john@example.com"
-        password = "SecurePass123"
-        
-        # Act
-        user = register_user(email, password)
-        
-        # Assert
-        assert user.email == email
-        assert user.password_hash != password  # Never store plain
-    
-    def test_register_with_invalid_email(self, clean_db):
-        """Given invalid email, when registering, then error returned"""
-        # Arrange
-        invalid_email = "not-an-email"
-        
-        # Act & Assert
-        with pytest.raises(ValueError, match="Invalid email format"):
-            register_user(invalid_email, "SecurePass123")
-    
-    def test_register_prevents_duplicate_email(self, clean_db):
-        """Given existing email, when registering, then conflict error"""
-        # Arrange
-        email = "john@example.com"
-        register_user(email, "SecurePass123")
-        
-        # Act & Assert
-        with pytest.raises(EmailAlreadyExists):
-            register_user(email, "AnotherPass123")
-```
-
-**When to use:** Test Generator agent, all code generation
-
----
-
-## 🔍 Code Review Skill (v3.0) ⭐ NEW
-
-**File:** [`code_review_skill.md`](code_review_skill.md)
-
-**Implements 6 Phases:**
-1. **Requirement Analysis** — Parse JIRA, translate to plain English
-2. **Requirement Validation** — Map code to ACs, calculate coverage %
-3. **Code Quality Review** — 6-category checklist (Design, SOLID, Patterns, Performance, Security, Testing/Docs)
-4. **Test Coverage** — Analyze test scenarios and coverage %
-5. **Documentation** — Audit docstrings, parameters, examples
-6. **Scorecard** — Weighted grade (A-F)
-
-**Output:**
-```
-╔════════════════════════════════════╗
-║     CODE REVIEW SCORECARD          ║
-╠════════════════════════════════════╣
-║ Requirement Met:   95% ████████░  ║
-║ Code Quality:      85% ███████░░  ║
-║ Test Coverage:     72% ██████░░░  ║
-║ Documentation:     68% ██████░░░░ ║
-╠════════════════════════════════════╣
-║ Final Grade: B (83.5/100)          ║
-║ Status: ⚠️ Changes Needed           ║
-╚════════════════════════════════════╝
-```
-
-**When to use:** Code Review Agent v3
-
----
-
-## 🚀 Apache Camel Skill (v1.0)
-
-**File:** [`apache_camel_skill.md`](apache_camel_skill.md)
-
-**Supports:**
-- Enterprise Integration Patterns (EIP)
-- Message routing
-- Transformation
-- Error handling
-
-**Generates:**
-- Route definitions
-- Processor implementations
-- Error handlers
-- Conditional logic
-
-**When to use:** Advanced integration scenarios
-
----
-
-## Skills Matrix
-
-| Skill | Language | Agent | Use Case |
-|-------|----------|-------|----------|
-| Code Docs | JS/Python/Java | All | Documentation |
-| Database | PostgreSQL/MySQL | Autonomous | Data layer |
-| Backend | FastAPI/Spring | Implementation | API development |
-| Frontend | React/TS | Implementation | UI development |
-| Testing | JUnit5/pytest | Test Gen | Test generation |
-| Code Review | Agnostic | Code Review | PR validation |
-| Camel | Apache Camel | Advanced | Integration |
-
----
-
-## How Skills Work
-
-### For Agents
-Agents **delegate** to skills for language-specific implementation:
-
-```python
-# In Implementation Agent:
-tech_stack = detect_technology(project)
-
-if tech_stack.backend == "FastAPI":
-    skill = backend_skill  # Apply FastAPI skill
-    code = skill.generate_endpoints(requirement)
-elif tech_stack.backend == "Spring":
-    skill = backend_skill  # Apply Spring skill
-    code = skill.generate_endpoints(requirement)
-```
-
-### For Users
-You can **import and use skills directly**:
-
-```python
-from skills.code_documentation_skill import DocumentationGenerator
-
-generator = DocumentationGenerator()
-docs = generator.generate_from_code("src/auth.py", format="docstring")
-print(docs)
-```
-
----
-
-## Adding a New Skill
-
-1. **Create:** `skills/my_skill.md`
-2. **Structure:**
-   ```markdown
-   ---
-   name: My Skill
-   version: 1.0
-   description: What it does
-   ---
-   
-   # Skill Name
-   ## Overview
-   ## Process
-   ## Example
-   ## Best Practices
-   ```
-3. **Test:** Run with agents
-4. **Submit:** PR with examples
+## 📚 Skill Categories
+
+### Code Quality & Documentation
+- `code_documentation_skill` — JSDoc/docstrings/Javadoc
+- `code_review_skill` — 6-phase PR analysis
+- `code_health_skill` — Issue taxonomy + severity
+- `code_formatting_skill` — Style standards
+
+### Testing
+- `test_skill` — Unit/integration/E2E tests (orchestrator)
+- ~~`testing_junit5_skill`~~ (subsumed)
+- ~~`testing_pytest_skill`~~ (subsumed)
+- ~~`testing_react_skill`~~ (subsumed)
+
+### Database & Persistence
+- `database_skill` — Schema design, migrations, indexing
+- `mssql_advanced_skill` — T-SQL + SQL Server optimization
+
+### Backend Development
+- `backend_skill` — REST API generation (FastAPI, Spring Boot)
+- `java_advanced_skill` — Java 17+ patterns
+- `python_advanced_skill` — Python 3.11+ patterns
+- `spring_advanced_skill` — Spring internals
+
+### Frontend Development
+- `frontend_skill` — React components (orchestrator)
+- `react_advanced_skill` — React 18+, hooks, TypeScript
+
+### Integration & Messaging
+- `apache_camel_skill` — EIPs, route DSL
+- `apache_pulsar_skill` — Messaging patterns
+- ~~`camel_exception_handling_skill`~~ (consolidated)
+- ~~`camel_pulsar_integration_skill`~~ (consolidated)
+- ~~`spring_camel_integration_skill`~~ (consolidated)
+
+### Observability & Logging
+- `opentelemetry_skill` — Tracing, metrics, logs
+- `logger_skill` — SLF4J, Logback, structured logging
+
+### Cross-Cutting
+- `error_handling_skill` — Exception handling
+- `oop_skill` — Design patterns, SOLID
+- `context_builder_skill` — Project context, architecture
+
+### Business Analysis
+- `jira_html_report_skill` — JIRA export → HTML backlog
 
 ---
 
 ## 🔗 Links
 
-- **[Agents Directory](../agents/README.md)** — Agent catalog
-- **[Tools Documentation](./README.md)** — Utility scripts  
-- **[Master Rules](../instructions/master_instruction_set.md)** — Standards
+- **[Agents Directory](../agents/README.md)** — Agent definitions (13 total)
+- **[Tools Documentation](../tools/README.md)** — Utility scripts
+- **[Master Rules](../instructions/master_instruction_set.md)** — Non-negotiable standards
 - **[Main README](../README.md)** — Project overview
 
 ---
 
-**Last Updated:** May 25, 2026 | **Version:** 4.2.0
+**Last Updated:** June 3, 2026 | **Version:** 2.0.0 (Consolidated) | **Skills:** 22 | **Agents:** 13

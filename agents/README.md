@@ -1,27 +1,56 @@
-# 🤖 AI Agents Directory
+# 🤖 AI Agents Directory (v2.0 — Consolidated)
 
-> Complete guide to all AI agents in the Awesome Prompts system
+> Role-based AI agents using reusable skills. 13 agents, 23 skills, zero overlap.
 
-**Quick Navigation**
-| Agent | Role | Purpose | Version | Status |
-|-------|------|---------|---------|--------|
-| [Startup Engineering Team](autonomous/autonomous_dev_agent.md) | Orchestration | Full-stack project generation (DB + API + UI + tests) | v1.0 | ✅ Ready |
-| [Codebase Auditor](codebase_auditor_agent.md) | Code Quality | Scan for violations, security issues, tech debt | v1.0 | ✅ Ready |
-| [Production Debugger](production_debugger_agent.md) | Code Quality | Root cause analysis, stack trace investigation, issue resolution | v1.0 | ✅ Ready |
-| [Performance Optimizer](performance_optimizer_agent.md) | Code Quality | Bottleneck analysis, optimization suggestions, benchmarking | v1.0 | ✅ Ready |
-| [Architecture Refactorer](architecture_refactorer_agent.md) | Code Quality | Code restructuring, clean architecture, zero-downtime migrations | v1.0 | ✅ Ready |
-| [Backend Systems Architect](backend_systems_architect_agent.md) | System Design | Scalable API architecture, database design, microservices patterns | v1.0 | ✅ Ready |
-| [Senior Frontend Engineer](senior_frontend_engineer_agent.md) | System Design | React/TypeScript patterns, component design, state management | v1.0 | ✅ Ready |
-| [Technical Lead](technical_lead_agent.md) | Production & Security | Strategic decisions, architecture reviews, team coordination | v1.0 | ✅ Ready |
-| [Security Auditor](security_auditor_agent.md) | Production & Security | Vulnerability scanning, threat modeling, compliance validation | v1.0 | ✅ Ready |
-| [AI Engineering Team Coordinator](ai_engineering_team_coordinator_agent.md) | Orchestration | Multi-agent collaboration, conflict resolution, quality gates | v1.0 | ✅ Ready |
-| [DevOps + Deployment](integration_agent.md) | Deployment | CI/CD pipelines, containerization, IaC, monitoring | v1.0 | ✅ Ready |
+## Quick Navigation (13 Agents)
+
+| # | Agent | Role | Purpose | Version | Status |
+|---|-------|------|---------|---------|--------|
+| 1 | [Autonomous Dev](autonomous/autonomous_dev_agent.md) | Orchestrator | Full-stack project generation (DB + API + UI + tests) | v1.0 | ✅ Ready |
+| 2 | [Implementation Engineer](implementation_agent.md) | Feature Builder | Code + tests + docs for single features or modules | v3.0 | ✅ Ready |
+| 3 | [Systems Architect](architecture_agent.md) | Architecture | Design new systems or refactor existing ones (greenfield + brownfield) | v2.0 | ✅ Ready |
+| 4 | [Code Reviewer](code_review_agent.md) | QA | PR validation against JIRA requirements, quality scoring | v3.0 | ✅ Ready |
+| 5 | [Test Engineer](test_case_generator_agent.md) | Testing | 100% coverage tests with business validation | v1.0 | ✅ Ready |
+| 6 | [Security Auditor](security_auditor_agent.md) | Security | Vulnerability scanning, threat modeling, OWASP compliance | v1.0 | ✅ Ready |
+| 7 | [Performance Optimizer](performance_optimizer_agent.md) | Performance | Bottleneck analysis, optimization strategies, benchmarking | v1.0 | ✅ Ready |
+| 8 | [Production Debugger](production_debugger_agent.md) | Debugging | Root cause analysis, stack trace investigation, edge cases | v1.0 | ✅ Ready |
+| 9 | [Codebase Auditor](codebase_auditor_agent.md) | Code Health | Scan for violations, tech debt, security issues, roadmaps | v1.0 | ✅ Ready |
+| 10 | [DevOps Engineer](integration_agent.md) | Deployment | CI/CD pipelines, containerization (Docker), IaC (Terraform), monitoring | v1.0 | ✅ Ready |
+| 11 | [Documentation Engineer](documentation_agent.md) | Documentation | Code docs (Javadoc/docstrings), architecture guides, API specs, HTML sites | v2.0 | ✅ Ready |
+| 12 | [Technical Lead](technical_lead_agent.md) | Strategy | Architecture reviews, tech decisions, team coordination | v1.0 | ✅ Ready |
+| 13 | [Business Analyst](business_analyst_agent.md) | Backlog | JIRA parsing, HTML backlog reports, filtering, stats | v1.0 | ✅ Ready |
 
 ---
 
-## 🎯 Agent Overview
+## 🎯 Agent Organization (Role-Based)
 
-### Architecture Pattern
+**Consolidated Structure (v2.0):**
+- **19 agents → 13 agents** (removed 7 overlapping agents)
+- **34 skills → 23 skills** (removed 12 orphaned skills)
+- **Zero role overlap** (each agent has a single, clear responsibility)
+
+### Removed in Consolidation
+
+**Overlapping Agents Merged:**
+- ❌ `ai_engineering_team_coordinator_agent` → Merged into `autonomous_dev_agent` (orchestration)
+- ❌ `super_agent_orchestrator` → Merged into `autonomous_dev_agent` (orchestration)
+- ❌ `context_builder_agent` → Wrapper; logic in `context_builder_skill`
+- ❌ `writer_agent` → Merged into `documentation_agent`
+- ❌ `technical_documentation_agent` → Merged into `documentation_agent`
+- ❌ `backend_systems_architect_agent` → Merged into `architecture_agent`
+- ❌ `architecture_refactorer_agent` → Merged into `architecture_agent`
+
+**Orphaned Skills Removed:**
+- ❌ `documentation_skill` (duplicate of `code_documentation_skill`)
+- ❌ `java11_skill`, `java17_skill` (subsumed by `java_advanced_skill`)
+- ❌ `rest_api_java_skill`, `rest_api_python_skill` (subsumed by `backend_skill`)
+- ❌ `testing_junit5_skill`, `testing_pytest_skill`, `testing_react_skill` (subsumed by `test_skill`)
+- ❌ `camel_exception_handling_skill`, `camel_pulsar_integration_skill`, `spring_camel_integration_skill` (consolidated into `apache_camel_skill`)
+- ❌ `sonarqube_vulnerability_skill` (consolidated into `code_health_skill`)
+
+---
+
+## 🎯 Architecture Pattern
 
 ```
 User Requirement
@@ -87,52 +116,22 @@ Output (Production-Ready)
 
 ---
 
-## 🤝 AI Engineering Team Coordinator Agent (v1.0) ⭐ NEW
+## 🏗️ Systems Architect Agent (v2.0) ⭐ MERGED
 
-**File:** [`ai_engineering_team_coordinator_agent.md`](ai_engineering_team_coordinator_agent.md)
-
-| Aspect | Details |
-|--------|---------|
-| **Purpose** | Orchestrate 4 elite agents working together |
-| **Team** | Architect, Engineer, Reviewer, Optimizer |
-| **Workflow** | Design → Build → Review → Optimize |
-| **Output** | Complete architecture + implementation + review + optimized code |
-| **Pattern** | Multi-agent collaboration with conflict resolution |
-
-**Features:**
-- 🏛️ Architect designs scalable system architecture
-- 👨‍💻 Engineer builds complete implementation with tests
-- 🔍 Reviewer critiques code, performance, security
-- ⚡ Optimizer refines and hardens for production
-- 🤝 Seamless handoff and communication patterns
-- 🚨 Conflict resolution when agents disagree
-- 📊 Quality gates at each phase
-
-**When to use:** Complex systems requiring careful design, high-quality implementations, peer review throughout development
-
----
-
-## 🏗️ Architecture Refactorer Agent (v1.0)
-
-**File:** [`architecture_refactorer_agent.md`](architecture_refactorer_agent.md)
+**File:** [`architecture_agent.md`](architecture_agent.md)
 
 | Aspect | Details |
 |--------|---------|
-| **Purpose** | Restructure messy production codebase |
-| **Input** | Existing code, architectural pain points |
-| **Analysis** | 8-phase (assessment → diagnosis → design → refactoring → migration) |
-| **Output** | Clean layered architecture + refactored code + migration guide |
-| **Key Pattern** | Domain-Driven Design (DDD) with clean architecture layers |
+| **Purpose** | Design new systems (greenfield) OR refactor existing ones (brownfield) |
+| **Greenfield** | API contracts, database schema, caching, deployment topology, code stubs |
+| **Brownfield** | Current state assessment, problem diagnosis, phased migration plan, rollback strategies |
+| **Output** | System topology diagrams, API contracts, DB schemas, phased roadmap, migration guides |
 
-**Features:**
-- 🔍 Architectural problem diagnosis (coupling, god modules, circular deps)
-- 🎯 Clean architecture design (presentation → application → domain ← infrastructure)
-- 📊 Phased refactoring roadmap (3-5 incremental, deployable phases)
-- 💻 Production code examples (before/after transformations)
-- 🛡️ Zero-downtime migration strategy (feature flags, rollback procedures)
-- ✅ 100% backward compatibility (no functionality changes)
+**Merged from:**
+- ✅ `backend_systems_architect_agent` (new system design)
+- ✅ `architecture_refactorer_agent` (existing system refactoring)
 
-**When to use:** Untangling tight coupling, fixing god classes, improving testability, scaling blockers
+**When to use:** Designing new systems OR refactoring existing monoliths/legacy code
 
 ---
 
@@ -155,21 +154,39 @@ Output (Production-Ready)
 
 ---
 
-## 📚 Writer Agent (v1.0)
+## 📚 Documentation Engineer Agent (v2.0) ⭐ MERGED
 
-**File:** [`writer_agent.md`](writer_agent.md)
+**File:** [`documentation_agent.md`](documentation_agent.md)
 
-**Purpose:** Auto-generate documentation
+**Purpose:** Comprehensive documentation across all levels
 
-**Generates:**
-- JSDoc (JavaScript/TypeScript)
-- docstrings (Python)
-- Javadoc (Java)
-- README updates
-- Changelog entries
-- API documentation
+**Covers:**
+- Code-level docs (Javadoc, docstrings, JSDoc)
+- Architecture docs (context.json, architecture.md, tech-stack.md)
+- API specifications (OpenAPI/Swagger)
+- README + quick-start guides
+- Interactive HTML documentation site
 
-**When to use:** Need documentation, README updates, API docs
+**Merged from:**
+- ✅ `writer_agent` (code-level + API docs)
+- ✅ `technical_documentation_agent` (architecture + HTML site)
+
+**When to use:** Need any documentation (code docs, architecture, API, README, HTML site)
+
+---
+
+## 📊 Business Analyst Agent (v1.0) ⭐ NEW
+
+**File:** [`business_analyst_agent.md`](business_analyst_agent.md)
+
+| Aspect | Details |
+|--------|---------|
+| **Purpose** | Parse JIRA exports, generate interactive backlog reports |
+| **Input** | Local JIRA JSON or CSV export |
+| **Output** | Single-file HTML report (self-contained, no CDN) |
+| **Features** | Filtering (status, priority, assignee, sprint), sorting, stats header, row expansion |
+
+**When to use:** Need to visualize JIRA backlog, generate backlog reports, share with stakeholders
 
 ---
 
@@ -216,76 +233,62 @@ Output (Production-Ready)
 
 ---
 
-## 📊 Technical Documentation Agent (v1.0)
 
-**File:** [`technical_documentation_agent.md`](technical_documentation_agent.md)
+## 🔗 Common Workflows
 
-**Purpose:** Auto-generate project documentation
+### Workflow 1: Build a Feature
+1. **Implementation Engineer** → Code + tests + docs
+2. **Code Reviewer** → Validate against JIRA
+3. **DevOps Engineer** → Deploy to production
 
-**Generates:**
-- `architecture.md` — System design with Mermaid diagrams
-- `tech-stack.md` — Technology reference table
-- `context.json` — Machine-readable metadata
-- `design.html` — Interactive visualization
+### Workflow 2: Audit Existing Codebase
+1. **Codebase Auditor** → Scan for issues, tech debt, violations
+2. **Production Debugger** → Deep-dive on critical issues
+3. **Performance Optimizer** → Identify bottlenecks
+4. **Systems Architect** → Design refactoring roadmap
 
-**When to use:** Need architecture docs, project documentation, knowledge graphs
+### Workflow 3: Build New System
+1. **Systems Architect** → Design topology, API contracts, DB schema
+2. **Implementation Engineer** → Build backend
+3. **Senior Frontend Engineer** → Build frontend
+4. **Test Engineer** → Generate 100% coverage tests
+5. **Security Auditor** → Vulnerability audit
+6. **DevOps Engineer** → CI/CD + deployment
+7. **Documentation Engineer** → Auto-generate docs
 
----
-
-## 🔗 Handoff Patterns
-
-Agent workflows follow structured handoff patterns for seamless collaboration:
-
-### 1. Code Quality Group
-Sequential pipeline for code health analysis and improvement:
-- **Codebase Auditor** → Initial scan for violations, tech debt, security issues
-- **Production Debugger** → Deep investigation of critical issues, root cause analysis
-- **Performance Optimizer** → Identify bottlenecks, provide optimization suggestions
-- **Architecture Refactorer** → Restructure code, apply clean architecture, plan migrations
-
-**Use when:** Dealing with legacy/production code requiring comprehensive review and improvement.
-
-### 2. System Design Group
-Parallel design for scalable systems:
-- **Backend Systems Architect** → Design API architecture, database patterns, microservices
-- **Senior Frontend Engineer** → Design UI/UX, component architecture, state management
-
-**Use when:** Building new systems requiring coordinated backend and frontend design.
-
-### 3. Production & Security Group
-Dual review for live systems:
-- **Technical Lead** → Strategic architecture review, team coordination, deployment decisions
-- **Security Auditor** → Vulnerability assessment, threat modeling, compliance validation
-
-**Use when:** Deploying to production or handling sensitive systems.
-
-### 4. Orchestration
-Central coordination:
-- **AI Engineering Team Coordinator** → Manages all agents, enforces quality gates, resolves conflicts
-
-**Use when:** Complex projects requiring multiple agents with formal handoffs and validation.
+### Workflow 4: Refactor Existing System
+1. **Systems Architect** → Analyze current state, design target state, create phased plan
+2. **Implementation Engineer** → Execute each phase
+3. **Code Reviewer** → Validate each phase
+4. **Test Engineer** → Ensure coverage
+5. **Production Debugger** → Handle issues
+6. **Documentation Engineer** → Update architecture docs
 
 ---
 
-## 📋 Agent Decision Matrix
+## 📋 Quick Reference Matrix
 
-| Need | Agent | Time |
-|------|-------|------|
-| Build a feature | Implementation | 5-10 min |
-| Review a PR | Code Review | 2-5 min |
-| Generate tests | Test Generator | 3-7 min |
-| Document code | Writer | 2-4 min |
-| Setup CI/CD | Integration | 10-15 min |
-| Full system | Autonomous Dev | 20-30 min |
-| Architecture docs | Tech Docs | 5-10 min |
-| Multi-agent collaboration | Team Coordinator | 2-4 hours |
-| Refactor messy code | Architecture Refactorer | 30-120 min |
+| Task | Agent | Estimated Time |
+|------|-------|-----------------|
+| Build a feature | Implementation Engineer | 5-10 min |
+| Review a PR | Code Reviewer | 2-5 min |
+| Generate tests | Test Engineer | 3-7 min |
+| Document code/API | Documentation Engineer | 2-10 min |
+| Setup CI/CD | DevOps Engineer | 10-15 min |
+| Full system from scratch | Autonomous Dev | 20-30 min |
+| Design new system | Systems Architect | 15-30 min |
+| Refactor existing system | Systems Architect | 30-120 min |
+| Audit codebase | Codebase Auditor | 10-30 min |
+| Find production bug | Production Debugger | 15-60 min |
+| Optimize performance | Performance Optimizer | 20-60 min |
+| Security review | Security Auditor | 15-45 min |
+| Visualize backlog | Business Analyst | 2-5 min |
 
 ---
 
 ## 🔗 Links
 
-- **[Skills Directory](../skills/README.md)** — Reusable skill modules
+- **[Skills Directory](../skills/README.md)** — Reusable skill modules (23 total)
 - **[Tools Documentation](../tools/README.md)** — Utility scripts
 - **[Master Rules](../instructions/master_instruction_set.md)** — Non-negotiable standards
 - **[Main README](../README.md)** — Project overview
@@ -293,4 +296,4 @@ Central coordination:
 
 ---
 
-**Last Updated:** May 27, 2026 | **Version:** 5.0.0
+**Last Updated:** June 3, 2026 | **Version:** 2.0.0 (Consolidated) | **Agents:** 13 | **Skills:** 22

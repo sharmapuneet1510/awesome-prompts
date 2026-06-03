@@ -24,34 +24,49 @@ awesome-prompts/
 │   ├── incident-management/          ← Production issue investigation
 │   └── reporting/                    ← HTML report generation
 │
-├── agents/                           ← Full agent definitions (role-based architecture)
-│   ├── implementation_agent.md       ← Full-lifecycle feature builder (code + tests + docs)
-│   ├── code_review_agent.md          ← Design patterns, SOLID, performance, security
-│   ├── writer_agent.md               ← API docs, README, changelog auto-generation
-│   ├── integration_agent.md          ← CI/CD pipelines, deployment, IaC, monitoring
-│   ├── context/
-│   │   └── context_builder_agent.md  ← Interactive project analysis & architecture
+├── agents/                           ← Role-based agent definitions (13 agents)
+│   ├── implementation_agent.md       ← Full-lifecycle feature builder
+│   ├── code_review_agent.md          ← PR validation + quality scoring
+│   ├── documentation_agent.md        ← Code docs + architecture docs + HTML sites
+│   ├── architecture_agent.md         ← Design new systems OR refactor existing
+│   ├── business_analyst_agent.md     ← JIRA parsing + HTML backlog reports
+│   ├── test_case_generator_agent.md  ← 100% coverage tests with business validation
+│   ├── security_auditor_agent.md     ← Vulnerability scanning + threat modeling
+│   ├── performance_optimizer_agent.md ← Bottleneck analysis + optimization
+│   ├── production_debugger_agent.md  ← Root cause analysis + edge case discovery
+│   ├── codebase_auditor_agent.md     ← Tech debt + violations scanning
+│   ├── integration_agent.md          ← CI/CD + Docker + Terraform + monitoring
+│   ├── technical_lead_agent.md       ← Architecture reviews + tech decisions
+│   ├── senior_frontend_engineer_agent.md ← React/TypeScript component design
 │   ├── autonomous/
 │   │   ├── autonomous_dev_agent.md   ← Full-stack orchestrator (DB + API + UI + tests)
 │   │   └── README.md                 ← Autonomous development guide
-│   ├── test_case_generator_agent.md  ← 100% coverage tests with JIRA validation
-│   └── README.md                     ← Agent role guide
+│   └── README.md                     ← Agent directory (consolidated v2.0)
 │
-├── skills/                           ← Reusable implementation skill modules
+├── skills/                           ← Reusable implementation skills (23 skills)
 │   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
-│   ├── database_skill.md             ← SQL schema + migrations (PostgreSQL/MySQL/MongoDB)
+│   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
+│   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
+│   ├── code_formatting_skill.md      ← Code style standards
+│   ├── database_skill.md             ← SQL schema + migrations (PostgreSQL/MySQL/MSSQL)
 │   ├── backend_skill.md              ← REST API generation (FastAPI/Spring Boot)
 │   ├── frontend_skill.md             ← React component generation + hooks
 │   ├── test_skill.md                 ← Test generation (JUnit5/pytest/Jest)
 │   ├── context_builder_skill.md      ← Project architecture & tech stack analysis
-│   ├── java_advanced_skill.md        ← Java 17+ coding standards & patterns
+│   ├── java_advanced_skill.md        ← Java 17/21 coding standards & patterns
 │   ├── python_advanced_skill.md      ← Python 3.11+ coding standards & patterns
 │   ├── react_advanced_skill.md       ← React 18+ / TypeScript coding standards
 │   ├── mssql_advanced_skill.md       ← T-SQL coding standards & patterns
-│   ├── code_health_skill.md          ← Issue taxonomy, severity scale, scan checklist
-│   ├── apache_camel_skill.md         ← Apache Camel integration framework & EIP patterns
-│   ├── spring_advanced_skill.md      ← Spring Framework / Spring Boot advanced patterns
-│   └── apache_pulsar_skill.md        ← Apache Pulsar messaging & streaming patterns
+│   ├── spring_advanced_skill.md      ← Spring Framework / Spring Boot internals
+│   ├── error_handling_skill.md       ← Exception handling + recovery patterns
+│   ├── oop_skill.md                  ← OOP pillars + SOLID + design patterns
+│   ├── apache_camel_skill.md         ← Apache Camel integration & EIP patterns
+│   ├── apache_pulsar_skill.md        ← Apache Pulsar messaging & streaming
+│   ├── opentelemetry_skill.md        ← Observability + tracing + metrics
+│   ├── logger_skill.md               ← SLF4J + Logback + structured logging
+│   ├── lombok_skill.md               ← Lombok annotations + boilerplate reduction
+│   ├── jira_html_report_skill.md     ← Parse JIRA + generate HTML backlog
+│   └── README.md                     ← Skills directory (consolidated v2.0)
 │
 ├── parser/                           ← Python field derivation analysis tool
 │
@@ -70,25 +85,27 @@ awesome-prompts/
 └── CLAUDE.md
 ```
 
-## Agents by Role
+## Agents by Role (v2.0 — Consolidated)
 
-Agents are organized by responsibility using a role-based generic architecture. See `agents/README.md` for detailed descriptions.
+Agents are organized by responsibility using a **role-based generic architecture**. See `agents/README.md` for detailed descriptions.
 
-### All Agents (v5.0.0)
+**Total: 13 agents (down from 19) — zero role overlap**
 
 | # | Role | Agent | File | Purpose | Tech-Agnostic |
 |---|------|-------|------|---------|---------------|
-| 1 | **Startup Engineering Team** | Autonomous Dev Agent | `agents/autonomous/autonomous_dev_agent.md` | Full-stack project generation with database, API, UI, and tests. Orchestrates complete system creation from requirements through deployment. | ✅ Yes |
-| 2 | **Codebase Auditor** | Codebase Auditor Agent | `agents/codebase_auditor_agent.md` | Scans codebases for violations, security issues, and tech debt. Provides comprehensive analysis and remediation recommendations. | ✅ Yes |
-| 3 | **Production Debugger** | Production Debugger Agent | `agents/production_debugger_agent.md` | Deep root cause analysis for critical issues. Investigates stack traces, error patterns, and production anomalies. | ✅ Yes |
-| 4 | **Performance Optimizer** | Performance Optimizer Agent | `agents/performance_optimizer_agent.md` | Identifies performance bottlenecks and provides optimization strategies. Conducts benchmarking and suggests algorithmic improvements. | ✅ Yes |
-| 5 | **Architecture Refactorer** | Architecture Refactorer Agent | `agents/architecture_refactorer_agent.md` | Restructures messy production code into clean architecture. Plans zero-downtime migrations and maintains backward compatibility. | ✅ Yes |
-| 6 | **Backend Systems Architect** | Backend Systems Architect Agent | `agents/backend_systems_architect_agent.md` | Designs scalable API architecture, database patterns, and microservices. Handles distributed systems and integration patterns. | ✅ Yes |
-| 7 | **Senior Frontend Engineer** | Senior Frontend Engineer Agent | `agents/senior_frontend_engineer_agent.md` | Designs modern component architecture with React/TypeScript patterns. Manages state, performance optimization, and accessibility. | ✅ Yes |
-| 8 | **Technical Lead** | Technical Lead Agent | `agents/technical_lead_agent.md` | Strategic architecture review and technical decisions. Coordinates teams, manages trade-offs, and ensures deployment readiness. | ✅ Yes |
-| 9 | **Security Auditor** | Security Auditor Agent | `agents/security_auditor_agent.md` | Comprehensive security assessment including vulnerability scanning and threat modeling. Ensures OWASP compliance and data protection. | ✅ Yes |
-| 10 | **AI Engineering Team Coordinator** | AI Engineering Team Coordinator Agent | `agents/ai_engineering_team_coordinator_agent.md` | Orchestrates multi-agent collaboration with conflict resolution. Enforces quality gates and manages handoffs between specialized agents. | ✅ Yes |
-| 11 | **DevOps + Deployment** | Integration Agent | `agents/integration_agent.md` | CI/CD pipelines, containerization with Docker, Infrastructure as Code, and monitoring setup. Supports AWS, GCP, Azure, and Kubernetes. | ✅ Yes |
+| 1 | **Orchestrator** | Autonomous Dev | `agents/autonomous/autonomous_dev_agent.md` | Full-stack project generation (DB + API + UI + tests from requirements) | ✅ Yes |
+| 2 | **Feature Builder** | Implementation Engineer | `agents/implementation_agent.md` | Code + tests + docs for single features/modules | ✅ Yes |
+| 3 | **Systems Architect** | Architecture | `agents/architecture_agent.md` | Design new systems OR refactor existing ones (greenfield + brownfield) | ✅ Yes |
+| 4 | **QA / Code Review** | Code Reviewer | `agents/code_review_agent.md` | PR validation against JIRA, quality scoring, HTML reports | ✅ Yes |
+| 5 | **Testing** | Test Engineer | `agents/test_case_generator_agent.md` | 100% coverage tests with business validation | ✅ Yes |
+| 6 | **Security** | Security Auditor | `agents/security_auditor_agent.md` | Vulnerability scanning, threat modeling, OWASP compliance | ✅ Yes |
+| 7 | **Performance** | Performance Optimizer | `agents/performance_optimizer_agent.md` | Bottleneck analysis, optimization strategies, benchmarking | ✅ Yes |
+| 8 | **Debugging** | Production Debugger | `agents/production_debugger_agent.md` | Root cause analysis, stack trace investigation, edge cases | ✅ Yes |
+| 9 | **Code Health** | Codebase Auditor | `agents/codebase_auditor_agent.md` | Scan for violations, tech debt, security issues, roadmaps | ✅ Yes |
+| 10 | **DevOps/Deployment** | DevOps Engineer | `agents/integration_agent.md` | CI/CD pipelines, Docker, Terraform, monitoring (AWS/GCP/Azure/K8s) | ✅ Yes |
+| 11 | **Documentation** | Documentation Engineer | `agents/documentation_agent.md` | Code docs, architecture guides, API specs, HTML sites | ✅ Yes |
+| 12 | **Strategy** | Technical Lead | `agents/technical_lead_agent.md` | Architecture reviews, tech decisions, team coordination | ✅ Yes |
+| 13 | **Backlog Analysis** | Business Analyst | `agents/business_analyst_agent.md` | JIRA parsing, HTML backlog reports, filtering, stats | ✅ Yes |
 
 ### Skill-Based Architecture
 
