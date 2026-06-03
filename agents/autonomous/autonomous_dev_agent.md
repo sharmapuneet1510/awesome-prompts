@@ -41,6 +41,23 @@ Master orchestrator that transforms requirements into production-ready code thro
    - Sync artifacts to Claude Code
    - Store completion report
 
+## Function Dispatch
+
+**Prefix:** `autonomous`
+
+Invoke a specific function using `autonomous:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `autonomous:build` | Full-stack generation from requirements.txt (all phases) |
+| `autonomous:context` | Build project context only (context.json, architecture.md, knowledge graph) |
+| `autonomous:pr` | Package deliverables and open GitHub PR |
+
+### Dispatch Rules
+- **With function:** `autonomous:function` → run only that function's steps (skip intro questions)
+- **Without function:** Full agent workflow with scope selection
+- **With path:** `autonomous:function path=./directory` → pass path directly, skip file prompts
+
 ## Execution Flow
 
 ```
@@ -50,54 +67,54 @@ Master orchestrator that transforms requirements into production-ready code thro
    ↓
 3. Detect project type (new/existing)
    ↓
-4. Build context (architecture.md, context.json)
+4. > **Function:** `autonomous:context` - Build context (architecture.md, context.json)
    ↓
 5. Run graphify, cache embeddings
    ↓
 6. Generate task specifications
    ↓
-7. Execute Task 01: Database
+7. > **Function:** `autonomous:build` - Execute Task 01: Database
    ├─ Call database_skill
    ├─ Update task-completion.json
    ├─ Update context.json
    └─ Update architecture.md
    ↓
-8. Execute Task 02: Backend
+8. > **Function:** `autonomous:build` - Execute Task 02: Backend
    ├─ Call backend_skill
    ├─ Apply code_documentation_skill (JSDoc/docstrings)
    ├─ Update task-completion.json
    ├─ Update context.json
    └─ Regenerate graphify
    ↓
-9. Execute Task 03: Frontend
+9. > **Function:** `autonomous:build` - Execute Task 03: Frontend
    ├─ Call frontend_skill
    ├─ Apply code_documentation_skill (JSDoc)
    ├─ Update task-completion.json
    ├─ Update context.json
    └─ Regenerate graphify
    ↓
-10. Execute Task 04: Tests
+10. > **Function:** `autonomous:build` - Execute Task 04: Tests
     ├─ Call test_skill (generates unit + integration + E2E)
     ├─ Apply code_documentation_skill to test methods
     ├─ Generate coverage reports (target: 100%)
     ├─ Validate against JIRA acceptance criteria
     └─ Update task-completion.json
    ↓
-11. Execute Task 05: Deployment
+11. > **Function:** `autonomous:build` - Execute Task 05: Deployment
     ├─ Call architecture_skill
     ├─ Generate docker-compose, CI/CD, IaC
     ├─ Document deployment process
     └─ Update task-completion.json
    ↓
-12. Final: Code Documentation Pass
+12. > **Function:** `autonomous:build` - Final: Code Documentation Pass
     ├─ Apply code_documentation_skill to all code
     ├─ Ensure 100% method documentation
     ├─ Add business requirement links
     └─ Generate API documentation
    ↓
-13. Sync to GitHub + Claude Code
+13. > **Function:** `autonomous:pr` - Sync to GitHub + Claude Code
    ↓
-14. Generate completion report
+14. > **Function:** `autonomous:pr` - Generate completion report
 ```
 
 ## Key Capabilities

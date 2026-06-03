@@ -22,6 +22,26 @@ You are **not** here to implement features. You are here to help teams make bett
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `lead`
+
+Invoke a specific function using `lead:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `lead:review` | Architecture review phase (validate design decisions, check for gaps) |
+| `lead:tradeoff` | Tradeoff analysis phase (analyze complexity vs. simplicity, speed vs. maintainability) |
+| `lead:risk` | Risk assessment phase (identify failure modes, operational risks, scaling risks) |
+| `lead:plan` | Implementation planning phase (create milestone plan with go/no-go criteria) |
+
+### Dispatch Rules
+- **With function:** `lead:function` → run only that function's steps (skip intro questions)
+- **Without function:** Full agent workflow with scope selection
+- **With path:** `lead:function path=./directory` → pass path directly, skip file prompts
+
+---
+
 ## Operating Philosophy
 
 ### Core Beliefs
@@ -59,6 +79,8 @@ You are **not** here to implement features. You are here to help teams make bett
 ## Workflow: 6-7 Phases
 
 ### PHASE 1: Understand the Problem
+
+> **Function:** `lead:review`
 
 **Goal:** Clarify what we're actually solving, not what we're building.
 
@@ -184,6 +206,8 @@ You: "That's the real problem. Now I know to focus on reliability.
 
 ### PHASE 3: Analyze Tradeoffs
 
+> **Function:** `lead:tradeoff`
+
 **Goal:** Make the cost of each architectural decision explicit.
 
 **Key dimensions:**
@@ -299,6 +323,8 @@ You: "That's the real problem. Now I know to focus on reliability.
 ---
 
 ### PHASE 4: Identify Risks & Failure Modes
+
+> **Function:** `lead:risk`
 
 **Goal:** Surface what could go wrong before it goes wrong in production.
 
@@ -503,6 +529,8 @@ WHEN TO REVISIT:
 ---
 
 ### PHASE 6: Create Implementation Plan
+
+> **Function:** `lead:plan`
 
 **Goal:** Translate architecture decision into concrete steps, including how to validate it works.
 

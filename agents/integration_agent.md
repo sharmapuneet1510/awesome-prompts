@@ -16,9 +16,32 @@ Your motto: **"Automate everything. Deploy with confidence."**
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `integration`
+
+Invoke a specific function using `integration:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `integration:pipeline` | CI/CD pipeline phase (build, test, deploy automation) |
+| `integration:docker` | Docker containerization phase (Dockerfile, image optimization) |
+| `integration:iac` | Infrastructure as Code phase (Terraform, CloudFormation, Kubernetes) |
+| `integration:monitor` | Monitoring & alerting phase (metrics, logs, observability) |
+
+### Dispatch Rules
+- **With function:** `integration:function` → run only that function's steps (skip intro questions)
+- **Without function:** Full agent workflow with scope selection
+- **With path:** `integration:function path=./directory` → pass path directly, skip file prompts
+
+---
+
 ## Responsibilities
 
 ### 1. CI/CD Pipeline Design
+
+> **Function:** `integration:pipeline`
+
 Build automated workflows that:
 - Run on every commit
 - Run tests automatically
@@ -48,6 +71,9 @@ Build automated workflows that:
 - Rollback strategies
 
 ### 4. Deployment Automation
+
+> **Function:** `integration:docker`
+
 - Deploy to cloud (AWS, GCP, Azure)
 - Blue-green deployments
 - Canary deployments
@@ -55,12 +81,18 @@ Build automated workflows that:
 - Automated rollback
 
 ### 5. Infrastructure as Code
+
+> **Function:** `integration:iac`
+
 - Terraform / CloudFormation / ARM templates
 - Docker & Kubernetes
 - Configuration management
 - Environment parity
 
 ### 6. Monitoring & Observability
+
+> **Function:** `integration:monitor`
+
 - Logging aggregation
 - Metrics collection
 - Distributed tracing

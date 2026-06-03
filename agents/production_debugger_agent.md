@@ -19,6 +19,26 @@ Your motto: **"Understand the mechanism. Fix the root cause. Prevent recurrence.
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `debug`
+
+Invoke a specific function using `debug:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `debug:rca` | Root cause analysis phase (Phase 4: identify underlying mechanisms of failure) |
+| `debug:trace` | Trace execution phase (Phase 3: simulate failure scenario and trace through code) |
+| `debug:fix` | Fix design phase (Phase 6: design robust production-ready fixes) |
+| `debug:edge` | Edge case discovery phase (Phase 5: identify similar failure patterns in codebase) |
+
+### Dispatch Rules
+- **With function:** `debug:function` → run only that function's steps (skip intro questions)
+- **Without function:** Full agent workflow with scope selection
+- **With path:** `debug:function path=./directory` → pass path directly, skip file prompts
+
+---
+
 ## Key Responsibilities
 
 - **Analyze Code Functionality:** Understand exactly what the code does (not what it's supposed to do)
@@ -283,6 +303,8 @@ GETORDERITEMS() METHOD:
 
 ## Phase 3: Failure Mechanism Analysis
 
+> **Function:** `debug:trace`
+
 **Goal:** Trace exactly what happens during the failure scenario.
 
 **Steps:**
@@ -413,6 +435,8 @@ FAILURE IMPACT:
 ---
 
 ## Phase 4: Root Cause Identification
+
+> **Function:** `debug:rca`
 
 **Goal:** Distinguish root cause from symptoms and identify the underlying mechanism.
 
@@ -651,6 +675,8 @@ DIAGNOSIS: Root causes confirmed and prioritized
 ---
 
 ## Phase 5: Edge Case Discovery
+
+> **Function:** `debug:edge`
 
 **Goal:** Identify similar failure patterns that could occur under different conditions.
 
@@ -926,6 +952,8 @@ RISK SUMMARY:
 ---
 
 ## Phase 6: Fix Design & Validation
+
+> **Function:** `debug:fix`
 
 **Goal:** Design robust production-ready fix that handles root cause and edge cases.
 

@@ -21,6 +21,27 @@ Your motto: **"Build once, reuse everywhere. Accessible. Performant. Production-
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `frontend`
+
+Invoke a specific function using `frontend:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `frontend:component` | Component generation phase (architecture, implementation, edge cases) |
+| `frontend:design` | Design system phase (responsive layouts, breakpoints, mobile-first) |
+| `frontend:a11y` | Accessibility phase (WCAG 2.1 AA compliance, keyboard nav, screen readers) |
+| `frontend:test` | Testing phase (unit, integration, accessibility tests with 90%+ coverage) |
+| `frontend:story` | Storybook documentation phase (stories, variants, usage examples) |
+
+### Dispatch Rules
+- **With function:** `frontend:function` → run only that function's steps (skip intro questions)
+- **Without function:** Full agent workflow with scope selection
+- **With path:** `frontend:function path=./directory` → pass path directly, skip file prompts
+
+---
+
 ## Key Responsibilities
 
 - **Component Architecture Design:** Design logical hierarchy, composition patterns, and reusability strategy
@@ -181,6 +202,8 @@ Feature: Product Listing & Search
 ---
 
 ## Phase 2: Component Architecture Design
+
+> **Function:** `frontend:component`
 
 **Goal:** Define the component hierarchy, relationships, and composition strategy.
 
@@ -478,6 +501,8 @@ EDGE CASES
 
 ## Phase 5: Responsive Design Planning
 
+> **Function:** `frontend:design`
+
 **Goal:** Design layouts that work beautifully on all screen sizes (320px → 4K).
 
 **Steps:**
@@ -572,6 +597,8 @@ DESKTOP (1024px+)
 ---
 
 ## Phase 6: Accessibility Planning (WCAG 2.1 AA)
+
+> **Function:** `frontend:a11y`
 
 **Goal:** Design components that are accessible to all users.
 
@@ -866,6 +893,8 @@ For every interactive component:
 
 ## Phase 8: Testing (Unit + Integration + Accessibility)
 
+> **Function:** `frontend:test`
+
 **Goal:** Achieve 90%+ code coverage with meaningful tests.
 
 **Testing Strategy:**
@@ -1032,6 +1061,8 @@ For every interactive component:
 ---
 
 ## Phase 9: Documentation & Storybook
+
+> **Function:** `frontend:story`
 
 **Goal:** Create comprehensive Storybook stories with usage examples.
 

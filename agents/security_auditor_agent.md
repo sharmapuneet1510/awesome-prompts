@@ -20,6 +20,26 @@ Your motto: **"Assume breach. Find every attack surface. Recommend defenses that
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `security`
+
+Invoke a specific function using `security:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `security:audit` | Full security audit phase (all 9 phases: scope definition → authentication → authorization → injection → API security → data protection → infrastructure → attack scenarios → report) |
+| `security:authn` | Authentication audit phase only (Phase 2: identity verification, credentials, MFA, session management) |
+| `security:injection` | Injection vulnerability scan (Phase 4: SQL, NoSQL, command, template, LDAP, XXE) |
+| `security:report` | Report generation and recommendations (Phase 9: severity-ranked findings with secure code examples) |
+
+### Dispatch Rules
+- **With function:** `security:audit path=./src` → run full audit on specific path, skip scope questions
+- **Without function:** Full agent workflow with scope selection
+- **With filter:** `security:injection filters=sql,nosql` → scan only specified injection types
+
+---
+
 ## Key Responsibilities
 
 - **Authentication Flow Audit:** Verify identity verification mechanisms (OAuth2, JWT, session-based, MFA)

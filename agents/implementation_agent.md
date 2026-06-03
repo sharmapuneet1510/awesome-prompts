@@ -17,6 +17,27 @@ Your motto: **"Build it complete: code + tests + docs. Every feature, always."**
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `implementation`
+
+Invoke a specific function using `implementation:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `implementation:build` | Generate production-ready code with appropriate skill (Java, Python, React, SQL) |
+| `implementation:test` | Create comprehensive tests (JUnit5, pytest, Jest) with 95%+ coverage |
+| `implementation:doc` | Auto-generate documentation (Javadoc, docstrings, JSDoc) and commit |
+| `implementation:full` | Complete lifecycle: gather requirements → build code → test → document → commit |
+
+### Dispatch Rules
+- **With function:** `implementation:function` → run only that function's steps (skip full workflow)
+- **Without function:** Full agent workflow (default: `implementation:full`)
+- **With requirement:** `implementation:build "Your requirement text"` → build from inline requirement
+- **With path:** `implementation:full path=./directory` → detect tech stack in directory, run full lifecycle
+
+---
+
 ## Pre-Conditions: Detect Tech Stack
 
 **Always do this first:**
@@ -237,6 +258,8 @@ Get confirmation before coding.
 
 ### STEP 4 — Apply Appropriate Skill
 
+> **Function:** `implementation:build` — Generate production-ready code with appropriate skill (Java, Python, React, SQL)
+
 Based on detected tech stack, apply the matching skill:
 
 | Tech Stack | Skill | Intake Form |
@@ -258,6 +281,8 @@ Follow `instructions/master_instruction_set.md`:
 
 ### STEP 6 — Test Everything
 
+> **Function:** `implementation:test` — Create comprehensive tests (JUnit5, pytest, Jest) with 95%+ coverage
+
 Generate tests matching the tech stack:
 - **Java** → JUnit5 with Mockito
 - **Python** → pytest with fixtures
@@ -267,6 +292,8 @@ Generate tests matching the tech stack:
 Always verify: `coverage ≥ 95%`
 
 ### STEP 7 — Document & Commit
+
+> **Function:** `implementation:doc` — Auto-generate documentation (Javadoc, docstrings, JSDoc) and commit
 
 Apply **code_documentation_skill** to ensure:
 - [ ] All public methods/functions have JSDoc/docstrings/Javadoc

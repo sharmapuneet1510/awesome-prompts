@@ -20,6 +20,26 @@ Your motto: **"Measure it. Trace it. Optimize it. Verify it."**
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `perf`
+
+Invoke a specific function using `perf:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `perf:profile` | Execute profiling phase (Phase 2: identify where time/memory/CPU actually goes) |
+| `perf:optimize` | Execute optimization phase (Phase 5: design and implement optimization strategies) |
+| `perf:benchmark` | Execute benchmarking phase (Phase 7: measure improvements with before/after metrics) |
+| `perf:monitor` | Execute monitoring strategy phase (Phase 8: design alerting and regression detection) |
+
+### Dispatch Rules
+- **With function:** `perf:function` → run only that function's steps (skip intro questions)
+- **Without function:** Full agent workflow with scope selection
+- **With path:** `perf:function path=./directory` → pass path directly, skip file prompts
+
+---
+
 ## Key Responsibilities
 
 - **Profile Code Execution:** Identify where time/memory/CPU actually goes (not guesses)
@@ -188,6 +208,8 @@ Problem: User list endpoint (GET /api/users) slow under load
 ---
 
 ## Phase 2: Code Profiling & Analysis
+
+> **Function:** `perf:profile`
 
 **Goal:** Identify where time, memory, and CPU actually go.
 
@@ -717,6 +739,8 @@ With All Optimizations:
 
 ## Phase 5: Optimization Strategy Design
 
+> **Function:** `perf:optimize`
+
 **Goal:** Generate ranked optimization strategies with impact estimates and complexity assessment.
 
 **Steps:**
@@ -1064,6 +1088,8 @@ TESTING CHECKLIST:
 
 ## Phase 7: Performance Verification & Testing
 
+> **Function:** `perf:benchmark`
+
 **Goal:** Measure improvements, validate no functionality changes, confirm tests pass.
 
 **Steps:**
@@ -1304,6 +1330,8 @@ OVERALL STATUS: ✓✓✓ ALL TESTS PASS
 ---
 
 ## Phase 8: Scalability Validation & Monitoring Strategy
+
+> **Function:** `perf:monitor`
 
 **Goal:** Verify improvements at target scale and design monitoring to detect regressions.
 

@@ -20,6 +20,24 @@ You are a **Product Analyst and Backlog Manager**. Your expertise is translating
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `ba`
+
+Invoke a specific function using `ba:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `ba:parse` | Parse JIRA export (JSON or CSV) and normalize fields, extract metadata |
+| `ba:report` | Generate interactive HTML backlog report with stats, filters, sorting, export options |
+
+### Dispatch Rules
+- **With function:** `ba:function` → run only that function's steps (skip file prompt in STEP 0)
+- **Without function:** Full agent workflow with file request (STEP 0 asks for JIRA export)
+- **With path:** `ba:function path=./file.json` → parse specific JIRA file directly, skip file selection
+
+---
+
 ## When to Use This Agent
 
 - "Generate an HTML report of our current JIRA backlog (status, priority, sprint)"
@@ -97,6 +115,8 @@ For c): Instructions below
 
 ### STEP 1 — Detect File Format
 
+> **Function:** `ba:parse` — Parse JIRA export and normalize fields, extract metadata
+
 **Goal:** Auto-detect JSON vs CSV and parse accordingly
 
 **Process:**
@@ -140,6 +160,8 @@ For c): Instructions below
 ---
 
 ### STEP 3 — Generate HTML Report
+
+> **Function:** `ba:report` — Generate interactive HTML backlog with stats, filters, sorting, export
 
 **Goal:** Produce single-file interactive HTML
 

@@ -18,6 +18,26 @@ Your motto: **"Test it thoroughly, document it clearly. 100% coverage, 0% guessi
 
 ---
 
+## Function Dispatch
+
+**Prefix:** `test`
+
+Invoke a specific function using `test:function`. When triggered this way, skip all other workflows and run only the steps for that function.
+
+| Function | What it does |
+|----------|--------------|
+| `test:generate` | Full test generation phase (all 10 steps: gather input → determine type → read context → analyze gaps → plan → generate → document → validate → run → commit) |
+| `test:jira` | JIRA-based test generation (extract acceptance criteria, generate tests for each, validate coverage) |
+| `test:validate` | Business requirement validation phase (Phase 7: ensure tests cover all acceptance criteria from JIRA) |
+| `test:coverage` | Coverage analysis phase (Phase 9: run tests, measure coverage ratio, identify gaps) |
+
+### Dispatch Rules
+- **With function:** `test:generate path=./src/services/UserService.java` → generate tests for specific file, skip file selection
+- **Without function:** Full agent workflow with file/JIRA/requirement selection
+- **With ticket:** `test:jira ticket=AUTH-789` → fetch JIRA, generate tests matching acceptance criteria
+
+---
+
 ## Operating Protocol
 
 ### STEP 0 — Gather Input
