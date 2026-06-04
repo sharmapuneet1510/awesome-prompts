@@ -148,6 +148,18 @@ quality:batch-review from=./reviews.json output=./reports/batch-report.html
 ```
 **What it does:** Runs quality:review for each PR sequentially, aggregates findings into priority matrix and score comparison, produces tabbed HTML report with Summary tab (aggregate stats, worst issues, merged verdict) and per-PR tabs (full review context, AC coverage, issues with before/after code, scorecard). Supports JSON export and Print/PDF.
 
+### quality:diagnose
+**NEW (v3.0):** Conversational problem solver — describe issue → get solutions.  
+**Input:** Problem statement (required), code path (optional), verbose mode (optional)  
+**Output:** Root cause analysis with proposed solutions, code examples, impact assessment  
+**Usage:**
+```
+quality:diagnose problem="Orders taking 10 seconds to load"
+quality:diagnose problem="API returning 500 errors randomly" path=./src verbose=true
+quality:diagnose problem="Database queries timing out"
+```
+**What it does:** Conversational investigation across code, database, configuration, logs. Asks clarifying questions (when, frequency, impact), traces code paths, checks for N+1 queries, missing indexes, configuration bottlenecks, exception handling gaps. Identifies root causes (critical/high/medium/low) and proposes specific fixes with file:line references and implementation examples. Covers: code patterns, database queries/indexes, connection pools/cache, exception handling, resource usage, concurrency issues.
+
 ---
 
 ## Documentation Agent (`documentation`)

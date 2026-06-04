@@ -1,6 +1,6 @@
 ---
 name: AP: Quality Agent
-version: 3.0
+version: 3.1
 description: >
   Senior QA & Security Engineer auditing code quality, security, performance,
   and production issues. Combines code review (requirement validation), codebase
@@ -43,6 +43,7 @@ and run only the steps for that function.
 | `quality:debug` | Production debugging phase (root cause analysis, failure mechanism, edge case discovery, regression test generation) | production_debugger_agent |
 | `quality:report` | Comprehensive quality report (synthesizes review + audit + security + perf + debug into single executive report) | NEW |
 | `quality:batch-review` | Batch PR review: run quality:review for each entry in JSON file, produce single HTML with sidebar tabs + summary | NEW (v3.0) |
+| `quality:diagnose` | Conversational problem solver: describe issue → ask clarifying questions → investigate code/DB/config → propose solutions | NEW (v3.0) |
 
 ### Dispatch Rules
 - **With function:** `quality:function [args]` → run only that function's steps (skip intro questions)
@@ -736,6 +737,7 @@ The Quality Agent achieves its mission when:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1 | 2026-06-04 | Added quality:diagnose function — conversational problem solver with multi-area investigation (code, DB, config, logs) |
 | 3.0 | 2026-06-03 | Unified Quality Agent: 6 functions (review, audit, security, perf, debug, report) + comprehensive report synthesis |
 | 2.0 | 2026-05-27 | Individual agents finalized (code_review, codebase_auditor, security_auditor, performance_optimizer, production_debugger) |
 | 1.0 | 2026-05-15 | Initial quality framework |
@@ -884,6 +886,231 @@ quality:batch-review from=./reviews.json
 # With custom output path
 quality:batch-review from=./reviews.json output=./reports/sprint-review.html
 ```
+
+---
+
+## FUNCTION 8: quality:diagnose
+
+**Purpose:** Conversational problem-solving function that investigates code, database, configuration, and logs to diagnose and solve technical issues. Asks clarifying questions, explores multiple investigation areas, and proposes actionable solutions.
+
+### Parameters
+
+| Parameter | Required | Description | Example |
+|-----------|----------|-------------|---------|
+| `problem` | ✓ Yes | Initial problem description or question | `problem="Orders taking 10 seconds to load"` |
+| `path` | Optional | Source code directory to analyze | `path=./src` |
+| `verbose` | Optional | Show detailed investigation steps | `verbose=true` |
+
+### Workflow Steps
+
+**STEP 1: Clarify the Problem (Conversational)**
+- Parse problem description
+- Ask 3-5 clarifying questions:
+  - When did it start? (recently introduced vs. chronic)
+  - Who/what is affected? (all users, specific feature, specific data set)
+  - Frequency? (always, intermittent, under load)
+  - Impact? (user experience, revenue, data consistency)
+  - Error messages? (null pointers, timeouts, exceptions)
+- Build problem profile from answers
+
+**STEP 2: Investigate Code Paths**
+- Trace execution flow for the reported issue
+- Identify relevant code files and methods
+- Check for:
+  - Loops and recursion (O(n²) or worse complexity)
+  - Unbounded queries or API calls
+  - Missing null checks
+  - Resource leaks (connections, memory)
+  - Exception handling gaps
+
+**STEP 3: Analyze Database (If Applicable)**
+- Check query patterns in code
+- Identify:
+  - Missing indexes on frequently queried columns
+  - N+1 query problems
+  - Inefficient joins or subqueries
+  - Table locks or contention
+  - Row count growth over time
+- Propose index candidates or schema optimizations
+
+**STEP 4: Review Configuration**
+- Check application settings:
+  - Connection pool sizes (too small = bottleneck)
+  - Cache settings (TTL, eviction policy)
+  - Timeout values
+  - Thread pool sizes
+  - Rate limiting settings
+  - Memory allocation
+
+**STEP 5: Examine Logs & Metrics**
+- Search for error patterns:
+  - Exception stack traces
+  - Warning signs (timeouts, retries)
+  - Performance metrics (latency percentiles, throughput)
+  - Resource usage (CPU, memory, disk I/O)
+  - GC pauses or memory pressure
+
+**STEP 6: Identify Root Causes**
+- Synthesize findings from all investigation areas
+- Rank by likelihood:
+  - 🔴 **CRITICAL** — Definite root cause, blocking
+  - 🟠 **HIGH** — Strong evidence, likely contributing
+  - 🟡 **MEDIUM** — Possible contributing factor
+  - 🟢 **LOW** — Unlikely but worth checking
+
+**STEP 7: Propose Solutions**
+For each root cause, provide:
+- **What:** Exact change needed
+- **Where:** File, class, method, line number
+- **Why:** How it fixes the problem
+- **Impact:** Performance gain, risk level, effort estimate
+- **Implementation:** Code example or step-by-step instructions
+- **Verification:** How to confirm the fix works
+
+### Investigation Areas Covered
+
+| Area | What we check | Example findings |
+|------|---------------|------------------|
+| **Code Patterns** | Loops, recursion, unbounded calls | O(n²) algorithm, N+1 query loop |
+| **Database** | Indexes, query efficiency, contention | Missing index on user_id, table lock |
+| **Configuration** | Pool sizes, timeouts, cache settings | Connection pool exhaustion, low cache hit rate |
+| **Exception Handling** | Try-catch gaps, swallowed errors | Null pointer from missing null check |
+| **Resource Usage** | Memory, CPU, I/O, connections | Memory leak in connection handler |
+| **Concurrency** | Race conditions, deadlocks | Concurrent modification exception |
+
+### Example Invocations
+
+**Simple problem statement:**
+```bash
+quality:diagnose problem="API endpoint returning 500 errors randomly"
+```
+
+**With code path context:**
+```bash
+quality:diagnose problem="User registration takes 30 seconds" path=./src/user
+```
+
+**Verbose investigation:**
+```bash
+quality:diagnose problem="Dashboard slow to load for large accounts" verbose=true
+```
+
+**Complex multi-system issue:**
+```bash
+quality:diagnose problem="Orders queue stuck, not processing for 2 hours"
+```
+
+### Example Investigation Output
+
+```
+╔═══════════════════════════════════════════════════════════════╗
+║ PROBLEM DIAGNOSIS — API Endpoint Returning 500 Errors        ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📋 PROBLEM CLARIFICATION
+├─ When did it start: Deployed 3 days ago (v2.1.0)
+├─ Frequency: Intermittent, ~5% of requests
+├─ Affected: Specific user cohort (high-volume API users)
+├─ Error: NullPointerException in UserService.getProfile()
+└─ Impact: ~2% of requests failing in production
+
+═══════════════════════════════════════════════════════════════
+
+🔍 CODE INVESTIGATION
+├─ Root file: src/service/UserService.java:145
+├─ Problem: Missing null check after cache lookup
+│
+├─ Before:
+│   User user = cache.get(userId);  // Can return null
+│   return user.getProfile();        // NPE if null
+│
+├─ After:
+│   User user = cache.get(userId);
+│   if (user == null) {
+│     user = repository.findById(userId);
+│   }
+│   return user != null ? user.getProfile() : null;
+│
+└─ Severity: 🔴 CRITICAL
+
+═══════════════════════════════════════════════════════════════
+
+💾 DATABASE INVESTIGATION
+├─ Query: SELECT * FROM users WHERE id = ?
+├─ Index status: EXISTS (idx_user_id)
+├─ Performance: <1ms (not the bottleneck)
+└─ Verdict: Database is fine
+
+═══════════════════════════════════════════════════════════════
+
+⚙️ CONFIGURATION INVESTIGATION
+├─ Cache hit rate: 95% (good)
+├─ Cache TTL: 5 minutes (reasonable)
+├─ Pool size: 20 connections (sufficient)
+└─ Verdict: Config is appropriate
+
+═══════════════════════════════════════════════════════════════
+
+📊 METRICS INVESTIGATION
+├─ Error rate: 5.2% (spike in last 3 days)
+├─ Latency: p95=120ms, p99=250ms (normal)
+├─ Exception rate: NPE = 312 in past 24h
+└─ Correlation: NPE errors started on deploy date
+
+═══════════════════════════════════════════════════════════════
+
+🎯 ROOT CAUSE ANALYSIS
+
+🔴 PRIMARY (Definite root cause):
+   Missing null check in UserService.getProfile()
+   └─ Cache can return null; code assumes non-null
+   └─ Fix: Add null check before calling getProfile()
+   └─ Fix time: 5 minutes
+   └─ Impact: Eliminate 100% of these errors
+
+═══════════════════════════════════════════════════════════════
+
+💡 SOLUTION
+
+Fix: Add null check in UserService.java line 145
+
+File: src/service/UserService.java
+Method: UserService.getProfile(String userId)
+
+Implementation:
+  User user = cache.get(userId);
+  if (user == null) {
+    user = repository.findById(userId);
+  }
+  if (user == null) {
+    throw new UserNotFoundException(userId);
+  }
+  return user.getProfile();
+
+Verification:
+  1. Deploy fix to staging
+  2. Run: gradle test --include UserServiceTest
+  3. Monitor error rate for 1 hour
+  4. Expected: NullPointerException rate drops to 0
+
+Effort: 5 minutes coding + 2 minutes testing = 7 minutes total
+```
+
+### When to Use quality:diagnose
+
+✅ **Good use cases:**
+- "Why is this endpoint so slow?"
+- "Getting null pointer exceptions in production"
+- "Database queries timing out intermittently"
+- "API returns 500 randomly for certain users"
+- "Memory usage keeps growing over time"
+- "Cache hit rate dropped after we deployed"
+
+❌ **Not ideal for:**
+- Designing new features (use `architect:design`)
+- Code review (use `quality:review`)
+- Security audit (use `quality:security`)
+- Performance tuning at scale (use `quality:perf` for detailed profiling)
 
 ---
 
