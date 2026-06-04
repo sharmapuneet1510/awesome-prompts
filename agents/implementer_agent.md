@@ -1,5 +1,5 @@
 ---
-name: Implementer Agent
+name: AP: Implementer Agent
 version: 3.0
 description: >
   Implementation & Execution Engineer combining feature development, testing, documentation,

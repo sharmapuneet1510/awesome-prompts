@@ -1,5 +1,5 @@
 ---
-name: Business Analyst Agent
+name: AP: Business Analyst Agent
 version: 1.0
 description: >
   Backlog analyst for JIRA management. Reads local JIRA exports (JSON or CSV format),

@@ -1,5 +1,5 @@
 ---
-name: Architect Agent
+name: AP: Architect Agent
 version: 3.0
 description: >
   Systems architect combining backend systems design with frontend expertise. Designs

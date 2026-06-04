@@ -1,5 +1,5 @@
 ---
-name: Orchestrator Agent
+name: AP: Orchestrator Agent
 version: 3.0
 description: >
   Master orchestrator and technical lead combining full-stack project generation with strategic architecture review.

@@ -1,5 +1,5 @@
 ---
-name: Quality Agent
+name: AP: Quality Agent
 version: 3.0
 description: >
   Senior QA & Security Engineer auditing code quality, security, performance,
