@@ -33,6 +33,47 @@ def test_expert_panel_generator_structure():
     for expert in expert_types:
         assert expert in content, f"Missing expert type: {expert}"
 
+def test_ideation_engine_structure():
+    """Test ideation_engine module has all required process phases and outputs."""
+    with open('agents/orchestrator/modules/ideation_engine.md', 'r') as f:
+        content = f.read()
+
+    # Verify required phases
+    phases = [
+        "### Phase 1: Clarification",
+        "### Phase 2: Concept Refinement",
+        "### Phase 3: Project Planning"
+    ]
+
+    for phase in phases:
+        assert phase in content, f"Missing phase: {phase}"
+
+    # Verify 7 clarification questions
+    questions = [
+        "Core Purpose",
+        "Target Users",
+        "Success Definition",
+        "Constraints",
+        "Differentiation",
+        "MVP Scope",
+        "Key Risks"
+    ]
+
+    for question in questions:
+        assert question in content, f"Missing question: {question}"
+
+    # Verify output sections
+    outputs = [
+        "idea_specification",
+        "project_plan",
+        "raid_analysis",
+        "timeline"
+    ]
+
+    for output in outputs:
+        assert output in content, f"Missing output section: {output}"
+
 if __name__ == '__main__':
     test_expert_panel_generator_structure()
-    print("✓ expert_panel_generator module structure test passed")
+    test_ideation_engine_structure()
+    print("✓ All module structure tests passed")
