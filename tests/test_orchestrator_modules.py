@@ -73,7 +73,34 @@ def test_ideation_engine_structure():
     for output in outputs:
         assert output in content, f"Missing output section: {output}"
 
+def test_design_solver_structure():
+    """Test design_solver module has all required phases and dimensions."""
+    with open('agents/orchestrator/modules/design_solver.md', 'r') as f:
+        content = f.read()
+
+    # Verify required phases
+    phases = [
+        "### Phase 1: Diagnosis",
+        "### Phase 2: Solution Generation",
+        "### Phase 3: Trade-Off Analysis",
+        "### Phase 4: Recommendation"
+    ]
+
+    for phase in phases:
+        assert phase in content, f"Missing phase: {phase}"
+
+    # Verify solution dimensions
+    dimensions = [
+        "database_design",
+        "api_throttling",
+        "project_structure"
+    ]
+
+    for dimension in dimensions:
+        assert dimension in content, f"Missing dimension: {dimension}"
+
 if __name__ == '__main__':
     test_expert_panel_generator_structure()
     test_ideation_engine_structure()
+    test_design_solver_structure()
     print("✓ All module structure tests passed")
