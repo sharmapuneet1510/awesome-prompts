@@ -338,27 +338,31 @@ class ExportResult:
     """Result of one platform export run.
 
     Attributes:
-        target:      Platform name (e.g. 'claude').
-        skill_files: Paths of written (or would-be-written) skill files.
-        agent_files: Paths of written (or would-be-written) agent files.
-        hook_files:  Paths of discovered hook files.
-        dry_run:     True if files were NOT actually written.
+        target:         Platform name (e.g. 'claude').
+        skill_files:    Paths of written (or would-be-written) skill files.
+        agent_files:    Paths of written (or would-be-written) agent files.
+        hook_files:     Paths of discovered hook files.
+        removed_files:  Paths of old files removed during cleanup.
+        dry_run:        True if files were NOT actually written.
     """
 
     target: str
     skill_files: list[Path]
     agent_files: list[Path]
     hook_files: list[Path] = field(default_factory=list)
+    removed_files: list[Path] = field(default_factory=list)
     dry_run: bool = False
 
     def summary(self) -> str:
         """Human-readable summary of exported files."""
         lines = [
             f"✅ {self.target.upper()}",
-            f"   Skills: {len(self.skill_files)}",
-            f"   Agents: {len(self.agent_files)}",
-            f"   Hooks:  {len(self.hook_files)}",
+            f"   Skills:  {len(self.skill_files)}",
+            f"   Agents:  {len(self.agent_files)}",
+            f"   Hooks:   {len(self.hook_files)}",
         ]
+        if self.removed_files:
+            lines.append(f"   Removed: {len(self.removed_files)}")
         return "\n".join(lines)
 
 
@@ -456,6 +460,89 @@ class PlatformExporter(ABC):
 
         return hook_paths
 
+    def _manifest_path(self) -> Path:
+        """Path to export manifest file for this platform."""
+        return self.skill_output_dir().parent / f".{self.target_name}-export-manifest.json"
+
+    def _load_manifest(self) -> dict:
+        """Load previous export manifest for this platform.
+
+        Returns:
+            Dict with 'skills', 'agents', 'hooks' lists of previous export paths.
+        """
+        manifest_file = self._manifest_path()
+        if manifest_file.exists():
+            try:
+                return json.loads(manifest_file.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                return {"skills": [], "agents": [], "hooks": []}
+        return {"skills": [], "agents": [], "hooks": []}
+
+    def _save_manifest(self, skills: list[Path], agents: list[Path], hooks: list[Path]) -> None:
+        """Save export manifest for this platform.
+
+        Args:
+            skills: List of exported skill file paths.
+            agents: List of exported agent file paths.
+            hooks:  List of exported hook file paths.
+        """
+        manifest_file = self._manifest_path()
+        manifest_file.parent.mkdir(parents=True, exist_ok=True)
+        manifest = {
+            "skills": [str(p) for p in skills],
+            "agents": [str(p) for p in agents],
+            "hooks": [str(p) for p in hooks],
+        }
+        manifest_file.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    def _cleanup_old_exports(self, current_skills: list[Path], current_agents: list[Path],
+                             current_hooks: list[Path], dry_run: bool = False) -> list[Path]:
+        """Remove old exported files not in current export.
+
+        Args:
+            current_skills:  Paths of newly exported skills.
+            current_agents:  Paths of newly exported agents.
+            current_hooks:   Paths of newly exported hooks.
+            dry_run:         If True, only list files to be removed.
+
+        Returns:
+            List of removed file paths.
+        """
+        manifest = self._load_manifest()
+        removed: list[Path] = []
+
+        # Convert current exports to set of strings for efficient lookup
+        current_paths = set(str(p) for p in current_skills + current_agents + current_hooks)
+
+        # Check old skills
+        for old_path_str in manifest.get("skills", []):
+            if old_path_str not in current_paths:
+                old_path = Path(old_path_str)
+                if old_path.exists():
+                    removed.append(old_path)
+                    if not dry_run:
+                        old_path.unlink()
+
+        # Check old agents
+        for old_path_str in manifest.get("agents", []):
+            if old_path_str not in current_paths:
+                old_path = Path(old_path_str)
+                if old_path.exists():
+                    removed.append(old_path)
+                    if not dry_run:
+                        old_path.unlink()
+
+        # Check old hooks
+        for old_path_str in manifest.get("hooks", []):
+            if old_path_str not in current_paths:
+                old_path = Path(old_path_str)
+                if old_path.exists():
+                    removed.append(old_path)
+                    if not dry_run:
+                        old_path.unlink()
+
+        return removed
+
     def export(
         self,
         skills: list[SkillFile],
@@ -463,7 +550,7 @@ class PlatformExporter(ABC):
         hooks: list[HookFile],
         dry_run: bool = False,
     ) -> ExportResult:
-        """Writes one file per skill, agent, and hook.
+        """Writes one file per skill, agent, and hook. Removes old versions not in current export.
 
         Args:
             skills:  Skill files to export.
@@ -472,7 +559,7 @@ class PlatformExporter(ABC):
             dry_run: If True, generate paths but do not write files.
 
         Returns:
-            ExportResult with all written (or planned) file paths.
+            ExportResult with all written (or planned) file paths and removed old files.
         """
         skill_paths: list[Path] = []
         agent_paths: list[Path] = []
@@ -493,11 +580,19 @@ class PlatformExporter(ABC):
 
         hook_paths = self.export_hooks(hooks, dry_run=dry_run)
 
+        # Clean up old exports not in current set
+        removed_files = self._cleanup_old_exports(skill_paths, agent_paths, hook_paths, dry_run=dry_run)
+
+        # Save manifest for next export
+        if not dry_run:
+            self._save_manifest(skill_paths, agent_paths, hook_paths)
+
         return ExportResult(
             target=self.target_name,
             skill_files=skill_paths,
             agent_files=agent_paths,
             hook_files=hook_paths,
+            removed_files=removed_files,
             dry_run=dry_run,
         )
 
@@ -1028,12 +1123,15 @@ class ExportOrchestrator:
                 result = exporter.export(skills, agents, hooks, dry_run=dry_run)
                 results.append(result)
                 action = "Would write" if dry_run else "Wrote"
-                print(
+                msg = (
                     f"  [{result.target:10}] {action} "
                     f"{len(result.skill_files)} skill(s), "
                     f"{len(result.agent_files)} agent(s), "
                     f"{len(result.hook_files)} hook(s)"
                 )
+                if result.removed_files:
+                    msg += f", removed {len(result.removed_files)} old file(s)"
+                print(msg)
             except Exception as err:
                 print(f"  [{exporter.target_name:10}] FAILED: {err}")
 
@@ -1049,6 +1147,9 @@ class ExportOrchestrator:
         print(f"  Skills    : {sum(len(r.skill_files) for r in results)} file(s)")
         print(f"  Agents    : {sum(len(r.agent_files) for r in results)} file(s)")
         print(f"  Hooks     : {sum(len(r.hook_files) for r in results)} file(s)")
+        total_removed = sum(len(r.removed_files) for r in results)
+        if total_removed:
+            print(f"  Removed   : {total_removed} old file(s)")
         print("─" * 60)
 
 
