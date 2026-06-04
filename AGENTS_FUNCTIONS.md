@@ -11,7 +11,7 @@
 
 | Agent | Prefix | Functions | Use When |
 |-------|--------|-----------|----------|
-| **Orchestrator** | `orchestrator` | plan, build, review, tradeoff, risk, context, pr | Start new project or generate full-stack system |
+| **Orchestrator** | `orchestrator` | ideate, solve, plan, build, review, tradeoff, risk, context, pr | Start new project, refine vague ideas, solve bottlenecks, or generate full-stack system |
 | **Architect** | `architect` | design, refactor, frontend, schema, api, a11y | Design system topology, DB schema, API contracts |
 | **Implementer** | `implementer` | build, test, doc, pipeline, docker, iac, full | Write code, generate tests, auto-document, deploy |
 | **Quality** | `quality` | review, audit, security, perf, debug, report | Validate PRs, scan codebase, find bugs, optimize |
@@ -24,22 +24,38 @@
 ```
 Requirement
     ↓
-orchestrator:plan       ← Parse requirement, break into tasks
+orchestrator:ideate (OPTIONAL—for vague ideas)
+    ├─ Refine concept
+    ├─ Expert feedback
+    └─ Output: detailed spec + project plan
     ↓
-architect:design        ← System topology, API, schema, deployment stubs
+orchestrator:plan (Parse requirements → tasks)
     ↓
-implementer:full        ← Write code, generate tests, auto-docs (no context loss)
+architect:design (System topology, API, schema)
     ↓
-quality:review          ← Validate, score, generate report
+orchestrator:solve (OPTIONAL—for bottleneck solving)
+    ├─ Analyze constraints
+    ├─ Multi-dimensional solutions
+    └─ Output: recommendations + roadmap
     ↓
-orchestrator:pr         ← Package deliverables, open GitHub PR
+implementer:full (Build + test + doc)
+    ↓
+quality:review
+    ↓
+orchestrator:pr
 ```
 
 ---
 
-# ORCHESTRATOR AGENT (7 functions)
+# ORCHESTRATOR AGENT (9 functions)
 
 **Prefix:** `orchestrator`
+
+### orchestrator:ideate
+Transform vague ideas into validated project plans with expert feedback. Uses ideation_engine module for systematic refinement, expert_panel_generator for domain-specific challenges. Outputs: idea-spec.md, project-plan.json, raid-analysis.md, project-plan.csv.
+
+### orchestrator:solve
+Solve design bottlenecks with multi-dimensional, prescriptive solutions. Uses design_solver module for diagnosis and trade-off analysis, expert_panel_generator for architecture challenges. Generates: solutions.md, recommendation.md, comparison-table.csv, implementation-roadmap.json.
 
 ### orchestrator:plan
 Parse requirements in 5 formats, break into tasks. Outputs: requirements.md, task-breakdown.json, execution-order.txt
