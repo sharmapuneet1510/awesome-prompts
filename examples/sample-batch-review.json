@@ -1,0 +1,21 @@
+[
+  {
+    "pr": 456,
+    "ticket": "PROJ-123",
+    "context": "OAuth2 security hardening for enterprise customers",
+    "business-justification": "SOC 2 compliance required by Q3 2026",
+    "review-scope": "Authentication layer only (skip frontend UI)",
+    "success-criteria": "No unvalidated redirects, all inputs sanitized, rate limiting enforced"
+  },
+  {
+    "pr": 789,
+    "ticket": "PROJ-124",
+    "context": "Database performance optimization for checkout flow",
+    "business-justification": "P0 latency issue affecting checkout, blocking enterprise customers"
+  },
+  {
+    "pr": 910,
+    "context": "Bug fix: pagination on search results page",
+    "business-justification": "Users report only 10 results showing instead of full page"
+  }
+]
