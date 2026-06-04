@@ -1,6 +1,6 @@
 # 🤖 AI Agents Directory (v3.0 — 4-Role Architecture)
 
-> Lean, role-based AI agents with function dispatch. **5 agents, 22 skills, 28 callable functions.**  
+> Lean, role-based AI agents with function dispatch. **5 agents, 24 skills, 31 callable functions.**  
 > **New in v3.0:** Consolidated 13 specialized agents into 4 primary roles + 1 utility agent. Linear execution pipeline prevents context loss.
 
 ## Quick Navigation (5 Agents)
@@ -57,10 +57,12 @@ Examples:
   quality:perf path=./src              → Performance optimization analysis
   quality:debug stack_trace="..."      → Root cause analysis
   quality:report pr=123                → Unified quality synthesis
+  quality:batch-review from=./reviews  → Multi-PR review with HTML report
+  quality:diagnose problem="..."       → Conversational problem solver
   ba:report path=./jira-export.json    → Parse JIRA → HTML backlog
 ```
 
-**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 28 callable functions with detailed inputs, outputs, and examples.**
+**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 31 callable functions with detailed inputs, outputs, and examples.**
 
 ---
 

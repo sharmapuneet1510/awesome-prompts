@@ -18,11 +18,11 @@
 
 ## 🚀 Quick Overview
 
-**Awesome Prompts v3.0** is a comprehensive, **production-ready system** of **5 role-based AI agents** and **23 reusable skills** that transform requirements into enterprise-grade code with:
+**Awesome Prompts v3.0** is a comprehensive, **production-ready system** of **5 role-based AI agents** and **24 reusable skills** that transform requirements into enterprise-grade code with:
 
 | Feature | Details |
 |---------|---------|
-| 🎯 **28 Callable Functions** | `agent:function` syntax for targeted workflows (see [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md)) |
+| 🎯 **31 Callable Functions** | `agent:function` syntax for targeted workflows (see [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md)) |
 | 🧪 **100% Test Coverage** | Unit, integration, and E2E tests with business validation |
 | 📚 **Auto-Documentation** | JSDoc, docstrings, Javadoc + architecture guides + HTML sites |
 | 🎯 **JIRA Integration** | Parse JIRA JSON/CSV → interactive HTML backlog reports |
@@ -57,13 +57,15 @@ quality:review pr=123                              # PR validation + scoring
 quality:audit path=./src                           # Codebase audit
 quality:security path=./src                        # OWASP security scan
 quality:perf path=./src                            # Performance optimization
+quality:diagnose problem="API slow"                # Conversational problem solver
+quality:batch-review from=./reviews.json           # Multi-PR review with HTML report
 
 # Business Analyst — Backlog management
 ba:report file=jira-export.json                    # Parse JIRA → HTML backlog
 ba:create path=./requirements.txt                  # Parse text → JIRA + BDD HTML cards
 ```
 
-**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 28 functions.**
+**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 31 functions.**
 
 ---
 
@@ -90,11 +92,11 @@ awesome-prompts/
 │   ├── orchestrator_agent.md          ← Strategy & Orchestration (plan, build, review, tradeoff, risk, context, pr)
 │   ├── architect_agent.md             ← Architecture & Design (design, refactor, frontend, schema, api, a11y)
 │   ├── implementer_agent.md           ← Implementation & Execution (build, test, doc, pipeline, docker, iac, full)
-│   ├── quality_agent.md               ← QA & Security (review, audit, security, perf, debug, report)
+│   ├── quality_agent.md               ← QA & Security (review, audit, security, perf, debug, report, batch-review, diagnose)
 │   ├── business_analyst_agent.md      ← Utility — Backlog (report, parse, create)
 │   └── README.md                      ← Agent guide with function dispatch syntax + linear pipeline
 │
-├── 🛠️ skills/                          ← 23 reusable implementation modules (v3.0)
+├── 🛠️ skills/                          ← 24 reusable implementation modules (v3.0)
 │   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc (100% coverage)
 │   ├── database_skill.md              ← SQL schema + migrations + indexing
 │   ├── backend_skill.md               ← REST API generation wrapper
@@ -107,6 +109,7 @@ awesome-prompts/
 │   ├── react_advanced_skill.md        ← React 18+ + TypeScript + a11y
 │   ├── jira_html_report_skill.md      ← Parse JIRA JSON/CSV → HTML backlog
 │   ├── ba_create_skill.md             ← Parse text requirements → JIRA + BDD HTML [NEW v3.0]
+│   ├── multi_review_html_skill.md     ← Batch PR review with tabbed HTML [NEW v3.0]
 │   └── [11 more skills...]            ← Code health, error handling, OOP, Camel, Pulsar, etc.
 │
 ├── 🔧 tools/                           ← Utility scripts & generators
