@@ -253,6 +253,66 @@ python3 tools/exporter.py --target claude copilot --hooks promptshield
 
 See `hooks/README.md` for hook format and examples.
 
+### Export Manifest & Automatic Cleanup
+
+The exporter automatically tracks exported files and removes old versions when new exports run:
+
+**How it works:**
+1. Each platform maintains a `.{platform}-export-manifest.json` file
+2. Manifest tracks all currently exported skills, agents, and hooks
+3. On each export, exporter compares new exports with old manifest
+4. Old files NOT in new export are automatically removed
+5. New manifest is saved for next export cycle
+
+**Manifest example** (`.claude-export-manifest.json`):
+```json
+{
+  "skills": [
+    "/Users/me/my-project/.claude/skills/backend_skill.md",
+    "/Users/me/my-project/.claude/skills/database_skill.md"
+  ],
+  "agents": [
+    "/Users/me/my-project/.claude/agents/orchestrator_agent.md"
+  ],
+  "hooks": []
+}
+```
+
+**Benefits:**
+- ✅ No stale files left from old exports
+- ✅ Clean project state with only current exports
+- ✅ Dry-run preview shows what will be removed
+- ✅ Works seamlessly across all 8 platforms
+
+**Example output:**
+```bash
+$ python tools/exporter.py --target claude
+
+[claude    ] Wrote 24 skill(s), 5 agent(s), 0 hook(s), removed 3 old file(s)
+
+────────────────────────────────────────────────────
+EXPORT SUMMARY
+────────────────────────────────────────────────────
+  Platforms : 1
+  Skills    : 24 file(s)
+  Agents    : 5 file(s)
+  Hooks     : 0 file(s)
+  Removed   : 3 old file(s)
+────────────────────────────────────────────────────
+```
+
+**Preview cleanup without changes:**
+```bash
+# See what would be removed
+python tools/exporter.py --dry-run
+```
+
+**Disable automatic cleanup** (if needed):
+```bash
+# Use --clean to remove ALL exports manually
+python tools/exporter.py --clean
+```
+
 ---
 
 ## 🎯 Interactive Exporter (Enhanced)
