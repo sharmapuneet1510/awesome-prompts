@@ -6,15 +6,17 @@ The skill exporter converts advanced coding knowledge files into instruction for
 
 ## Installation
 
-No installation needed. The script is pure Python 3 with no external dependencies.
+No dependencies needed. The exporter is pure Python 3.
 
 ```bash
-# Make it executable
-chmod +x tools/skill_exporter.py
+# After cloning the repository, generate IDE rules
+python tools/exporter.py
 
-# Verify it works
-python tools/skill_exporter.py --list
+# Verify installation
+python tools/exporter.py --list
 ```
+
+This exports agents and skills to all platforms (Claude Code, Copilot, Cursor, Windsurf, etc).
 
 ## Common Tasks
 

@@ -34,7 +34,8 @@ Complete guide to awesome-prompts v3.0 architecture, agents, skills, and workflo
 ## 🎯 Quick Navigation
 
 **I want to:**
-- **Build a new feature** → [QUICK_START.md](QUICK_START.md)
+- **Get started (5 min)** → [QUICK_START.md](QUICK_START.md) — Install & export
+- **Build a new feature** → Start with agent from `src/agents/`
 - **Review code** → [guides/01-code-review-tool.md](guides/01-code-review-tool.md)
 - **Export to my IDE** → [guides/02-exporting-to-platforms.md](guides/02-exporting-to-platforms.md)
 - **Understand the architecture** → [architecture/](architecture/)
