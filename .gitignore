@@ -136,7 +136,9 @@ tools/output/openai/agents/
 .*/agents/                     # Catch agents in any hidden directory
 .*/rules/                      # Catch rules in any hidden directory
 
-# Generated context and feedback directories (local only)
+# Generated output directories (local only)
+graphify-out/
+reviews/
 .context/
 .feedback/
 context_builder/
