@@ -33,9 +33,23 @@
 
 ---
 
-## 💡 New in v3.0: 4-Role Architecture + Context Preservation
+## 💡 What's New in v3.0
 
-**v3.0 reduces agents from 13 → 5 and eliminates context loss:**
+### Architecture
+- ✅ **Reduced from 13 → 5 agents** (role-based, no duplication)
+- ✅ **31 callable functions** across all agents
+- ✅ **No context loss** — implementer:full runs code + tests + docs in one pass
+- ✅ **24 reusable skills** (from code generation to security audits)
+
+### Repository Organization (June 2026)
+- ✅ **3-tier semantic structure** (src/ | tools/ | docs/)
+- ✅ **92 files reorganized** with `git mv` (git history preserved)
+- ✅ **AP: vendor prefix** on all agents (multi-vendor distinction)
+- ✅ **Improved .gitignore** (8 organized sections)
+- ✅ **token_optimizer fully tested** (35/35 tests passing ✅)
+- ✅ **Production-ready** and ready to scale
+
+### Example v3.0 Functions:
 
 ```bash
 # Orchestrator — Plan & orchestrate
@@ -69,66 +83,161 @@ ba:create path=./requirements.txt                  # Parse text → JIRA + BDD H
 
 ---
 
-## 📂 Repository Structure
+## 📂 Repository Structure (v3.0 — 3-Tier Organization)
 
 ```
-awesome-prompts/
+awesome-prompts/                       Reorganized June 2026 for clarity & scalability
 │
-├── 📋 instructions/                    ← Universal rules & intake forms
-│   ├── master_instruction_set.md      ← Non-negotiable rules for all agents
-│   ├── java_project_intake.md         ← Java/Spring Boot Q&A (33 questions)
-│   └── python_project_intake.md       ← Python Q&A with OOP patterns
+├── 🔧 src/                            ← CORE DEFINITIONS (version controlled, ready for platforms)
+│   │
+│   ├── agents/                        ← 5 role-based agents (AP: vendor prefix)
+│   │   ├── orchestrator_agent.md      ← Strategy: plan, build, review, tradeoff, risk, context, pr
+│   │   ├── architect_agent.md         ← Design: design, refactor, frontend, schema, api, a11y
+│   │   ├── implementer_agent.md       ← Build: build, test, doc, pipeline, docker, iac, full
+│   │   ├── quality_agent.md           ← QA: review, audit, security, perf, debug, batch-review, diagnose
+│   │   ├── business_analyst_agent.md  ← Backlog: report, parse, create
+│   │   └── README.md                  ← Agent dispatch syntax + 31 callable functions
+│   │
+│   ├── skills/                        ← 24 reusable implementation modules
+│   │   ├── code_documentation_skill.md        ← JSDoc/docstrings/Javadoc
+│   │   ├── database_skill.md                  ← SQL schema + migrations
+│   │   ├── backend_skill.md                   ← REST API generation
+│   │   ├── frontend_skill.md                  ← React components
+│   │   ├── test_skill.md                      ← Test generation
+│   │   ├── code_review_skill.md               ← 6-phase review + scoring
+│   │   ├── multi_review_html_skill.md         ← Batch PR review with HTML
+│   │   ├── jira_html_report_skill.md          ← Parse JIRA → HTML backlog
+│   │   ├── ba_create_skill.md                 ← Text requirements → JIRA + BDD HTML
+│   │   ├── java_advanced_skill.md             ← Java 17/21 + Spring Boot
+│   │   ├── python_advanced_skill.md           ← Python 3.11+ patterns
+│   │   ├── react_advanced_skill.md            ← React 18+ + TypeScript
+│   │   ├── context_builder_skill.md           ← Architecture analysis
+│   │   ├── error_handling_skill.md            ← Exception patterns
+│   │   ├── oop_skill.md                       ← OOP pillars + SOLID
+│   │   ├── apache_camel_skill.md              ← Apache Camel integration
+│   │   ├── apache_pulsar_skill.md             ← Apache Pulsar messaging
+│   │   ├── opentelemetry_skill.md             ← Observability + tracing
+│   │   ├── logger_skill.md                    ← SLF4J + Logback
+│   │   ├── lombok_skill.md                    ← Lombok annotations
+│   │   ├── code_health_skill.md               ← Code quality patterns
+│   │   ├── code_formatting_skill.md           ← Style standards
+│   │   ├── mssql_advanced_skill.md            ← T-SQL patterns
+│   │   ├── spring_advanced_skill.md           ← Spring Framework
+│   │   └── README.md                          ← Skills reference guide
+│   │
+│   ├── instructions/                  ← Universal rules & intake templates
+│   │   ├── master_instruction_set.md  ← Non-negotiable rules for all agents
+│   │   ├── java_project_intake.md     ← Java/Spring Boot Q&A (33 questions)
+│   │   ├── python_project_intake.md   ← Python Q&A with OOP patterns
+│   │   └── technical_documentation_intake.md  ← Documentation template
+│   │
+│   └── hooks/                         ← Git hooks & security guardrails
+│       ├── promptshield-check.sh      ← Block injection attempts (user-prompt-submit)
+│       ├── code-format-check.sh       ← Validate formatting (pre-commit)
+│       ├── test-runner-pre-commit.py  ← Run tests before commit (pre-commit)
+│       └── README.md                  ← Hook configuration guide
 │
-├── 💡 prompts/                         ← Categorized prompt templates
-│   ├── code-review/                   ← Code review agent prompts
-│   ├── testing/                       ← Test generation templates
-│   ├── codebase-analysis/             ← Code mapping & tracing
-│   ├── email/                         ← Email writing & review
-│   ├── project-management/            ← User stories, workflow mapping
-│   ├── incident-management/           ← Production issue investigation
-│   └── reporting/                     ← HTML report generation
+├── 🛠️ tools/                          ← UTILITIES & FRAMEWORKS
+│   │
+│   ├── exporter.py                    ← Export agents/skills to 9 platforms
+│   ├── interactive_exporter.py        ← Interactive platform selector
+│   ├── test_exporter.py               ← Test exporter pipeline
+│   │
+│   ├── instructions-framework/        ← Instruction parsing & middleware
+│   │   ├── cli.py                     ← Command-line interface
+│   │   ├── parser.py                  ← YAML instruction parser
+│   │   ├── loader.py                  ← Load + merge instructions
+│   │   ├── pipeline.py                ← Execution pipeline
+│   │   ├── analyzers/                 ← Language detection (Java, Python, TS, etc)
+│   │   ├── exporters/                 ← Platform exporters (Claude, Copilot, Cursor, etc)
+│   │   ├── middleware/                ← Conflict detection, dependency resolution
+│   │   └── README.md
+│   │
+│   ├── token_optimizer/               ← Query analyzer library (35 tests ✅)
+│   │   ├── analyzer.py                ← Main QueryAnalyzer orchestrator
+│   │   ├── models.py                  ← Dataclasses, enums, type-safe output
+│   │   ├── config.py                  ← Configurable thresholds
+│   │   ├── scoring.py                 ← Multi-dimensional scoring
+│   │   ├── detector.py                ← Web search, token, external data detection
+│   │   ├── setup.py (NEW)             ← Package setup
+│   │   ├── pyproject.toml (NEW)       ← Project metadata
+│   │   └── README.md                  ← Full documentation + examples
+│   │
+│   ├── feedback/                      ← Feedback analysis & tracking
+│   │   ├── feedback_analyzer.py       ← Pattern analysis + insights
+│   │   ├── feedback_processor.py      ← Process feedback YAML
+│   │   └── README.md
+│   │
+│   ├── examples/                      ← Sample outputs & configs
+│   │   ├── sample-batch-review.json
+│   │   └── sample-code-review.md
+│   │
+│   ├── code_review_generator.py       ← Generate code review reports
+│   ├── code_review_reporter.py        ← Format code review comments
+│   ├── context_builder.py             ← Generate architecture documentation
+│   ├── requirement_parser.py           ← Parse requirements from multiple sources
+│   ├── config_generator.py             ← Generate project configurations
+│   └── README.md                       ← Tools reference guide
 │
-├── 🤖 agents/                          ← 5 role-based agents (v3.0 consolidated)
-│   ├── orchestrator_agent.md          ← Strategy & Orchestration (plan, build, review, tradeoff, risk, context, pr)
-│   ├── architect_agent.md             ← Architecture & Design (design, refactor, frontend, schema, api, a11y)
-│   ├── implementer_agent.md           ← Implementation & Execution (build, test, doc, pipeline, docker, iac, full)
-│   ├── quality_agent.md               ← QA & Security (review, audit, security, perf, debug, report, batch-review, diagnose)
-│   ├── business_analyst_agent.md      ← Utility — Backlog (report, parse, create)
-│   └── README.md                      ← Agent guide with function dispatch syntax + linear pipeline
+├── 📚 docs/                           ← DOCUMENTATION
+│   │
+│   ├── README.md                      ← Documentation overview
+│   ├── SETUP_GUIDE.md                 ← Installation & setup
+│   ├── USAGE_GUIDE.md                 ← How to use agents & skills
+│   ├── API_REFERENCE.md               ← Function reference
+│   │
+│   ├── architecture/                  ← System design documents
+│   │   ├── agent-architecture.md
+│   │   ├── skill-architecture.md
+│   │   └── system-design.md
+│   │
+│   ├── guides/                        ← How-to guides
+│   │   ├── adding-agents.md
+│   │   ├── adding-skills.md
+│   │   ├── exporting-to-platforms.md
+│   │   └── feedback-and-guardrails.md
+│   │
+│   └── superpowers/                   ← Specs & implementation plans (COMMITTED)
+│       ├── specs/                     ← Design specifications
+│       └── plans/                     ← Implementation plans
 │
-├── 🛠️ skills/                          ← 24 reusable implementation modules (v3.0)
-│   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc (100% coverage)
-│   ├── database_skill.md              ← SQL schema + migrations + indexing
-│   ├── backend_skill.md               ← REST API generation wrapper
-│   ├── frontend_skill.md              ← React component generation wrapper
-│   ├── test_skill.md                  ← Test suite generation orchestrator
-│   ├── code_review_skill.md           ← 6-phase code review + scoring
-│   ├── context_builder_skill.md       ← Architecture analysis + context.json
-│   ├── java_advanced_skill.md         ← Java 17/21 + Spring Boot patterns
-│   ├── python_advanced_skill.md       ← Python 3.11+ + async patterns
-│   ├── react_advanced_skill.md        ← React 18+ + TypeScript + a11y
-│   ├── jira_html_report_skill.md      ← Parse JIRA JSON/CSV → HTML backlog
-│   ├── ba_create_skill.md             ← Parse text requirements → JIRA + BDD HTML [NEW v3.0]
-│   ├── multi_review_html_skill.md     ← Batch PR review with tabbed HTML [NEW v3.0]
-│   └── [11 more skills...]            ← Code health, error handling, OOP, Camel, Pulsar, etc.
+├── 🧪 tests/                          ← TEST SUITE
+│   │
+│   ├── conftest.py (NEW)              ← Pytest configuration + PYTHONPATH setup
+│   ├── test_token_optimizer.py        ← 35 tests, 100% PASS ✅
+│   ├── fixtures/                      ← Test data fixtures
+│   ├── test_agents/                   ← Agent-specific tests
+│   ├── test_integration/              ← Integration tests
+│   ├── test_services/                 ← Service tests
+│   └── test_tools/                    ← Tool tests
 │
-├── 🔧 tools/                           ← Utility scripts & generators
-│   ├── exporter.py                    ← Export to 9 platforms
-│   ├── code_review_generator.py       ← Generate HTML reports [NEW]
-│   ├── code_review_reporter.py        ← Format MR comments [NEW]
-│   ├── context_builder.py             ← Generate architecture docs
-│   └── [4 more tools...]
+├── 📦 examples/                       ← SAMPLE OUTPUTS & CONFIGS
+│   ├── sample-batch-review.json
+│   ├── sample-reviews/
+│   └── sample-configs/
 │
-├── 📊 docs/
-│   ├── superpowers/
-│   │   ├── specs/                     ← Design specifications
-│   │   │   └── 2026-05-25-code-review-agent-v3-design.md [NEW]
-│   │   └── plans/                     ← Implementation plans
-│   │       └── 2026-05-25-code-review-agent-v3.md [NEW]
-│   └── context/                       ← Generated project documentation
+├── 🔐 .deprecated/                    ← ARCHIVED OLD CODE
+│   └── old-prompts/                   ← Original prompts/ folder (for reference)
 │
-└── 📚 README.md (you are here!)
+├── 🤝 .claude/                        ← Claude Code exports (TRACKED & COMMITTED)
+│   ├── agents/
+│   ├── skills/
+│   └── hooks/
+│
+├── 📝 Core Files
+│   ├── README.md (you are here!)
+│   ├── CLAUDE.md                      ← Project instructions for Claude Code
+│   ├── AGENTS_FUNCTIONS.md            ← Complete function reference (31 functions)
+│   ├── .gitignore                     ← Git ignore rules (8 organized sections)
+│   └── LICENSE
 ```
+
+**Key Improvements:**
+- ✅ **Semantic organization** — src/ (core), tools/ (utilities), docs/ (documentation)
+- ✅ **Scalable structure** — Ready for 100+ agents & skills
+- ✅ **Platform exports tracked** — .claude/ committed intentionally
+- ✅ **Generated output isolated** — graphify-out/, reviews/, .context/ in .gitignore
+- ✅ **Git history preserved** — All 92 files moved with `git mv` (June 2026)
 
 ---
 
@@ -150,9 +259,10 @@ cd awesome-prompts
 <details open>
 <summary><b>✨ Example 1: Build a User Registration Feature</b></summary>
 
-**Step 1: Copy the Implementation Agent**
+**Step 1: Copy the Implementer Agent**
 ```
-File: agents/implementation_agent.md
+File: src/agents/implementer_agent.md
+Function: implementer:full path=./design
 ```
 
 **Step 2: Provide Your Requirement**
@@ -160,7 +270,7 @@ File: agents/implementation_agent.md
 "Build user registration with email validation and password hashing"
 ```
 
-**Step 3: Agent Delivers**
+**Step 3: Agent Delivers (all in one pass!)**
 - ✅ Code (src/auth/register.py)
 - ✅ Tests (tests/test_register.py) — 100% coverage
 - ✅ Docs (JSDoc/docstrings with examples)
@@ -188,8 +298,10 @@ def register_user(email: str, password: str) -> User:
         user = register_user("john@example.com", "secure_password")
         assert user.email == "john@example.com"
     """
-    # Auto-implemented with full docstring
+    # Auto-implemented with comprehensive docstring + tests
 ```
+
+**Time:** ~5 minutes end-to-end (code + tests + docs + PR created)
 
 </details>
 
@@ -342,15 +454,11 @@ Each skill is **tech-agnostic** and used by agents to implement features:
 | **code_review** [NEW] | 6-phase review analysis | Language-agnostic | Code Review Agent |
 | **apache_camel** | Integration framework patterns | Apache Camel | Advanced users |
 
-Skills are **importable** for custom workflows:
-
-```python
-# Example: Use code_documentation_skill in your own agent
-from skills.code_documentation_skill import DocumentationGenerator
-
-generator = DocumentationGenerator()
-docs = generator.generate_from_code("src/auth.py", format="docstring")
-```
+**Note on Structure:**
+- Agents & skills are Markdown definitions (for Claude, Copilot, etc.)
+- Python tools in `tools/` include implementations
+- token_optimizer (35 tests ✅) is a production-ready library for query analysis
+- Export to platforms: `python tools/exporter.py`
 
 ---
 
