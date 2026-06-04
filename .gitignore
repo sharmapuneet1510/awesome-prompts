@@ -97,9 +97,8 @@ coverage.xml
 .github/copilot/
 
 # Claude Code / Claude IDE Integration
-.claude/skills/
-.claude/agents/
-.claude/hooks/
+# NOTE: .claude/ is TRACKED and committed (not ignored)
+# Only .claude/settings.local.json is ignored (personal settings)
 
 # Cursor IDE Integration
 .cursor/
@@ -136,6 +135,11 @@ tools/output/openai/agents/
 .*/skills/                     # Catch skills in any hidden directory
 .*/agents/                     # Catch agents in any hidden directory
 .*/rules/                      # Catch rules in any hidden directory
+
+# Generated context and feedback directories (local only)
+.context/
+.feedback/
+context_builder/
 
 # Superpowers: allow specs and plans (commit)
 !docs/superpowers/specs/
