@@ -1,3 +1,9 @@
+---
+name: Ideation Engine Module
+version: 1.0
+description: Systematically refine vague ideas into detailed project specifications with expert feedback integration
+---
+
 # Ideation Engine Module
 
 ## Purpose

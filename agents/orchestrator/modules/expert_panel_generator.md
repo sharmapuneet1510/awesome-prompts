@@ -1,3 +1,9 @@
+---
+name: Expert Panel Generator Module
+version: 1.0
+description: Create virtual domain experts for targeted feedback, challenges, and perspective-sharing
+---
+
 # Expert Panel Generator Module
 
 ## Purpose

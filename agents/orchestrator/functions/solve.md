@@ -1,3 +1,10 @@
+---
+name: orchestrator:solve Function
+version: 1.0
+description: Solve specific design bottlenecks with multi-dimensional, prescriptive solutions
+prefix: orchestrator:solve
+---
+
 # Function: orchestrator:solve
 
 **Prefix:** `orchestrator:solve`

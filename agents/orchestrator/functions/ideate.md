@@ -1,3 +1,10 @@
+---
+name: orchestrator:ideate Function
+version: 1.0
+description: Transform vague ideas into validated project plans with expert feedback
+prefix: orchestrator:ideate
+---
+
 # Function: orchestrator:ideate
 
 **Prefix:** `orchestrator:ideate`

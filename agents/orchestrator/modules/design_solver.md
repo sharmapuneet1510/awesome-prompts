@@ -1,3 +1,9 @@
+---
+name: Design Solver Module
+version: 1.0
+description: Solve specific design bottlenecks with multi-dimensional, prescriptive solutions
+---
+
 # Design Solver Module
 
 ## Purpose
