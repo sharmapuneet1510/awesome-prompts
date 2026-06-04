@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "token_optimizer"
+version = "1.0.0"
+description = "Intelligent query analysis before Claude dispatch"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{name = "Claude Code", email = "noreply@anthropic.com"}]
+license = {text = "MIT"}
+keywords = ["ai", "llm", "query-analysis", "token-optimization"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/anthropics/awesome-prompts"
+Repository = "https://github.com/anthropics/awesome-prompts"
