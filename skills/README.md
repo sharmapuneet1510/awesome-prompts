@@ -29,6 +29,7 @@
 | 21 | [Lombok](lombok_skill.md) | @Data, @Builder, boilerplate reduction | Java | Advanced Java |
 | 22 | [JIRA HTML Report](jira_html_report_skill.md) | Parse JIRA, generate HTML backlog | Language-agnostic | Business Analyst |
 | 23 | [BA Create](ba_create_skill.md) | Parse plain-text requirements → JIRA JSON + BDD HTML cards | Language-agnostic | Business Analyst |
+| 24 | [Multi-Review HTML](multi_review_html_skill.md) | Batch PR review HTML with sidebar tabs + summary dashboard | Language-agnostic | Quality Agent |
 
 ---
 
@@ -60,6 +61,9 @@
 ### Business Analyst Skills (Backlog & Requirements)
 - `jira_html_report_skill` — Parse JIRA exports, generate HTML backlog reports
 - `ba_create_skill` — Parse plain-text requirements, generate JIRA JSON + BDD HTML cards
+
+### Quality Agent Skills (Batch Review)
+- `multi_review_html_skill` — Batch PR review HTML with sidebar tabs, summary dashboard, export options
 
 ---
 
@@ -161,4 +165,4 @@ Generate complete code
 
 ---
 
-**Last Updated:** June 3, 2026 | **Version:** 2.0.0 (Consolidated) | **Skills:** 22 | **Agents:** 13
+**Last Updated:** June 4, 2026 | **Version:** 2.0.0 (Consolidated) | **Skills:** 24 | **Agents:** 5

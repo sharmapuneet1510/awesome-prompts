@@ -42,6 +42,7 @@ and run only the steps for that function.
 | `quality:perf` | Performance audit phase (profiling, bottleneck identification, optimization strategies, scalability projection) | performance_optimizer_agent |
 | `quality:debug` | Production debugging phase (root cause analysis, failure mechanism, edge case discovery, regression test generation) | production_debugger_agent |
 | `quality:report` | Comprehensive quality report (synthesizes review + audit + security + perf + debug into single executive report) | NEW |
+| `quality:batch-review` | Batch PR review: run quality:review for each entry in JSON file, produce single HTML with sidebar tabs + summary | NEW (v3.0) |
 
 ### Dispatch Rules
 - **With function:** `quality:function [args]` → run only that function's steps (skip intro questions)
@@ -738,6 +739,151 @@ The Quality Agent achieves its mission when:
 | 3.0 | 2026-06-03 | Unified Quality Agent: 6 functions (review, audit, security, perf, debug, report) + comprehensive report synthesis |
 | 2.0 | 2026-05-27 | Individual agents finalized (code_review, codebase_auditor, security_auditor, performance_optimizer, production_debugger) |
 | 1.0 | 2026-05-15 | Initial quality framework |
+
+---
+
+## FUNCTION 7: quality:batch-review
+
+**Purpose:** Batch PR review for multiple pull requests in one session. Runs quality:review for each PR in a JSON input file, aggregates findings, and produces a single self-contained HTML report with fixed left sidebar tabs + summary dashboard.
+
+### Parameters
+
+| Parameter | Required | Description | Example |
+|-----------|----------|-------------|---------|
+| `from` | ✓ Yes | Path to reviews.json input file | `from=./reviews.json` |
+| `output` | Optional | Output HTML file path | `output=./reports/batch-report.html` |
+
+### Input Format: reviews.json
+
+```json
+[
+  {
+    "pr": 456,
+    "ticket": "PROJ-123",
+    "context": "OAuth2 security hardening for enterprise customers",
+    "business-justification": "SOC 2 compliance required by Q3",
+    "review-scope": "Authentication layer only (skip frontend)",
+    "success-criteria": "No unvalidated redirects, all inputs sanitized"
+  },
+  {
+    "pr": 789,
+    "ticket": "PROJ-124",
+    "context": "Database performance optimization",
+    "business-justification": "P0 latency issue affecting checkout"
+  },
+  {
+    "pr": 910,
+    "ticket": "PROJ-125"
+  }
+]
+```
+
+**Fields:**
+- `pr` (required): PR number
+- `ticket` (optional): JIRA ticket key (auto-detected from git if omitted)
+- `context` (optional): Why the change exists
+- `business-justification` (optional): Business impact or compliance driver
+- `review-scope` (optional): Areas to focus review on
+- `success-criteria` (optional): What success looks like
+
+### Workflow Steps
+
+**STEP 1: Parse reviews.json**
+- Validate JSON array structure
+- For each entry: resolve ticket (provided or auto-detect from git commits for that PR)
+- Build review context block per entry
+
+**STEP 2: Run quality:review for each entry**
+- Execute all PHASE 0-6 for each PR sequentially
+- Collect full review result per PR:
+  ```
+  {
+    pr, ticket, context, verdict,
+    overall_score, grade,
+    scores: { requirements, code_quality, security, tests, docs },
+    blockers: [...],        // P0+P1 issues with blocks_merge=true
+    non_blockers: [...],    // P2+P3 issues
+    ac_coverage: [...],     // per-AC breakdown
+    issues: [...],          // all issues with before/after code
+    fix_estimate_hours: N
+  }
+  ```
+
+**STEP 3: Compute aggregate summary**
+- `overall_verdict`: if ANY PR has REQUEST CHANGES → batch verdict = STOP
+- `total_blockers`: sum of all blocker counts
+- `total_fix_hours`: sum across all PRs
+- `priority_matrix`: { P0: [{pr, title}], P1: [...], P2: [...], P3: [...] }
+- `score_comparison`: sorted table of all PRs by overall score
+- `worst_issues`: top 5 issues by severity across all PRs
+
+**STEP 4: Apply multi_review_html_skill to render HTML**
+- Generate single self-contained HTML file
+- All CSS/JS inline (no external CDN)
+
+**STEP 5: Deliver**
+- Print summary to console
+- Save report file (default: `quality-batch-report.html`)
+
+### Output: quality-batch-report.html
+
+**Layout:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ HEADER (gradient, title, generated date, review count)      │
+├────────────────┬──────────────────────────────────────────┤
+│ SIDEBAR        │  CONTENT PANEL                           │
+│ (280px fixed)  │                                          │
+│                │  Summary Tab:                            │
+│ 📊 Summary     │   • Aggregate stats (4 cards)            │
+│                │   • Priority matrix table                │
+│ 🔴 PR#456      │   • Score comparison table               │
+│    PROJ-123    │   • Merged verdict + total fix hours    │
+│    74% · C+    │   • Top 5 worst issues                  │
+│    3 blockers  │                                          │
+│                │  Per-PR Tab:                             │
+│ ⚠️  PR#789      │   • REVIEW CONTEXT block                │
+│    PROJ-124    │   • AC coverage table                   │
+│    83% · B     │   • Issues (before/after code)          │
+│                │   • Scorecard + verdict                 │
+│ ✅ PR#910      │   • Blockers + non-blocking lists       │
+│    PROJ-125    │                                          │
+│    90% · B+    │                                          │
+│                │                                          │
+│ [Export JSON]  │                                          │
+│ [Print/PDF]    │                                          │
+└────────────────┴──────────────────────────────────────────┘
+```
+
+**Sidebar tabs:**
+- `🔴` = REQUEST CHANGES (has blockers)
+- `⚠️` = APPROVE WITH COMMENTS (no blockers, but has issues)
+- `✅` = APPROVE (clean)
+
+**Summary tab content:**
+- Aggregate stats: total reviews, blockers, average score, total fix hours
+- Merged verdict: STOP if any PR has blockers; CAUTION if warnings; PROCEED if all clean
+- Priority matrix: P0/P1/P2/P3 counts with affected PRs
+- Score comparison: sortable table of all PRs (PR, ticket, scores, verdict)
+- Top 5 worst issues: severity, title, PR, affected file, fix time
+
+**Per-PR tabs:**
+- Identical to single `quality:review` output (PHASE 0-6 results)
+- REVIEW CONTEXT header
+- AC coverage breakdown
+- Issues with before/after code blocks
+- Scorecard with verdict
+- Blockers and non-blocking lists
+
+### Example Invocation
+
+```bash
+# Basic batch review
+quality:batch-review from=./reviews.json
+
+# With custom output path
+quality:batch-review from=./reviews.json output=./reports/sprint-review.html
+```
 
 ---
 

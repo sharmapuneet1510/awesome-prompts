@@ -136,7 +136,23 @@ Root cause analysis from stack trace, failure mechanism explanation, regression 
 
 ### quality:report
 **NEW (v3.0):** Unified synthesis of all 5 quality functions into single HTML report.
-documentation:readme path=./project include-contributing=true
+
+### quality:batch-review
+**NEW (v3.0):** Batch PR review for multiple PRs in one session.  
+**Input:** `reviews.json` array with PR configs (pr, ticket, context, business-justification, review-scope, success-criteria)  
+**Output:** `quality-batch-report.html` — single self-contained file with fixed sidebar tabs + summary dashboard  
+**Usage:**
+```
+quality:batch-review from=./reviews.json
+quality:batch-review from=./reviews.json output=./reports/batch-report.html
+```
+**What it does:** Runs quality:review for each PR sequentially, aggregates findings into priority matrix and score comparison, produces tabbed HTML report with Summary tab (aggregate stats, worst issues, merged verdict) and per-PR tabs (full review context, AC coverage, issues with before/after code, scorecard). Supports JSON export and Print/PDF.
+
+---
+
+## Documentation Agent (`documentation`)
+
+### documentation:readme path=./project include-contributing=true
 ```
 **What it does:** Writes a comprehensive README with project summary, prerequisites, local setup, running tests, project structure, key concepts, and troubleshooting guide. Target: new developers onboard in < 5 minutes.
 
