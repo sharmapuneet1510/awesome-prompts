@@ -125,7 +125,12 @@ tools/output/openai/
 # ═══════════════════════════════════════════════════════════════════════════════
 # SPECIAL: .claude/ is TRACKED & COMMITTED (platform exports for Claude Code)
 # ═══════════════════════════════════════════════════════════════════════════════
+# REASON: .claude/ is the primary export target for Claude Code (checked into repo)
+# REASON: Users need these exports checked in for Claude Code to use them
+# REASON: Other platforms (.github/, .cursor/, .windsurf/, etc.) are auto-generated
+#
 # Only .claude/settings.local.json is ignored (user's personal settings)
+# After pulling, regenerate all platform exports with: python tools/exporter.py
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GENERATED OUTPUT (LOCAL ONLY - Never commit)

@@ -42,10 +42,10 @@
 - ✅ **24 reusable skills** (from code generation to security audits)
 
 ### Repository Organization (June 2026)
-- ✅ **3-tier semantic structure** (src/ | tools/ | docs/)
-- ✅ **92 files reorganized** with `git mv` (git history preserved)
+- ✅ **Fully consolidated structure** — all definitions at root level
+- ✅ **Removed src/ directory** — simplified path resolution
 - ✅ **AP: vendor prefix** on all agents (multi-vendor distinction)
-- ✅ **Improved .gitignore** (8 organized sections)
+- ✅ **8 platform exports supported** (.github, .claude, .cursor, .windsurf, .gemini, .continue, .aider)
 - ✅ **token_optimizer fully tested** (35/35 tests passing ✅)
 - ✅ **Production-ready** and ready to scale
 
@@ -83,59 +83,60 @@ ba:create path=./requirements.txt                  # Parse text → JIRA + BDD H
 
 ---
 
-## 📂 Repository Structure (v3.0 — 3-Tier Organization)
+## 📂 Repository Structure (v3.0 — Fully Consolidated)
 
 ```
 awesome-prompts/                       Reorganized June 2026 for clarity & scalability
 │
-├── 🔧 src/                            ← CORE DEFINITIONS (version controlled, ready for platforms)
-│   │
-│   ├── agents/                        ← 5 role-based agents (AP: vendor prefix)
-│   │   ├── orchestrator_agent.md      ← Strategy: plan, build, review, tradeoff, risk, context, pr
-│   │   ├── architect_agent.md         ← Design: design, refactor, frontend, schema, api, a11y
-│   │   ├── implementer_agent.md       ← Build: build, test, doc, pipeline, docker, iac, full
-│   │   ├── quality_agent.md           ← QA: review, audit, security, perf, debug, batch-review, diagnose
-│   │   ├── business_analyst_agent.md  ← Backlog: report, parse, create
-│   │   └── README.md                  ← Agent dispatch syntax + 31 callable functions
-│   │
-│   ├── skills/                        ← 24 reusable implementation modules
-│   │   ├── code_documentation_skill.md        ← JSDoc/docstrings/Javadoc
-│   │   ├── database_skill.md                  ← SQL schema + migrations
-│   │   ├── backend_skill.md                   ← REST API generation
-│   │   ├── frontend_skill.md                  ← React components
-│   │   ├── test_skill.md                      ← Test generation
-│   │   ├── code_review_skill.md               ← 6-phase review + scoring
-│   │   ├── multi_review_html_skill.md         ← Batch PR review with HTML
-│   │   ├── jira_html_report_skill.md          ← Parse JIRA → HTML backlog
-│   │   ├── ba_create_skill.md                 ← Text requirements → JIRA + BDD HTML
-│   │   ├── java_advanced_skill.md             ← Java 17/21 + Spring Boot
-│   │   ├── python_advanced_skill.md           ← Python 3.11+ patterns
-│   │   ├── react_advanced_skill.md            ← React 18+ + TypeScript
-│   │   ├── context_builder_skill.md           ← Architecture analysis
-│   │   ├── error_handling_skill.md            ← Exception patterns
-│   │   ├── oop_skill.md                       ← OOP pillars + SOLID
-│   │   ├── apache_camel_skill.md              ← Apache Camel integration
-│   │   ├── apache_pulsar_skill.md             ← Apache Pulsar messaging
-│   │   ├── opentelemetry_skill.md             ← Observability + tracing
-│   │   ├── logger_skill.md                    ← SLF4J + Logback
-│   │   ├── lombok_skill.md                    ← Lombok annotations
-│   │   ├── code_health_skill.md               ← Code quality patterns
-│   │   ├── code_formatting_skill.md           ← Style standards
-│   │   ├── mssql_advanced_skill.md            ← T-SQL patterns
-│   │   ├── spring_advanced_skill.md           ← Spring Framework
-│   │   └── README.md                          ← Skills reference guide
-│   │
-│   ├── instructions/                  ← Universal rules & intake templates
-│   │   ├── master_instruction_set.md  ← Non-negotiable rules for all agents
-│   │   ├── java_project_intake.md     ← Java/Spring Boot Q&A (33 questions)
-│   │   ├── python_project_intake.md   ← Python Q&A with OOP patterns
-│   │   └── technical_documentation_intake.md  ← Documentation template
-│   │
-│   └── hooks/                         ← Git hooks & security guardrails
-│       ├── promptshield-check.sh      ← Block injection attempts (user-prompt-submit)
-│       ├── code-format-check.sh       ← Validate formatting (pre-commit)
-│       ├── test-runner-pre-commit.py  ← Run tests before commit (pre-commit)
-│       └── README.md                  ← Hook configuration guide
+├── 📋 agents/                         ← 5 role-based agents (AP: vendor prefix) + modules/functions
+│   ├── orchestrator_agent.md          ← Strategy: plan, build, review, tradeoff, risk, context, pr
+│   ├── architect_agent.md             ← Design: design, refactor, frontend, schema, api, a11y
+│   ├── implementer_agent.md           ← Build: build, test, doc, pipeline, docker, iac, full
+│   ├── quality_agent.md               ← QA: review, audit, security, perf, debug, batch-review, diagnose
+│   ├── business_analyst_agent.md      ← Backlog: report, parse, create
+│   ├── orchestrator/                  ← Orchestrator modules & functions
+│   │   ├── modules/                   ← design_solver, expert_panel_generator, ideation_engine
+│   │   └── functions/                 ← ideate, solve
+│   └── README.md                      ← Agent dispatch syntax + 31 callable functions
+│
+├── 💡 skills/                         ← 24 reusable implementation modules
+│   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc
+│   ├── database_skill.md              ← SQL schema + migrations
+│   ├── backend_skill.md               ← REST API generation
+│   ├── frontend_skill.md              ← React components
+│   ├── test_skill.md                  ← Test generation
+│   ├── code_review_skill.md           ← 6-phase review + scoring
+│   ├── multi_review_html_skill.md     ← Batch PR review with HTML
+│   ├── jira_html_report_skill.md      ← Parse JIRA → HTML backlog
+│   ├── ba_create_skill.md             ← Text requirements → JIRA + BDD HTML
+│   ├── java_advanced_skill.md         ← Java 17/21 + Spring Boot
+│   ├── python_advanced_skill.md       ← Python 3.11+ patterns
+│   ├── react_advanced_skill.md        ← React 18+ + TypeScript
+│   ├── context_builder_skill.md       ← Architecture analysis
+│   ├── error_handling_skill.md        ← Exception patterns
+│   ├── oop_skill.md                   ← OOP pillars + SOLID
+│   ├── apache_camel_skill.md          ← Apache Camel integration
+│   ├── apache_pulsar_skill.md         ← Apache Pulsar messaging
+│   ├── opentelemetry_skill.md         ← Observability + tracing
+│   ├── logger_skill.md                ← SLF4J + Logback
+│   ├── lombok_skill.md                ← Lombok annotations
+│   ├── code_health_skill.md           ← Code quality patterns
+│   ├── code_formatting_skill.md       ← Style standards
+│   ├── mssql_advanced_skill.md        ← T-SQL patterns
+│   ├── spring_advanced_skill.md       ← Spring Framework
+│   └── README.md                      ← Skills reference guide
+│
+├── 📖 instructions/                   ← Universal rules & intake templates
+│   ├── master_instruction_set.md      ← Non-negotiable rules for all agents
+│   ├── java_project_intake.md         ← Java/Spring Boot Q&A (33 questions)
+│   ├── python_project_intake.md       ← Python Q&A with OOP patterns
+│   └── technical_documentation_intake.md  ← Documentation template
+│
+├── 🔒 hooks/                          ← Git hooks & security guardrails
+│   ├── promptshield-check.sh          ← Block injection attempts (user-prompt-submit)
+│   ├── code-format-check.sh           ← Validate formatting (pre-commit)
+│   ├── test-runner-pre-commit.py      ← Run tests before commit (pre-commit)
+│   └── README.md                      ← Hook configuration guide
 │
 ├── 🛠️ tools/                          ← UTILITIES & FRAMEWORKS
 │   │
@@ -233,11 +234,12 @@ awesome-prompts/                       Reorganized June 2026 for clarity & scala
 ```
 
 **Key Improvements:**
-- ✅ **Semantic organization** — src/ (core), tools/ (utilities), docs/ (documentation)
+- ✅ **Fully consolidated** — agents, skills, instructions, hooks all at root level
+- ✅ **No src/ complexity** — simplified path resolution for exporter
 - ✅ **Scalable structure** — Ready for 100+ agents & skills
-- ✅ **Platform exports tracked** — .claude/ committed intentionally
+- ✅ **Platform exports managed** — .claude/ committed (others in .gitignore)
 - ✅ **Generated output isolated** — graphify-out/, reviews/, .context/ in .gitignore
-- ✅ **Git history preserved** — All 92 files moved with `git mv` (June 2026)
+- ✅ **8 Platform support** — .github (Copilot), .claude (Claude), .cursor, .windsurf, .gemini, .continue, .aider, tools/output/openai
 
 ---
 
@@ -261,7 +263,7 @@ cd awesome-prompts
 
 **Step 1: Copy the Implementer Agent**
 ```
-File: src/agents/implementer_agent.md
+File: agents/implementer_agent.md
 Function: implementer:full path=./design
 ```
 
