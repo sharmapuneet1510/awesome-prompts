@@ -1106,16 +1106,15 @@ class ExportOrchestrator:
 
     def __init__(self, repo_root: Path) -> None:
         self._repo_root  = repo_root
-        self._skills_dir = repo_root / "skills"
-        self._agents_dir = repo_root / "agents"
-        # Modules and functions are in top-level agents/, not in src/
-        # So we need to go up one level if we're in src/
-        if repo_root.name == "src":
-            self._modules_dir = repo_root.parent / "agents"
-            self._functions_dir = repo_root.parent / "agents"
+        # Skills can be in src/skills or root-level skills
+        if (repo_root / "src" / "skills").exists():
+            self._skills_dir = repo_root / "src" / "skills"
         else:
-            self._modules_dir = repo_root / "agents"
-            self._functions_dir = repo_root / "agents"
+            self._skills_dir = repo_root / "skills"
+        # Agents, modules, and functions are always at root level
+        self._agents_dir = repo_root / "agents"
+        self._modules_dir = repo_root / "agents"
+        self._functions_dir = repo_root / "agents"
 
     def discover_skills(self) -> list[SkillFile]:
         if not self._skills_dir.exists():
@@ -1493,11 +1492,9 @@ def resolve_repo_root(provided: Path | None) -> Path:
     else:
         root = Path(__file__).resolve().parent.parent
 
-    # Check for src/ subdirectory (new structure)
-    if (root / "src" / "skills").exists():
-        return root / "src"
-    # Check for skills/ at root (old structure)
-    if (root / "skills").exists():
+    # Always check skills location but always return the actual repo root
+    # This handles mixed structures like src/skills + root-level agents/
+    if (root / "src" / "skills").exists() or (root / "skills").exists():
         return root
 
     print(f"ERROR: Could not find skills/ directory under {root}")

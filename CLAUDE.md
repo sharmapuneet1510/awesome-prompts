@@ -24,38 +24,45 @@ awesome-prompts/
 │   ├── incident-management/          ← Production issue investigation
 │   └── reporting/                    ← HTML report generation
 │
-├── agents/                           ← Role-based agent definitions (5 agents, v3.0)
+├── agents/                           ← Role-based agent definitions (5 agents, v3.0) + modules/functions
 │   ├── orchestrator_agent.md         ← Strategy & Orchestration (plan, build, context, pr, review, tradeoff, risk)
 │   ├── architect_agent.md            ← Architecture & Design (design, refactor, frontend, schema, api, a11y)
 │   ├── implementer_agent.md          ← Implementation & Execution (build, test, doc, pipeline, docker, iac, full)
 │   ├── quality_agent.md              ← QA & Security (review, audit, security, perf, debug, report)
 │   ├── business_analyst_agent.md     ← Utility — Backlog (report, parse)
+│   ├── orchestrator/                 ← Orchestrator agent modules & functions
+│   │   ├── modules/                  ← Orchestrator modules (design_solver, expert_panel_generator, ideation_engine)
+│   │   ├── functions/                ← Orchestrator functions (ideate, solve)
+│   │   └── README.md
 │   └── README.md                     ← Agent directory (v3.0 with linear pipeline)
 │
-├── skills/                           ← Reusable implementation skills (22 skills)
-│   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
-│   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
-│   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
-│   ├── code_formatting_skill.md      ← Code style standards
-│   ├── database_skill.md             ← SQL schema + migrations (PostgreSQL/MySQL/MSSQL)
-│   ├── backend_skill.md              ← REST API generation (FastAPI/Spring Boot)
-│   ├── frontend_skill.md             ← React component generation + hooks
-│   ├── test_skill.md                 ← Test generation (JUnit5/pytest/Jest)
-│   ├── context_builder_skill.md      ← Project architecture & tech stack analysis
-│   ├── java_advanced_skill.md        ← Java 17/21 coding standards & patterns
-│   ├── python_advanced_skill.md      ← Python 3.11+ coding standards & patterns
-│   ├── react_advanced_skill.md       ← React 18+ / TypeScript coding standards
-│   ├── mssql_advanced_skill.md       ← T-SQL coding standards & patterns
-│   ├── spring_advanced_skill.md      ← Spring Framework / Spring Boot internals
-│   ├── error_handling_skill.md       ← Exception handling + recovery patterns
-│   ├── oop_skill.md                  ← OOP pillars + SOLID + design patterns
-│   ├── apache_camel_skill.md         ← Apache Camel integration & EIP patterns
-│   ├── apache_pulsar_skill.md        ← Apache Pulsar messaging & streaming
-│   ├── opentelemetry_skill.md        ← Observability + tracing + metrics
-│   ├── logger_skill.md               ← SLF4J + Logback + structured logging
-│   ├── lombok_skill.md               ← Lombok annotations + boilerplate reduction
-│   ├── jira_html_report_skill.md     ← Parse JIRA + generate HTML backlog
-│   └── README.md                     ← Skills directory (consolidated v2.0)
+├── hooks/                            ← Hook scripts for platform automation
+│
+├── src/
+│   └── skills/                       ← Reusable implementation skills (22 skills)
+│       ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
+│       ├── code_review_skill.md          ← 6-phase PR analysis + scoring
+│       ├── code_health_skill.md          ← Issue taxonomy + severity scoring
+│       ├── code_formatting_skill.md      ← Code style standards
+│       ├── database_skill.md             ← SQL schema + migrations (PostgreSQL/MySQL/MSSQL)
+│       ├── backend_skill.md              ← REST API generation (FastAPI/Spring Boot)
+│       ├── frontend_skill.md             ← React component generation + hooks
+│       ├── test_skill.md                 ← Test generation (JUnit5/pytest/Jest)
+│       ├── context_builder_skill.md      ← Project architecture & tech stack analysis
+│       ├── java_advanced_skill.md        ← Java 17/21 coding standards & patterns
+│       ├── python_advanced_skill.md      ← Python 3.11+ coding standards & patterns
+│       ├── react_advanced_skill.md       ← React 18+ / TypeScript coding standards
+│       ├── mssql_advanced_skill.md       ← T-SQL coding standards & patterns
+│       ├── spring_advanced_skill.md      ← Spring Framework / Spring Boot internals
+│       ├── error_handling_skill.md       ← Exception handling + recovery patterns
+│       ├── oop_skill.md                  ← OOP pillars + SOLID + design patterns
+│       ├── apache_camel_skill.md         ← Apache Camel integration & EIP patterns
+│       ├── apache_pulsar_skill.md        ← Apache Pulsar messaging & streaming
+│       ├── opentelemetry_skill.md        ← Observability + tracing + metrics
+│       ├── logger_skill.md               ← SLF4J + Logback + structured logging
+│       ├── lombok_skill.md               ← Lombok annotations + boilerplate reduction
+│       ├── jira_html_report_skill.md     ← Parse JIRA + generate HTML backlog
+│       └── README.md                     ← Skills directory (consolidated v2.0)
 │
 ├── parser/                           ← Python field derivation analysis tool
 │
@@ -70,6 +77,10 @@ awesome-prompts/
 │
 ├── tests/
 │   └── test_token_optimizer.py       ← 35 comprehensive tests (all passing)
+│
+├── tools/
+│   ├── exporter.py                   ← Multi-platform export tool (skills, agents, hooks)
+│   └── [other tools]
 │
 └── CLAUDE.md
 ```
