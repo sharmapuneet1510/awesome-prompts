@@ -223,15 +223,36 @@ class TestFileDiscovery:
 
     @staticmethod
     def test_function_files():
-        """Verify function files"""
-        functions_dir = REPO_ROOT / "agents" / "orchestrator" / "functions"
-        function_files = list(functions_dir.glob("*.md"))
-        expected_count = 2
-        return [TestResult(
-            f"Function files: {len(function_files)} found",
-            len(function_files) == expected_count,
-            f"Expected {expected_count}: ideate, solve"
-        )]
+        """Verify function files exist for all agents"""
+        results = []
+
+        expected_functions = {
+            "architect": ["design", "refactor", "schema", "api", "frontend", "a11y"],
+            "implementer": ["build", "test", "doc", "pipeline", "docker", "iac", "full"],
+            "quality": ["review", "audit", "security", "perf", "debug", "report", "batch-review", "diagnose"],
+            "business_analyst": ["report", "parse"],
+            "orchestrator": ["ideate", "solve"],
+        }
+
+        for agent, expected_funcs in expected_functions.items():
+            functions_dir = REPO_ROOT / "agents" / agent / "functions"
+            if functions_dir.exists():
+                function_files = list(functions_dir.glob("*.md"))
+                actual_count = len(function_files)
+                expected_count = len(expected_funcs)
+                results.append(TestResult(
+                    f"{agent}: {actual_count} function(s)",
+                    actual_count == expected_count,
+                    f"Expected {expected_count}: {', '.join(expected_funcs[:3])}{'...' if len(expected_funcs) > 3 else ''}"
+                ))
+            else:
+                results.append(TestResult(
+                    f"{agent}/functions/ directory exists",
+                    False,
+                    f"Directory missing at {functions_dir}"
+                ))
+
+        return results
 
 
 class TestExporter:
@@ -288,6 +309,15 @@ class TestExporter:
                 f"Exporter discovers 5 agents",
                 agent_count >= 5,
                 f"Found {agent_count}"
+            ))
+
+        if "Functions:" in output:
+            functions_section = output.split("Functions:")[1]
+            function_count = len([l for l in functions_section.split("\n") if l.strip() and not l.startswith("Functions")])
+            results.append(TestResult(
+                f"Exporter discovers 25 functions",
+                function_count >= 25,
+                f"Found {function_count}: architect(6), implementer(7), quality(8), ba(2), orchestrator(2)"
             ))
 
         return results
