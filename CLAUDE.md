@@ -38,31 +38,30 @@ awesome-prompts/
 │
 ├── hooks/                            ← Hook scripts for platform automation
 │
-├── src/
-│   └── skills/                       ← Reusable implementation skills (22 skills)
-│       ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
-│       ├── code_review_skill.md          ← 6-phase PR analysis + scoring
-│       ├── code_health_skill.md          ← Issue taxonomy + severity scoring
-│       ├── code_formatting_skill.md      ← Code style standards
-│       ├── database_skill.md             ← SQL schema + migrations (PostgreSQL/MySQL/MSSQL)
-│       ├── backend_skill.md              ← REST API generation (FastAPI/Spring Boot)
-│       ├── frontend_skill.md             ← React component generation + hooks
-│       ├── test_skill.md                 ← Test generation (JUnit5/pytest/Jest)
-│       ├── context_builder_skill.md      ← Project architecture & tech stack analysis
-│       ├── java_advanced_skill.md        ← Java 17/21 coding standards & patterns
-│       ├── python_advanced_skill.md      ← Python 3.11+ coding standards & patterns
-│       ├── react_advanced_skill.md       ← React 18+ / TypeScript coding standards
-│       ├── mssql_advanced_skill.md       ← T-SQL coding standards & patterns
-│       ├── spring_advanced_skill.md      ← Spring Framework / Spring Boot internals
-│       ├── error_handling_skill.md       ← Exception handling + recovery patterns
-│       ├── oop_skill.md                  ← OOP pillars + SOLID + design patterns
-│       ├── apache_camel_skill.md         ← Apache Camel integration & EIP patterns
-│       ├── apache_pulsar_skill.md        ← Apache Pulsar messaging & streaming
-│       ├── opentelemetry_skill.md        ← Observability + tracing + metrics
-│       ├── logger_skill.md               ← SLF4J + Logback + structured logging
-│       ├── lombok_skill.md               ← Lombok annotations + boilerplate reduction
-│       ├── jira_html_report_skill.md     ← Parse JIRA + generate HTML backlog
-│       └── README.md                     ← Skills directory (consolidated v2.0)
+├── skills/                           ← Reusable implementation skills (22 skills)
+│   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
+│   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
+│   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
+│   ├── code_formatting_skill.md      ← Code style standards
+│   ├── database_skill.md             ← SQL schema + migrations (PostgreSQL/MySQL/MSSQL)
+│   ├── backend_skill.md              ← REST API generation (FastAPI/Spring Boot)
+│   ├── frontend_skill.md             ← React component generation + hooks
+│   ├── test_skill.md                 ← Test generation (JUnit5/pytest/Jest)
+│   ├── context_builder_skill.md      ← Project architecture & tech stack analysis
+│   ├── java_advanced_skill.md        ← Java 17/21 coding standards & patterns
+│   ├── python_advanced_skill.md      ← Python 3.11+ coding standards & patterns
+│   ├── react_advanced_skill.md       ← React 18+ / TypeScript coding standards
+│   ├── mssql_advanced_skill.md       ← T-SQL coding standards & patterns
+│   ├── spring_advanced_skill.md      ← Spring Framework / Spring Boot internals
+│   ├── error_handling_skill.md       ← Exception handling + recovery patterns
+│   ├── oop_skill.md                  ← OOP pillars + SOLID + design patterns
+│   ├── apache_camel_skill.md         ← Apache Camel integration & EIP patterns
+│   ├── apache_pulsar_skill.md        ← Apache Pulsar messaging & streaming
+│   ├── opentelemetry_skill.md        ← Observability + tracing + metrics
+│   ├── logger_skill.md               ← SLF4J + Logback + structured logging
+│   ├── lombok_skill.md               ← Lombok annotations + boilerplate reduction
+│   ├── jira_html_report_skill.md     ← Parse JIRA + generate HTML backlog
+│   └── README.md                     ← Skills directory (consolidated v2.0)
 │
 ├── parser/                           ← Python field derivation analysis tool
 │

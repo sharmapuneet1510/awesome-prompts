@@ -1106,12 +1106,8 @@ class ExportOrchestrator:
 
     def __init__(self, repo_root: Path) -> None:
         self._repo_root  = repo_root
-        # Skills can be in src/skills or root-level skills
-        if (repo_root / "src" / "skills").exists():
-            self._skills_dir = repo_root / "src" / "skills"
-        else:
-            self._skills_dir = repo_root / "skills"
-        # Agents, modules, and functions are always at root level
+        # All directories are now at root level
+        self._skills_dir = repo_root / "skills"
         self._agents_dir = repo_root / "agents"
         self._modules_dir = repo_root / "agents"
         self._functions_dir = repo_root / "agents"
@@ -1492,13 +1488,12 @@ def resolve_repo_root(provided: Path | None) -> Path:
     else:
         root = Path(__file__).resolve().parent.parent
 
-    # Always check skills location but always return the actual repo root
-    # This handles mixed structures like src/skills + root-level agents/
-    if (root / "src" / "skills").exists() or (root / "skills").exists():
+    # Check for skills/ directory at root
+    if (root / "skills").exists():
         return root
 
     print(f"ERROR: Could not find skills/ directory under {root}")
-    print("Expected src/skills/ or skills/ at repository root.")
+    print("Expected skills/ at repository root.")
     print("Run from the repository root or use --repo-root.")
     sys.exit(1)
 
