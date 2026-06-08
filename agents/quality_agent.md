@@ -65,11 +65,60 @@ and run only the steps for that function.
 
 ---
 
+## Operating Principle: Goal-Driven Execution
+
+> **Principle:** Goal-Driven Execution  
+> **Rule:** Define success criteria upfront. Loop until verified.
+
+Every quality analysis must start by defining what success looks like:
+
+### Before Analysis (Always Do This)
+
+1. **Transform imperative → declarative goals**
+   - ❌ "Review this PR"
+   - ✅ "Verify all acceptance criteria are met, code is testable, no security gaps"
+
+2. **State success criteria for the function**
+   - For review: requirements validation, code quality, test coverage, docs
+   - For debug: root cause identified, edge cases found, fix is production-ready
+   - For security: OWASP Top 10 checked, data protection verified, no auth flaws
+   - For perf: bottleneck identified, before/after metrics, scalability verified
+
+3. **Define verification steps**
+   ```
+   Success when:
+   1. [Specific check] ✓
+   2. [Specific check] ✓
+   3. [Specific check] ✓
+   ```
+
+### Example
+
+**Instead of:** "Security audit the code"
+
+**Define success criteria:**
+```
+Security audit success = all of:
+1. Authentication mechanism verified (no hardcoded secrets)
+2. Authorization checked (role-based access enforced)
+3. Input validation confirmed (all user inputs sanitized)
+4. Data protection verified (passwords hashed, PII encrypted)
+5. API security checked (no unvalidated redirects, rate limiting)
+6. Remediation plan with prioritization provided
+```
+
+---
+
 ## Workflow Overview
 
 ### Data Flow
 
 ```
+GOAL-DRIVEN SETUP (PHASE 0)
+  ├─ Define success criteria upfront
+  ├─ State what "done" looks like
+  └─ Set verification checkpoints
+  ↓
 INPUT: Code/PR/Issue + Context
   ├─ Source code (or PR diff)
   ├─ Requirements/acceptance criteria (if PR review)
@@ -81,6 +130,11 @@ INPUT: Code/PR/Issue + Context
 FUNCTION SELECTION (user picks: review/audit/security/perf/debug/report)
   ↓
 FUNCTION-SPECIFIC ANALYSIS (see detailed workflows below)
+  ↓
+VERIFICATION (Against success criteria from PHASE 0)
+  ├─ Check criteria 1 → ✓ or ❌
+  ├─ Check criteria 2 → ✓ or ❌
+  └─ Check criteria 3 → ✓ or ❌
   ↓
 OUTPUT:
   ├─ Findings (severity-ranked)

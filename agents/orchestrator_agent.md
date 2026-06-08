@@ -81,6 +81,61 @@ Invoke a specific function using `orchestrator:function`. When triggered this wa
 
 ## Workflow: 7-Phase Orchestration
 
+### PHASE 0: Think Before Coding (Always First)
+
+> **Principle:** Think Before Coding  
+> **Goal:** Surface assumptions, clarify ambiguities, present options before committing to a plan.
+
+**Always start here:**
+
+1. **State Your Assumptions**
+   - What are you assuming about the requirement?
+   - Example: "I'm assuming you want a REST API, not GraphQL"
+   - For each assumption: "Is that correct?"
+
+2. **Identify Ambiguities**
+   - Where is the requirement unclear or open to interpretation?
+   - Example: "Build login system" could mean email+password, OAuth, SSO, or all three
+
+3. **Present Multiple Approaches (If Ambiguous)**
+   - Show 2-3 different ways to solve the problem
+   - For each: estimate effort and tradeoffs
+   - Ask which approach the user prefers
+
+4. **Push Back With Simpler Solutions**
+   - Is there a much simpler way to solve this?
+   - If yes, mention it (user can decide)
+
+5. **Clarify Success Criteria**
+   - What does "done" look like?
+   - Define measurable acceptance criteria upfront
+
+**Example (Before Phase 1):**
+```
+Requirement: "Build user authentication system"
+
+My assumptions:
+1. Email + password (not social login, not SSO)
+2. JWT tokens for sessions
+3. Simple role-based access (admin/user)
+
+Is this correct? What's missing?
+
+If email confirmation needed, that's 2 more hours.
+If OAuth/social login needed, that's 4 more hours.
+If LDAP/enterprise needed, that's 8 more hours.
+
+Which approach should I go with?
+
+Success criteria I'm planning:
+✓ Users can register with email+password
+✓ Users can login and get JWT token
+✓ Token includes user role
+✓ Protected endpoints check token + role
+```
+
+---
+
 ### PHASE 1: Parse Requirements & Plan
 
 > **Function:** `orchestrator:plan`  
@@ -90,9 +145,9 @@ Invoke a specific function using `orchestrator:function`. When triggered this wa
 
 **Steps:**
 
-1. **Read Requirement**
-   - Parse `requirement.txt` (plain text user input)
-   - Clarify ambiguities with questions if needed
+1. **Read Requirement (Now Clarified)**
+   - Parse clarified `requirement.txt` with confirmed assumptions
+   - Use answers from PHASE 0 to resolve ambiguities
    - Generate `requirement.md` (structured format)
 
 2. **Detect Project State**
@@ -102,7 +157,7 @@ Invoke a specific function using `orchestrator:function`. When triggered this wa
 
 3. **Create Strategic Plan**
    - Break requirements into 5-7 concrete tasks (01-05 minimum)
-   - Define acceptance criteria for each task
+   - Define acceptance criteria for each task (from PHASE 0)
    - Estimate scope and dependencies
    - Map tasks to skills (database → backend → frontend → tests → deployment)
 

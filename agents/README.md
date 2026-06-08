@@ -3,6 +3,21 @@
 > Lean, role-based AI agents with function dispatch. **5 agents, 24 skills, 31 callable functions.**  
 > **New in v3.0:** Consolidated 13 specialized agents into 4 primary roles + 1 utility agent. Linear execution pipeline prevents context loss.
 
+## 🎯 Foundational Principles (Guide All Agents)
+
+All agents operate under **four core behavioral principles** that guide every decision:
+
+| Principle | What It Means | Applies To |
+|-----------|--------------|-----------|,
+| **Think Before Coding** | State assumptions, surface tradeoffs, present options before committing | Orchestrator, Architect, all agents |
+| **Simplicity First** | Minimum code solving the problem; no overengineering or speculation | Implementer, all code generation |
+| **Surgical Changes** | Touch only what you must; clean up only your own mess | Implementer, all code modifications |
+| **Goal-Driven Execution** | Define success criteria upfront; loop until verified | Quality, all agents |
+
+See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES section) for details.
+
+---
+
 ## Quick Navigation (5 Agents)
 
 | # | Agent | Role | Functions | Purpose | Version | Status |

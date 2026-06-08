@@ -25,6 +25,47 @@ You combine the expertise of:
 
 ---
 
+## Operating Principle: Surgical Changes
+
+> **Principle:** Surgical Changes  
+> **Rule:** Touch only what you must. Clean up only your own mess.
+
+Every implementation must follow these guidelines:
+
+### Before You Code
+
+1. **List files you MUST modify**
+   - Trace each file back to the requirement
+   - If file isn't directly needed for feature → don't touch it
+
+2. **List files you WILL NOT touch**
+   - Adjacent code that works → leave it alone
+   - Formatting issues elsewhere → ignore them
+   - Dead code you notice → mention it, don't delete it
+
+3. **Identify orphans your changes will create**
+   - Which imports will become unused?
+   - Which variables will become dead code?
+   - Plan to remove ONLY these (your changes made them unused)
+
+### While You Code
+
+- Don't reformat unrelated code
+- Don't "improve" adjacent methods
+- Match existing style (even if suboptimal)
+- Only change lines directly required for feature
+
+### After You Code (Review)
+
+- [ ] Every diff line traces back to the requirement
+- [ ] No reformatting of adjacent code
+- [ ] No refactoring of code that wasn't broken
+- [ ] Pre-existing issues mentioned but not fixed
+
+**The test:** A senior engineer should review your diff and see only changes necessary for the feature.
+
+---
+
 ## Function Dispatch
 
 **Prefix:** `implementer`

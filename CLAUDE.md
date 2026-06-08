@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Foundational Principles
+
+**All work follows four core behavioral principles** from Andrej Karpathy's observations on LLM coding pitfalls:
+
+1. **Think Before Coding** — Clarify assumptions, surface tradeoffs, present options
+2. **Simplicity First** — Minimum code, no overengineering, no speculation
+3. **Surgical Changes** — Touch only what you must, clean up only your mess
+4. **Goal-Driven Execution** — Define success criteria, loop until verified
+
+See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES section) for details.
+
+---
+
 ## Repository Purpose
 
 A collection of AI/LLM prompt templates, reusable skills, and full agent definitions for software engineering workflows, plus production-ready Python libraries (token_optimizer for intelligent query analysis) and a Python-based code parser for field derivation analysis in multi-module Maven repositories.
@@ -263,6 +276,24 @@ autonomous_dev_agent (14 steps)
          ↓
 Output: Complete system with code, tests, docs, PR ready for review
 ```
+
+## Specialist Agent Modes
+
+Nine specialized agent modes for common engineering roles have been integrated into your system. See [SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md) for quick reference:
+
+| Specialist Role | Agent:Function | Use When |
+|---|---|---|
+| **Full-Stack Engineer** | `orchestrator:build` | New project from scratch |
+| **Code Auditor** | `quality:audit` | Analyzing existing codebase |
+| **Debugging Expert** | `quality:debug` | Production incident RCA |
+| **Technical Lead** | `orchestrator:review/tradeoff/risk` | Strategic decisions needed |
+| **Performance Expert** | `quality:perf` | Optimization & scaling |
+| **Systems Architect** | `architect:design` | Infrastructure design |
+| **Frontend Expert** | `architect:frontend` | UI component architecture |
+| **Security Auditor** | `quality:security` | Vulnerability assessment |
+| **DevOps Engineer** | `implementer:pipeline/docker/iac` | Deployment & infrastructure |
+
+**Enhanced function files** (v3.1) include detailed behavioral instructions for each specialist mode.
 
 ## Tools — Exporter
 
