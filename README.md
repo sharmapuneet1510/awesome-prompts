@@ -5,9 +5,9 @@
 <div align="center">
 
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge&logo=checkmarx)](https://github.com/sharmapuneet1510/awesome-prompts)
-[![Version](https://img.shields.io/badge/Version-3.0-blueviolet?style=for-the-badge&logo=semanticrelease)](https://github.com/sharmapuneet1510/awesome-prompts/releases)
+[![Version](https://img.shields.io/badge/Version-3.1-blueviolet?style=for-the-badge&logo=semanticrelease)](https://github.com/sharmapuneet1510/awesome-prompts/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge&logo=opensourceinitiative)](LICENSE)
-[![Updated](https://img.shields.io/badge/Updated-June%202026-darkblue?style=for-the-badge&logo=calendar)](https://github.com/sharmapuneet1510/awesome-prompts/commits/main)
+[![Updated](https://img.shields.io/badge/Updated-June%208%202026-darkblue?style=for-the-badge&logo=calendar)](https://github.com/sharmapuneet1510/awesome-prompts/commits/main)
 [![Platform](https://img.shields.io/badge/Platforms-9+-ff69b4?style=for-the-badge&logo=electron)](docs/)
 
 **Compatible with:** Claude Code • GitHub Copilot • Cursor • Windsurf • VS Code • Gemini CLI • Continue.dev • OpenAI • Aider
@@ -16,9 +16,21 @@
 
 ---
 
+## 🌟 What's New in v3.1 (June 2026)
+
+### ✨ Latest Features
+
+- ✅ **Foundational Behavioral Principles** — All agents now operate under 4 core principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution)
+- ✅ **9 Specialist Agent Modes** — Invoke agents as Full-Stack Engineer, Code Auditor, Debugging Expert, Technical Lead, Performance Expert, etc.
+- ✅ **28 Real-World Function Examples** — Complete examples for every agent function (see [FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md))
+- ✅ **Professional Enhancement** — Removed external branding, pure professional guidance system
+- ✅ **v3.1 Quality Functions** — Enhanced debug, perf, security functions with detailed workflows
+
+---
+
 ## 🚀 Quick Overview
 
-**Awesome Prompts v3.0** is a comprehensive, **production-ready system** of **5 role-based AI agents** and **24 reusable skills** that transform requirements into enterprise-grade code with:
+**Awesome Prompts v3.1** is a comprehensive, **production-ready system** of **5 role-based AI agents** and **24 reusable skills** that transform requirements into enterprise-grade code with:
 
 | Feature | Details |
 |---------|---------|
@@ -83,7 +95,82 @@ ba:create path=./requirements.txt                  # Parse text → JIRA + BDD H
 
 ---
 
-## 📂 Repository Structure (v3.0 — Fully Consolidated)
+## 🎯 Foundational Principles (v3.1)
+
+**All agents operate under 4 core behavioral principles** derived from Andrej Karpathy's observations on LLM coding pitfalls:
+
+### 1. Think Before Coding
+**State assumptions, surface tradeoffs, present options before committing.**
+
+- Ask clarifying questions upfront (PHASE 0 in orchestrator:plan)
+- Present multiple interpretations for ambiguous requirements
+- Push back with simpler approaches
+- Stop and ask when confused
+
+### 2. Simplicity First
+**Minimum code solving the problem. No overengineering or speculation.**
+
+- No features beyond what was asked
+- No abstractions for single-use code
+- If 200 lines could be 50, rewrite to 50
+
+### 3. Surgical Changes
+**Touch only what you must. Clean up only your own mess.**
+
+- Pre-implementation checklist: "List files you must modify"
+- Post-implementation verification: "Every changed line traces to requirement"
+- Don't improve adjacent code, only your own
+
+### 4. Goal-Driven Execution
+**Define success criteria upfront. Loop until verified.**
+
+- Transform tasks into verifiable goals
+- Test-first approach
+- Verification loops built into all workflows
+
+**See [CLAUDE.md](CLAUDE.md) and `instructions/master_instruction_set.md` for details.**
+
+---
+
+## 🎭 9 Specialist Agent Modes (v3.1)
+
+Invoke agents as specialized roles suited to your task:
+
+| Mode | Agent | Command | Use When |
+|------|-------|---------|----------|
+| **Full-Stack Engineer** | orchestrator:build | Build complete systems from scratch |
+| **Code Auditor** | quality:audit | Analyze existing codebases for tech debt |
+| **Debugging Expert** | quality:debug | Fix production bugs with RCA |
+| **Technical Lead** | orchestrator:review/tradeoff/risk | Make architectural decisions |
+| **Performance Expert** | quality:perf | Optimize slow applications |
+| **Systems Architect** | architect:design | Design new system topology |
+| **Frontend Expert** | architect:frontend | Build UI component systems |
+| **Security Auditor** | quality:security | Find vulnerabilities (OWASP) |
+| **DevOps Engineer** | implementer:pipeline/docker/iac | Setup CI/CD + infrastructure |
+
+**See [SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md) for commands and examples.**
+
+---
+
+## 📖 Comprehensive Function Examples (v3.1)
+
+**[FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md)** contains real-world examples for all 28 functions:
+
+- **Orchestrator** (7 functions) — plan, build, context, review, tradeoff, risk, pr
+- **Architect** (6 functions) — design, refactor, frontend, schema, api, a11y  
+- **Implementer** (7 functions) — build, test, doc, pipeline, docker, iac, full
+- **Quality** (8 functions) — review, audit, security, perf, debug, report, batch-review, diagnose
+- **Business Analyst** (2 functions) — report, parse
+
+Each example shows:
+✓ Real-world scenario (e.g., MVP, chat system, monolith → microservices)
+✓ Expected outputs (code, configs, diagrams)
+✓ Parameters explained
+✓ When to use
+
+---
+
+## 📂 Repository Structure (v3.1 — Fully Consolidated)
 
 ```
 awesome-prompts/                       Reorganized June 2026 for clarity & scalability
@@ -931,6 +1018,6 @@ See [LICENSE](LICENSE) for details.
 
 **Made with ❤️ by [Puneet Sharma](https://github.com/sharmapuneet1510)**
 
-Last updated: May 25, 2026 | v4.2.0
+Last updated: June 8, 2026 | v3.1.0
 
 </div>
