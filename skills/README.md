@@ -1,8 +1,8 @@
-# 🛠️ Skills Directory (v2.0 — Consolidated)
+# 🛠️ Skills Directory (v2.1 — Consolidated)
 
-> Reusable, tech-specific implementation modules used by agents. 23 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 25 skills, zero orphans.
 
-## Quick Navigation (23 Skills)
+## Quick Navigation (25 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -30,6 +30,7 @@
 | 22 | [JIRA HTML Report](jira_html_report_skill.md) | Parse JIRA, generate HTML backlog | Language-agnostic | Business Analyst |
 | 23 | [BA Create](ba_create_skill.md) | Parse plain-text requirements → JIRA JSON + BDD HTML cards | Language-agnostic | Business Analyst |
 | 24 | [Multi-Review HTML](multi_review_html_skill.md) | Batch PR review HTML with sidebar tabs + summary dashboard | Language-agnostic | Quality Agent |
+| 25 | [JIRA Incremental Spec Generator](jira_incremental_spec_generator_skill.md) | Read JIRA incrementally, generate comprehensive application spec (book format) | Language-agnostic | Orchestrator, Architect |
 
 ---
 
@@ -61,6 +62,7 @@
 ### Business Analyst Skills (Backlog & Requirements)
 - `jira_html_report_skill` — Parse JIRA exports, generate HTML backlog reports
 - `ba_create_skill` — Parse plain-text requirements, generate JIRA JSON + BDD HTML cards
+- `jira_incremental_spec_generator_skill` — Read JIRA incrementally by prefix, generate comprehensive application specification in book format
 
 ### Quality Agent Skills (Batch Review)
 - `multi_review_html_skill` — Batch PR review HTML with sidebar tabs, summary dashboard, export options
