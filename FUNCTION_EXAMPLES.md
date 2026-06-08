@@ -1,16 +1,63 @@
 ---
 title: Comprehensive Function Examples — All Agents
-version: 1.0
+version: 2.0
 date: 2026-06-08
+description: 1,200+ line guide with real-world examples for all 30 functions across 5 agents
 ---
 
-# Function Examples — All 5 Agents + 28 Functions
+# Function Examples — All 5 Agents + 30 Functions
 
-Real-world usage examples for every agent and function.
+Real-world usage examples for every agent and function. **See [FUNCTION_QUICK_REFERENCE.md](FUNCTION_QUICK_REFERENCE.md) for one-page cheat sheets.**
+
+---
+
+## 📋 Table of Contents (Quick Jump)
+
+### By Agent
+- [🎯 Orchestrator (7 functions)](#orchestrator-agent-7-functions) — plan, build, context, review, tradeoff, risk, pr
+- [🏗️ Architect (6 functions)](#architect-agent-6-functions) — design, refactor, schema, api, frontend, a11y
+- [💻 Implementer (7 functions)](#implementer-agent-7-functions) — build, test, doc, pipeline, docker, iac, full
+- [✅ Quality (8 functions)](#quality-agent-8-functions) — review, audit, security, perf, debug, report, batch-review, diagnose
+- [📊 Business Analyst (2 functions)](#business-analyst-agent-2-functions) — report, parse
+
+### By Use Case
+- [Starting a project](#starting-a-project) → orchestrator:plan + architect:design
+- [Build production system](#building-a-complete-system) → orchestrator:build + implementer:full
+- [Code review & validation](#code-review--validation) → quality:review + quality:audit
+- [Fix bugs & optimize](#debugging--performance) → quality:debug + quality:perf
+- [Design decisions](#architectural-decisions) → orchestrator:tradeoff + orchestrator:review
 
 ---
 
 ## 🎯 Orchestrator Agent (7 Functions)
+
+**Role:** Strategy & Orchestration | **Tech:** Language-agnostic | **Context:** Full-stack generation, technical leadership
+
+### Quick Commands (Copy-Paste)
+
+```bash
+orchestrator:plan "Build user authentication system"
+orchestrator:build path=./requirements.md
+orchestrator:context path=./existing-project
+orchestrator:review path=./system-design.md
+orchestrator:tradeoff goal="Handle 1M users"
+orchestrator:risk path=./architecture
+orchestrator:pr title="feat: user auth MVP"
+```
+
+### Function Map (Orchestrator)
+
+| Function | Use When | Time | Output |
+|----------|----------|------|--------|
+| **plan** | Starting new project, need strategic direction | 5-10 min | Task breakdown, clarified requirements |
+| **build** | Need full-stack MVP, end-to-end generation | 1-2 hours | Complete system (code + tests + docs) |
+| **context** | Joining team, need project overview | 10-15 min | architecture.md, tech-stack.md, design.html |
+| **review** | Before implementation, need senior perspective | 15-20 min | Design review with risks & challenges |
+| **tradeoff** | Choosing between architecture patterns | 10-15 min | 3 approaches with effort/complexity |
+| **risk** | Production readiness check | 15-20 min | Risk assessment with mitigations |
+| **pr** | Ready to submit for review | 5 min | GitHub PR with full context |
+
+---
 
 ### orchestrator:plan
 **What it does:** Parse requirements, clarify assumptions, create task breakdown
@@ -190,6 +237,32 @@ GitHub PR with:
 ---
 
 ## 🏗️ Architect Agent (6 Functions)
+
+**Role:** Architecture & Design | **Tech:** Language-agnostic | **Context:** System topology, API contracts, DB schema, UI architecture
+
+### Quick Commands (Copy-Paste)
+
+```bash
+architect:design requirements="Real-time chat for 100K users"
+architect:refactor path=./monolith goal="Split into microservices"
+architect:schema requirements="Users, products, orders" db=postgresql
+architect:api requirements="List products, create order, get user"
+architect:frontend requirements="Product card with image, price, rating"
+architect:a11y path=./product-page.tsx
+```
+
+### Function Map (Architect)
+
+| Function | Use When | Time | Output |
+|----------|----------|------|--------|
+| **design** | Designing system from scratch | 1-2 hours | C4 diagram, API spec, DB schema, deployment |
+| **refactor** | Modernizing legacy system | 2-3 hours | Migration guide, rollback strategies, phased plan |
+| **schema** | Database design from scratch | 30-45 min | SQL DDL, indexes, migrations |
+| **api** | REST API contract design | 30-45 min | OpenAPI 3.0 spec with examples |
+| **frontend** | React component architecture | 1-2 hours | Component design, TypeScript interfaces |
+| **a11y** | Accessibility audit (WCAG 2.1 AA) | 15-30 min | Audit findings, remediation steps |
+
+---
 
 ### architect:design
 **What it does:** Greenfield system design (C4, API contracts, schema, caching, deployment)
@@ -428,6 +501,34 @@ Recommendations:
 ---
 
 ## 💻 Implementer Agent (7 Functions)
+
+**Role:** Implementation & Execution | **Tech:** Auto-detects (Java/Python/React/Node) | **Context:** Code generation, testing, CI/CD, deployment
+
+### Quick Commands (Copy-Paste)
+
+```bash
+implementer:build path=./api-spec.md
+implementer:test path=./services/user_service.py
+implementer:doc path=./src
+implementer:pipeline path=./ platform=github-actions
+implementer:docker path=./src
+implementer:iac path=./app type=kubernetes
+implementer:full path=./requirements.md
+```
+
+### Function Map (Implementer)
+
+| Function | Use When | Time | Output | Key Benefit |
+|----------|----------|------|--------|-------------|
+| **build** | Need to write code from spec | 30-60 min | Production-ready code (auto-detects stack) | Models, routes, services |
+| **test** | Need comprehensive tests | 30-45 min | Test suite with 95%+ coverage | Unit + integration + edge cases |
+| **doc** | Need auto-generated docs | 20-30 min | JSDoc/docstrings + README + API guide | Inline + architecture + guides |
+| **pipeline** | Setting up CI/CD | 15-20 min | GitHub Actions / GitLab CI / Jenkins | Tests, linting, coverage, deploy |
+| **docker** | Containerizing application | 10-15 min | Dockerfile + docker-compose.yml | Multi-stage build, health checks |
+| **iac** | Deploying to cloud | 20-30 min | K8s / Terraform / CloudFormation | deployment.yaml, service.yaml |
+| **full** | Complete end-to-end implementation | 2-3 hours | Code + tests + docs + CI/CD + Docker + K8s | NO context loss between phases! |
+
+---
 
 ### implementer:build
 **What it does:** Generate production-ready code (auto-detects tech stack)
@@ -825,6 +926,36 @@ implementer:full path=./requirements.md
 
 ## ✅ Quality Agent (8 Functions)
 
+**Role:** QA, Security & Performance | **Tech:** Language-agnostic | **Context:** PR validation, security audit, performance optimization, debugging
+
+### Quick Commands (Copy-Paste)
+
+```bash
+quality:review pr=456 ticket=PROJ-123
+quality:audit path=./backend
+quality:security path=./app compliance=SOC2
+quality:perf path=./src baseline="500ms"
+quality:debug stack_trace="NullPointerException at line 42" path=./src
+quality:report path=./src comprehensive=true
+quality:batch-review from=./reviews.json output=./report.html
+quality:diagnose problem="Orders endpoint taking 10 seconds"
+```
+
+### Function Map (Quality)
+
+| Function | Use When | Time | Output | Score Range |
+|----------|----------|------|--------|-------------|
+| **review** | Reviewing pull requests | 20-30 min | 6-phase report with A-F grade | A-F scorecard |
+| **audit** | Auditing existing codebase | 1-2 hours | Architecture analysis, tech debt roadmap | Health score |
+| **security** | Security audit / compliance | 1-2 hours | Vulnerability report with severity | Critical/High/Medium |
+| **perf** | Optimizing slow application | 1-2 hours | Bottleneck analysis, optimization roadmap | Before/after metrics |
+| **debug** | Fixing production bugs | 30-45 min | 5-phase RCA with fixed code + tests | Root cause identified |
+| **report** | Complete quality synthesis | 2-3 hours | Unified report (all dimensions) | Comprehensive assessment |
+| **batch-review** | Reviewing multiple PRs | 5 min per PR | Single HTML report with tabs + summary | Comparative analysis |
+| **diagnose** | Conversational problem solving | 15-20 min | RCA + proposed solutions with examples | Actionable fixes |
+
+---
+
 ### quality:review
 **What it does:** PR validation (requirements, code quality, tests, docs)
 
@@ -1114,6 +1245,24 @@ Expected result: 10sec → 200ms
 
 ## 📊 Business Analyst Agent (2 Functions)
 
+**Role:** Utility — Backlog Management | **Tech:** JIRA, JSON, CSV | **Context:** Backlog parsing, visualization, reporting
+
+### Quick Commands (Copy-Paste)
+
+```bash
+ba:report path=./jira-export.json project=MYAPP
+ba:parse path=./jira-export.json format=json
+```
+
+### Function Map (Business Analyst)
+
+| Function | Use When | Time | Output |
+|----------|----------|------|--------|
+| **report** | Analyzing JIRA backlog | 5-10 min | Interactive HTML report with filters, charts |
+| **parse** | Need machine-readable JIRA data | 2-3 min | Structured JSON with stories, points, status |
+
+---
+
 ### ba:report
 **What it does:** Parse JIRA backlog, generate HTML report
 
@@ -1162,65 +1311,168 @@ ba:parse path=./jira-export.json format=json
 
 ---
 
-## 🎯 Quick Reference by Use Case
+---
 
-### "I want to build a complete system"
+## 📌 Use Case Index
+
+### Starting a Project
 ```bash
+# 1. Clarify requirements + create task breakdown
+orchestrator:plan "Build e-commerce platform with..."
+
+# 2. Design system topology + API contracts + schema
+architect:design requirements="..."
+
+# 3. Generate complete system in one pass
+implementer:full path=./requirements.md
+```
+
+### Building a Complete System
+```bash
+# End-to-end generation with full orchestration
 orchestrator:build path=./requirements.md
+# Output: Code + tests + docs + CI/CD pipeline
 ```
 
-### "I need to understand an existing project"
+### Code Review & Validation
 ```bash
-orchestrator:context path=./project
+# Review PR against requirements
+quality:review pr=123 ticket=PROJ-456
+
+# Full codebase audit (architecture, SOLID, tech debt)
+quality:audit path=./backend
+
+# Security audit with compliance checking
+quality:security path=./app compliance=SOC2
+
+# Single consolidated report
+quality:report path=./src comprehensive=true
 ```
 
-### "Design a system for me"
+### Debugging & Performance
 ```bash
-architect:design requirements="Your requirements"
+# Fix production bugs with RCA
+quality:debug stack_trace="error" path=./src
+
+# Find and fix performance bottlenecks
+quality:perf path=./src baseline="500ms" scale="1M users"
+
+# Conversational problem solving
+quality:diagnose problem="Orders endpoint slow"
 ```
 
-### "Generate production-ready code"
+### Architectural Decisions
 ```bash
-implementer:full path=./design.md
+# Compare 3 approaches with tradeoffs
+orchestrator:tradeoff goal="Handle 1M concurrent users"
+
+# Strategic review with risks + recommendations
+orchestrator:review path=./system-design.md
+
+# Risk assessment with failure modes
+orchestrator:risk path=./architecture
 ```
 
-### "Fix a production bug"
+### Existing Project Analysis
 ```bash
-quality:debug stack_trace="error message"
+# Build complete project understanding
+orchestrator:context path=./existing-project
+# Output: architecture.md, tech-stack.md, design.html
 ```
 
-### "Optimize my slow app"
+### Database & API Design
 ```bash
-quality:perf path=./src baseline="current metrics"
+# Design database schema from scratch
+architect:schema requirements="Users, products, orders" db=postgresql
+
+# Design REST API contract
+architect:api requirements="List products, create order, get user"
 ```
 
-### "Find security vulnerabilities"
+### Component Design
 ```bash
-quality:security path=./src
+# React component architecture
+architect:frontend requirements="Product card with image, price, rating"
+
+# Accessibility audit (WCAG 2.1 AA)
+architect:a11y path=./product-page.tsx
 ```
 
-### "Review my pull request"
+### Brownfield Refactoring
 ```bash
-quality:review pr=123
+# Plan migration from monolith to microservices
+architect:refactor path=./monolith goal="Split into microservices"
+# Output: Current state, target design, phased roadmap
 ```
 
-### "Audit my codebase"
+### Backlog Management
 ```bash
-quality:audit path=./src
-```
+# Visualize JIRA backlog with charts + filtering
+ba:report path=./jira-export.json project=MYAPP
 
-### "Make architectural decisions"
-```bash
-orchestrator:tradeoff goal="your goal"
+# Extract structured data from JIRA
+ba:parse path=./jira-export.json format=json
 ```
 
 ---
 
-**Each function includes:**
-- ✓ Clear examples (real-world)
-- ✓ Expected outputs
-- ✓ Parameters explained
-- ✓ When to use
-- ✓ Pro tips
+## 🚀 Common Workflows
 
-See individual agent files for detailed documentation of each function.
+### Workflow 1: MVP Launch (4-6 hours)
+```
+orchestrator:plan
+    ↓
+architect:design
+    ↓
+implementer:full (code + tests + docs + CI/CD)
+    ↓
+quality:review
+    ↓
+orchestrator:pr
+```
+
+### Workflow 2: Code Review Sprint
+```
+quality:review pr=123 ticket=PROJ-456
+quality:review pr=124 ticket=PROJ-457
+quality:batch-review from=./reviews.json
+```
+
+### Workflow 3: Legacy System Modernization
+```
+orchestrator:context path=./legacy
+quality:audit path=./src
+quality:security path=./src
+architect:refactor path=./legacy goal="..."
+```
+
+### Workflow 4: Production Incident
+```
+quality:debug stack_trace="error"
+quality:diagnose problem="description"
+quality:perf path=./affected-module
+implementer:test path=./fix (verify fix)
+```
+
+---
+
+## ✨ Pro Tips
+
+1. **Always start with PHASE 0** — orchestrator:plan asks clarifying questions first (no assumptions)
+2. **Use implementer:full** — Builds code + tests + docs in one context with zero state loss
+3. **Review against requirements** — quality:review validates against JIRA acceptance criteria
+4. **Chain functions** — orchestrator:plan → architect:design → implementer:full → quality:review → orchestrator:pr
+5. **Batch reviews** — quality:batch-review for multiple PRs (faster than individual reviews)
+6. **Quick reference** — See [FUNCTION_QUICK_REFERENCE.md](FUNCTION_QUICK_REFERENCE.md) for one-page cheat sheets
+7. **Tech stack auto-detection** — implementer:build detects Python/Java/React automatically
+8. **Comprehensive reports** — quality:report combines review + audit + security + perf + debug
+
+---
+
+## 📚 See Also
+
+- **[FUNCTION_QUICK_REFERENCE.md](FUNCTION_QUICK_REFERENCE.md)** — One-page cheat sheets for all 30 functions
+- **[agents/README.md](agents/README.md)** — Agent descriptions and dispatch syntax
+- **[SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md)** — 9 specialist role-based modes (Full-Stack Engineer, Code Auditor, etc.)
+- **[skills/README.md](skills/README.md)** — 25 reusable implementation skills
+- **[instructions/master_instruction_set.md](instructions/master_instruction_set.md)** — Foundational principles and non-negotiable standards
