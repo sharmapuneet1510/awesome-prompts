@@ -78,6 +78,21 @@ Examples:
 ```
 
 **See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 31 callable functions with detailed inputs, outputs, and examples.**
+---
+
+## 📖 Complete Examples Guide
+
+**See [FUNCTION_EXAMPLES.md](../FUNCTION_EXAMPLES.md) for real-world usage examples of all 28 functions:**
+
+- **Orchestrator** (7 functions) — plan, build, context, review, tradeoff, risk, pr
+- **Architect** (6 functions) — design, refactor, frontend, schema, api, a11y
+- **Implementer** (7 functions) — build, test, doc, pipeline, docker, iac, full
+- **Quality** (8 functions) — review, audit, security, perf, debug, report, batch-review, diagnose
+- **Business Analyst** (2 functions) — report, parse
+
+Each function includes:
+✓ Real-world examples | ✓ Parameters explained | ✓ Expected outputs | ✓ When to use
+
 
 ---
 
