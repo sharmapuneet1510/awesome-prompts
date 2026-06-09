@@ -1,0 +1,49 @@
+graph TB
+    subgraph Agents["5 Core Agents (28 functions)"]
+        OR["Orchestrator<br/>(9 functions)<br/>ideate, solve, plan, build,<br/>context, pr, review,<br/>tradeoff, risk"]
+        AR["Architect<br/>(6 functions)<br/>design, refactor, frontend,<br/>schema, api, a11y"]
+        IM["Implementer<br/>(7 functions)<br/>build, test, doc, pipeline,<br/>docker, iac, full"]
+        QA["Quality<br/>(5 functions)<br/>review, audit, security,<br/>perf, debug, report"]
+        BA["Business Analyst<br/>(2 functions)<br/>report, parse"]
+    end
+
+    subgraph Tools["Python Tools (15+)"]
+        T1["exporter.py"]
+        T2["context_builder.py"]
+        T3["requirement_parser.py"]
+        T4["code_review_generator.py"]
+        T5["task_generator.py"]
+        T6["+ 10 more tools"]
+    end
+
+    subgraph Skills["Reusable Skills (22)"]
+        S1["java_advanced_skill.md"]
+        S2["python_advanced_skill.md"]
+        S3["react_advanced_skill.md"]
+        S4["+ 19 more skills"]
+    end
+
+    subgraph Libraries["Python Libraries (2)"]
+        LIB1["token_optimizer/"]
+        LIB2["parser/"]
+    end
+
+    Req["Requirement Input"]
+    Output["Deliverables<br/>(code, tests, docs, diagrams)"]
+
+    Req -->|input| OR
+    OR -->|invokes| AR
+    AR -->|invokes| IM
+    IM -->|uses| Skills
+    IM -->|uses| Libraries
+    QA -.->|reviews| OR
+    Tools -.->|supports| OR
+    Tools -.->|supports| IM
+    Skills -->|generates| Output
+    Libraries -->|generates| Output
+
+    style OR fill:#e1f5ff
+    style AR fill:#e8f5e9
+    style IM fill:#fff3e0
+    style QA fill:#fce4ec
+    style BA fill:#f3e5f5
