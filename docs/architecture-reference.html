@@ -337,6 +337,58 @@
             color: #999;
         }
 
+        .architecture-section {
+            margin-bottom: 30px;
+        }
+
+        .architecture-section h3 {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            margin-top: 30px;
+            font-weight: 700;
+        }
+
+        .architecture-section h3:first-child {
+            margin-top: 0;
+        }
+
+        .architecture-diagram {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.4;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+        }
+
+        .architecture-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .legend-item {
+            border: 2px solid;
+            padding: 16px;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+
+        .legend-item-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .legend-item-description {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.5;
+        }
+
         @media (max-width: 768px) {
             header h1 {
                 font-size: 1.8em;
@@ -389,15 +441,15 @@
     <div class="container">
         <!-- HEADER -->
         <header>
-            <h1>📚 Function & Tools Reference</h1>
-            <p>Complete documentation for 28 agent functions and 25 Python tools</p>
+            <h1>📚 System Reference & Architecture</h1>
+            <p>Complete documentation for 5 agents, 28 functions, 26 skills, and 25 tools</p>
         </header>
 
         <!-- TABS -->
         <div class="tabs-wrapper">
             <button class="tab-button active" onclick="switchTab('agents')">Agents (28 Functions)</button>
             <button class="tab-button" onclick="switchTab('tools')">Tools (25)</button>
-            <button class="tab-button" onclick="switchTab('skills')">Skills (22)</button>
+            <button class="tab-button" onclick="switchTab('skills')">Skills (26)</button>
             <button class="tab-button" onclick="switchTab('architecture')">Architecture</button>
         </div>
 
@@ -604,24 +656,264 @@
 
         <!-- SKILLS TAB -->
         <div id="skills" class="tab-content">
-            <div class="placeholder">
-                <h3>📚 Skills Documentation Coming in Phase 3</h3>
-                <p>Complete documentation for 22 reusable skills will be added in Phase 3, Task 12.</p>
-                <p style="margin-top: 20px; color: #666;">Skills include: Code Documentation, Code Review, Code Health, Code Formatting, Database, Backend, Frontend, Testing, Context Builder, and advanced language-specific skills (Java, Python, React, MSSQL, Spring, OOP, Error Handling, Apache Camel, Apache Pulsar, OpenTelemetry, Logger, Lombok, JIRA Report).</p>
+            <div class="search-box">
+                <input type="text" id="skillSearch" placeholder="Search skills by name, category, or tech stack..." onkeyup="filterSkills()">
             </div>
+
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="number">26</div>
+                    <div class="label">Skills</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">8</div>
+                    <div class="label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">15+</div>
+                    <div class="label">Tech Stacks</div>
+                </div>
+            </div>
+
+            <table class="tools-table" id="skillsTable">
+                <thead>
+                    <tr>
+                        <th>Skill Name</th>
+                        <th>Category</th>
+                        <th>Tech Stack</th>
+                        <th>Purpose</th>
+                        <th>When to Use</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="skillsBody">
+                    <!-- Skills will be populated by JavaScript -->
+                </tbody>
+            </table>
         </div>
 
         <!-- ARCHITECTURE TAB -->
         <div id="architecture" class="tab-content">
-            <div class="placeholder">
-                <h3>🏗️ Architecture Diagram Coming in Phase 3</h3>
-                <p>Interactive architecture visualization will be added in Phase 3, Task 13.</p>
-                <p style="margin-top: 20px; color: #666;">Will include: C4 system diagrams, deployment topology, component relationships, data flow, and infrastructure overview.</p>
+            <div style="padding: 20px 0;">
+                <h2 style="margin-bottom: 20px; color: #333;">System Architecture Overview</h2>
+
+                <div class="stats-summary">
+                    <div class="stat-card">
+                        <div class="number">5</div>
+                        <div class="label">Agents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">28</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">26</div>
+                        <div class="label">Skills</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">25</div>
+                        <div class="label">Tools</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 20px; color: #333;">Architecture Diagram</h3>
+                <pre style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; font-size: 0.9em; line-height: 1.4;">
+AWESOME PROMPTS v3.1 — ROLE-BASED ARCHITECTURE
+================================================
+
+User Input (Requirement)
+         ↓
+    ┌────────────────────────────────────────────────────────┐
+    │           ORCHESTRATOR AGENT (9 Functions)             │
+    │  🎼 Strategy & Orchestration                            │
+    │  ideate → solve → plan → build → context → pr → review  │
+    │         tradeoff → risk                                 │
+    └────────────────┬─────────────────────────────────────────┘
+         ↓
+    ┌────────────────────────────────────────────────────────┐
+    │            ARCHITECT AGENT (6 Functions)               │
+    │  🏛️ Architecture & Design                              │
+    │  design → refactor → frontend → schema → api → a11y     │
+    └────────────────┬─────────────────────────────────────────┘
+         ↓
+    ┌────────────────────────────────────────────────────────┐
+    │          IMPLEMENTER AGENT (7 Functions)               │
+    │  ⚙️ Implementation & Execution                          │
+    │  build → test → doc → pipeline → docker → iac → full    │
+    │         (full = build + test + doc in same context)     │
+    └────────────────┬─────────────────────────────────────────┘
+         ↓
+    ┌────────────────────────────────────────────────────────┐
+    │  Applied Skills (26) — Language & Domain Specific      │
+    │  Code Documentation • Code Review • Code Health        │
+    │  Database • Backend • Frontend • Testing • OOP          │
+    │  Java • Python • React • Spring • MSSQL • Error Handler │
+    │  Logger • Lombok • Apache Camel • Pulsar • JIRA        │
+    │  OpenTelemetry • Context Builder • BA Create           │
+    │  Multi Review HTML                                     │
+    └────────────────┬─────────────────────────────────────────┘
+         ↓
+    ┌────────────────────────────────────────────────────────┐
+    │           QUALITY AGENT (6 Functions)                  │
+    │  ✅ QA, Security & Performance                          │
+    │  review → audit → security → perf → debug → report      │
+    └────────────────┬─────────────────────────────────────────┘
+         ↓
+    ┌────────────────────────────────────────────────────────┐
+    │  Supporting Tools (25) — Python Utilities              │
+    │  Exporters • Code Review • Analysis • Requirements      │
+    │  Task Generation • Context Building • GitHub Sync       │
+    │  Token Optimizer • Project Detection • Feedback         │
+    └────────────────┬─────────────────────────────────────────┘
+         ↓
+    ┌────────────────────────────────────────────────────────┐
+    │       BUSINESS ANALYST AGENT (2 Functions)             │
+    │  📊 Backlog & Reporting Utility                         │
+    │  report → parse (JIRA integration & HTML backlog)       │
+    └────────────────┬─────────────────────────────────────────┘
+         ↓
+    DELIVERABLES (Code + Tests + Docs + PR)
+</pre>
+
+                <h3 style="margin-top: 30px; margin-bottom: 20px; color: #333;">Legend & Color Coding</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div style="border: 2px solid #3b82f6; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 6px; background: #f0f7ff;">
+                        <div style="font-weight: 700; color: #3b82f6; margin-bottom: 8px;">🔵 Orchestrator (Blue)</div>
+                        <div style="font-size: 0.9em; color: #666;">Strategy & Orchestration — 9 functions for planning, building, and reviewing full-stack projects</div>
+                    </div>
+
+                    <div style="border: 2px solid #10b981; border-left: 4px solid #10b981; padding: 16px; border-radius: 6px; background: #f0fdf4;">
+                        <div style="font-weight: 700; color: #10b981; margin-bottom: 8px;">🟢 Architect (Green)</div>
+                        <div style="font-size: 0.9em; color: #666;">Architecture & Design — 6 functions for topology, APIs, schemas, and accessibility</div>
+                    </div>
+
+                    <div style="border: 2px solid #f59e0b; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 6px; background: #fffbf0;">
+                        <div style="font-weight: 700; color: #f59e0b; margin-bottom: 8px;">🟠 Implementer (Orange)</div>
+                        <div style="font-size: 0.9em; color: #666;">Implementation & Execution — 7 functions for code, tests, docs, and deployment</div>
+                    </div>
+
+                    <div style="border: 2px solid #ec4899; border-left: 4px solid #ec4899; padding: 16px; border-radius: 6px; background: #fdf2f8;">
+                        <div style="font-weight: 700; color: #ec4899; margin-bottom: 8px;">🔴 Quality (Pink)</div>
+                        <div style="font-size: 0.9em; color: #666;">QA, Security & Performance — 6 functions for validation, security, and optimization</div>
+                    </div>
+
+                    <div style="border: 2px solid #8b5cf6; border-left: 4px solid #8b5cf6; padding: 16px; border-radius: 6px; background: #faf5ff;">
+                        <div style="font-weight: 700; color: #8b5cf6; margin-bottom: 8px;">🟣 Business Analyst (Purple)</div>
+                        <div style="font-size: 0.9em; color: #666;">Backlog & Reporting Utility — 2 functions for JIRA parsing and HTML reports</div>
+                    </div>
+
+                    <div style="border: 2px solid #667eea; border-left: 4px solid #667eea; padding: 16px; border-radius: 6px; background: #f0f4ff;">
+                        <div style="font-weight: 700; color: #667eea; margin-bottom: 8px;">⭐ Skills & Tools</div>
+                        <div style="font-size: 0.9em; color: #666;">26 Reusable skills and 25 Python tools that power agent functions</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 20px; color: #333;">Data Flow Explanation</h3>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <p style="margin-bottom: 12px; color: #333;"><strong>Linear Pipeline Architecture (v3.0)</strong></p>
+                    <ul style="margin-left: 20px; color: #666; line-height: 1.8;">
+                        <li><strong>Input:</strong> User requirement (free text, JIRA, file, or auto-detected)</li>
+                        <li><strong>Orchestrator:</strong> Parses requirement, creates plan, orchestrates workflow</li>
+                        <li><strong>Architect:</strong> Designs system topology, APIs, schemas, and UI architecture</li>
+                        <li><strong>Implementer:</strong> Generates code (detects tech stack), comprehensive tests (95%+), and documentation</li>
+                        <li><strong>Skills Applied:</strong> Language-specific patterns, frameworks, and standards (Java, Python, React, Spring, etc.)</li>
+                        <li><strong>Quality Agent:</strong> PR validation, codebase audit, security scan, performance optimization, RCA</li>
+                        <li><strong>Tools Support:</strong> 25 Python utilities for exporters, code review, analysis, requirements parsing, task generation</li>
+                        <li><strong>Business Analyst:</strong> JIRA parsing, HTML backlog visualization, reporting</li>
+                        <li><strong>Output:</strong> Complete deliverables (code + tests + docs + GitHub PR)</li>
+                    </ul>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 20px; color: #333;">System Statistics</h3>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div>
+                            <div style="font-weight: 700; color: #667eea; margin-bottom: 8px;">Agents</div>
+                            <div style="color: #666;">
+                                <div>5 Total Agents</div>
+                                <div style="font-size: 0.9em; color: #999;">Reduced from 13 (v2.0) to 5 (v3.0)</div>
+                                <div style="font-size: 0.9em; color: #999;">Zero role overlap, lean architecture</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: #667eea; margin-bottom: 8px;">Functions</div>
+                            <div style="color: #666;">
+                                <div>28 Total Functions</div>
+                                <div style="font-size: 0.9em; color: #999;">Orchestrator: 9</div>
+                                <div style="font-size: 0.9em; color: #999;">Architect: 6 | Implementer: 7</div>
+                                <div style="font-size: 0.9em; color: #999;">Quality: 6 | BA: 2</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: #667eea; margin-bottom: 8px;">Skills</div>
+                            <div style="color: #666;">
+                                <div>26 Reusable Skills</div>
+                                <div style="font-size: 0.9em; color: #999;">8 Categories</div>
+                                <div style="font-size: 0.9em; color: #999;">Language & domain specific</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: #667eea; margin-bottom: 8px;">Tools</div>
+                            <div style="color: #666;">
+                                <div>25 Python Tools</div>
+                                <div style="font-size: 0.9em; color: #999;">20 in tools/</div>
+                                <div style="font-size: 0.9em; color: #999;">5 in token_optimizer/</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 20px; color: #333;">Integration Points</h3>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+                    <ul style="margin-left: 20px; color: #666; line-height: 1.8;">
+                        <li><strong>Skill-Based Architecture:</strong> Agents delegate to skills, not monolithic tech-specific agents</li>
+                        <li><strong>Linear Pipeline:</strong> Explicit handoffs between agents with full context preservation</li>
+                        <li><strong>Implementer:Full Function:</strong> Runs build + test + doc in same context (no state loss)</li>
+                        <li><strong>Tech-Agnostic Agents:</strong> Apply language/framework detection at skill application time</li>
+                        <li><strong>Cross-Platform Export:</strong> Tools export agents & skills to Copilot, Cursor, Claude, etc.</li>
+                        <li><strong>Token Optimization:</strong> QueryAnalyzer scores requirements before dispatch</li>
+                        <li><strong>JIRA Integration:</strong> BA agent parses tickets and generates HTML backlog visualizations</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Skills data (26 skills)
+        const skillsData = [
+            { name: 'code_documentation_skill', category: 'Documentation', techStack: 'JavaScript, Python, Java', purpose: 'Auto-generate JSDoc, docstrings, Javadoc', whenToUse: 'After writing code, need to document', status: 'Documented' },
+            { name: 'code_review_skill', category: 'Code Quality', techStack: 'Language-agnostic', purpose: '6-phase PR analysis with scoring', whenToUse: 'Before merging PRs, need quality validation', status: 'Documented' },
+            { name: 'code_health_skill', category: 'Code Quality', techStack: 'Language-agnostic', purpose: 'Issue taxonomy and severity scoring', whenToUse: 'Codebase audit, identify debt', status: 'Documented' },
+            { name: 'code_formatting_skill', category: 'Code Quality', techStack: 'Language-agnostic', purpose: 'Code style standards and conventions', whenToUse: 'Ensure consistent formatting', status: 'Documented' },
+            { name: 'database_skill', category: 'Infrastructure', techStack: 'PostgreSQL, MySQL, MSSQL', purpose: 'SQL schema design and migrations', whenToUse: 'Database architecture planning', status: 'Documented' },
+            { name: 'backend_skill', category: 'Implementation', techStack: 'FastAPI, Spring Boot, Node.js', purpose: 'REST API generation and design', whenToUse: 'Build backend services', status: 'Documented' },
+            { name: 'frontend_skill', category: 'Implementation', techStack: 'React, Vue, Angular', purpose: 'React component generation with hooks', whenToUse: 'Build UI components and pages', status: 'Documented' },
+            { name: 'test_skill', category: 'Testing', techStack: 'JUnit5, pytest, Jest', purpose: 'Test generation with high coverage', whenToUse: 'Write comprehensive test suites', status: 'Documented' },
+            { name: 'context_builder_skill', category: 'Analysis', techStack: 'Language-agnostic', purpose: 'Project architecture and tech stack analysis', whenToUse: 'Scan and document existing projects', status: 'Documented' },
+            { name: 'java_advanced_skill', category: 'Language-Specific', techStack: 'Java 17, Java 21', purpose: 'Java coding standards and patterns', whenToUse: 'Java/Spring Boot projects', status: 'Documented' },
+            { name: 'python_advanced_skill', category: 'Language-Specific', techStack: 'Python 3.11, Python 3.12', purpose: 'Python coding standards and patterns', whenToUse: 'Python/FastAPI projects', status: 'Documented' },
+            { name: 'react_advanced_skill', category: 'Language-Specific', techStack: 'React 18+, TypeScript', purpose: 'React and TypeScript coding standards', whenToUse: 'React/TypeScript projects', status: 'Documented' },
+            { name: 'mssql_advanced_skill', category: 'Language-Specific', techStack: 'T-SQL, MSSQL 2019+', purpose: 'T-SQL patterns and optimization', whenToUse: 'Microsoft SQL Server projects', status: 'Documented' },
+            { name: 'spring_advanced_skill', category: 'Framework', techStack: 'Spring Framework, Spring Boot', purpose: 'Spring internals and best practices', whenToUse: 'Advanced Spring Boot development', status: 'Documented' },
+            { name: 'error_handling_skill', category: 'Patterns', techStack: 'Language-agnostic', purpose: 'Exception handling and recovery patterns', whenToUse: 'Build resilient error handling', status: 'Documented' },
+            { name: 'oop_skill', category: 'Patterns', techStack: 'Language-agnostic', purpose: 'OOP pillars, SOLID, design patterns', whenToUse: 'Design object-oriented systems', status: 'Documented' },
+            { name: 'logger_skill', category: 'Observability', techStack: 'SLF4J, Logback, Python logging', purpose: 'SLF4J and structured logging', whenToUse: 'Implement comprehensive logging', status: 'Documented' },
+            { name: 'lombok_skill', category: 'Framework', techStack: 'Java, Lombok', purpose: 'Lombok annotations and boilerplate reduction', whenToUse: 'Reduce Java boilerplate', status: 'Documented' },
+            { name: 'apache_camel_skill', category: 'Framework', techStack: 'Java, Apache Camel', purpose: 'Integration patterns and EIP', whenToUse: 'Apache Camel routing and pipelines', status: 'Documented' },
+            { name: 'apache_pulsar_skill', category: 'Framework', techStack: 'Java, Apache Pulsar', purpose: 'Messaging and streaming patterns', whenToUse: 'Event-driven messaging systems', status: 'Documented' },
+            { name: 'opentelemetry_skill', category: 'Observability', techStack: 'Java, Python, Go', purpose: 'Observability, tracing, and metrics', whenToUse: 'Implement distributed tracing', status: 'Documented' },
+            { name: 'jira_html_report_skill', category: 'Reporting', techStack: 'HTML, JavaScript', purpose: 'Parse JIRA and generate HTML backlog', whenToUse: 'Create JIRA reports and visualizations', status: 'Documented' },
+            { name: 'jira_incremental_spec_skill', category: 'Specification', techStack: 'JIRA API', purpose: 'Generate incremental JIRA specifications', whenToUse: 'Create detailed JIRA specs iteratively', status: 'Documented' },
+            { name: 'ba_create_skill', category: 'Specification', techStack: 'Language-agnostic', purpose: 'Business analyst document creation', whenToUse: 'Create requirements and specs', status: 'Documented' },
+            { name: 'multi_review_html_skill', category: 'Reporting', techStack: 'HTML, JavaScript', purpose: 'Generate multi-reviewer code review HTML', whenToUse: 'Aggregate multiple code reviews', status: 'Documented' },
+            { name: 'api_skill', category: 'Implementation', techStack: 'OpenAPI, REST', purpose: 'API contract and specification design', whenToUse: 'Design API endpoints and contracts', status: 'Documented' },
+        ];
+
         // Tools data
         const toolsData = [
             { name: 'analyzer.py', module: 'token_optimizer', category: 'Token Optimizer', purpose: 'Main QueryAnalyzer orchestrator for intelligent query analysis', status: 'Documented' },
@@ -650,6 +942,21 @@
             { name: 'task_tracker.py', module: 'tools', category: 'Requirement Mgmt', purpose: 'Track task execution and dependencies', status: 'Documented' },
             { name: 'update_checker.py', module: 'tools', category: 'Configuration', purpose: 'Check for tool updates and versions', status: 'Documented' },
         ];
+
+        // Initialize skills table
+        function initSkillsTable() {
+            const tbody = document.getElementById('skillsBody');
+            tbody.innerHTML = skillsData.map(skill => `
+                <tr data-skill="${skill.name}" data-category="${skill.category}" data-tech="${skill.techStack.toLowerCase()}">
+                    <td><span class="tool-name">${skill.name}</span></td>
+                    <td>${skill.category}</td>
+                    <td><span class="tool-module">${skill.techStack}</span></td>
+                    <td>${skill.purpose}</td>
+                    <td>${skill.whenToUse}</td>
+                    <td><span class="status-badge status-documented">${skill.status}</span></td>
+                </tr>
+            `).join('');
+        }
 
         // Initialize tools table
         function initToolsTable() {
@@ -707,6 +1014,36 @@
             }
         }
 
+        // Search and filter skills
+        function filterSkills() {
+            const searchTerm = document.getElementById('skillSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#skillsBody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = 'table-row';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0 && searchTerm) {
+                const tbody = document.getElementById('skillsBody');
+                if (!tbody.querySelector('.no-results')) {
+                    const noResultsRow = document.createElement('tr');
+                    noResultsRow.className = 'no-results';
+                    noResultsRow.innerHTML = '<td colspan="6">No skills matching "' + searchTerm + '"</td>';
+                    tbody.appendChild(noResultsRow);
+                }
+            } else {
+                const noResults = document.querySelector('.no-results');
+                if (noResults) noResults.remove();
+            }
+        }
+
         // Search and filter tools
         function filterTools() {
             const searchTerm = document.getElementById('toolSearch').value.toLowerCase();
@@ -746,6 +1083,7 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
+            initSkillsTable();
             initToolsTable();
         });
     </script>
