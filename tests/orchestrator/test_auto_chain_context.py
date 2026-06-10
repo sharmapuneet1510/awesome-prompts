@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch, call
+from tools.orchestrator.auto_chain import auto_chain_context
 
 
 class TestAutoChainContext:
@@ -17,21 +18,31 @@ class TestAutoChainContext:
         }
 
         # Mock the context invocation
-        with patch('orchestrator.invoke_context') as mock_context:
-            mock_context.return_value = {
-                "status": "success",
-                "artifacts": ["architecture.md", "tech-stack.md"]
-            }
+        mock_context = Mock()
+        mock_context.return_value = {
+            "status": "success",
+            "artifacts": ["architecture.md", "tech-stack.md"]
+        }
 
-            # Simulate build completion
-            from orchestrator import auto_chain_context
-            result = auto_chain_context(build_result)
+        # Simulate build completion
+        result = auto_chain_context(
+            build_result,
+            config={
+                "orchestrator": {
+                    "build": {
+                        "auto_generate_context": True,
+                        "context_depth": "comprehensive"
+                    }
+                }
+            },
+            invoke_context_fn=mock_context
+        )
 
-            # Assert context was called with correct arguments
-            mock_context.assert_called_once_with(
-                path="/tmp/generated_project",
-                depth="comprehensive"
-            )
+        # Assert context was called with correct arguments
+        mock_context.assert_called_once_with(
+            path="/tmp/generated_project",
+            depth="comprehensive"
+        )
 
-            assert result["status"] == "success"
-            assert "context_artifacts" in result
+        assert result["status"] == "success"
+        assert result["context_result"]["status"] == "success"
