@@ -54,9 +54,11 @@ orchestrator:pr (Create GitHub PR)
 **Purpose:** Transform vague, high-level ideas into validated project plans. Refines concepts through expert feedback, surfaces hidden assumptions, and generates executable specifications ready for implementation.
 
 **Inputs:**
-- idea (string): Initial concept (can be sketchy, informal, or incomplete)
-- context (string, optional): Business context or domain expertise
-- scope (string, optional): Rough scale or constraints ("startup MVP", "enterprise scale", etc.)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| idea | string | Yes | Initial concept (can be sketchy, informal, or incomplete) |
+| context | string | No | Business context or domain expertise |
+| scope | string | No | Rough scale or constraints ("startup MVP", "enterprise scale", etc.) |
 
 **Outputs:**
 - idea-spec.md (markdown): Clarified feature specification with assumptions, scope boundaries, non-goals
@@ -233,9 +235,11 @@ Microservices chosen because: team growth, deployment independence, tech flexibi
 **Purpose:** Solve specific design bottlenecks and architectural constraints. Provides multi-dimensional solutions with prescriptive recommendations. Ideal for unblocking teams facing tradeoff decisions.
 
 **Inputs:**
-- problem (string): Specific bottleneck or constraint (e.g., "Database query takes 10 seconds", "Can't scale beyond 10K concurrent users")
-- context (string, optional): Current architecture, constraints, team size
-- constraints (string, optional): Budget, timeline, team expertise ("3 engineers, 2 weeks, no new infrastructure")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| problem | string | Yes | Specific bottleneck or constraint (e.g., "Database query takes 10 seconds", "Can't scale beyond 10K concurrent users") |
+| context | string | No | Current architecture, constraints, team size |
+| constraints | string | No | Budget, timeline, team expertise ("3 engineers, 2 weeks, no new infrastructure") |
 
 **Outputs:**
 - solutions.md (markdown): 3-5 solution approaches with detailed analysis
@@ -428,10 +432,12 @@ Phase 3 is buffer / future-proof.
 **Purpose:** Parse requirements in multiple formats (free text, JIRA, requirements.md) and break them down into executable tasks. Creates detailed task breakdown, acceptance criteria, dependencies, and execution order.
 
 **Inputs:**
-- requirement (string): Free-form requirement description
-- source (string, optional): Source format ("jira", "file", "email", or infer)
-- file_path (string, optional): Path to requirements file (requirements.md, acceptance-criteria.txt, etc.)
-- ticket_id (string, optional): JIRA ticket ID (e.g., "PROJ-123")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| requirement | string | Yes | Free-form requirement description |
+| source | string | No | Source format ("jira", "file", "email", or infer) |
+| file_path | string | No | Path to requirements file (requirements.md, acceptance-criteria.txt, etc.) |
+| ticket_id | string | No | JIRA ticket ID (e.g., "PROJ-123") |
 
 **Outputs:**
 - requirements.md (markdown): Clarified requirements with assumptions, scope, acceptance criteria, non-goals
@@ -699,9 +705,11 @@ Task 08: Deployment & Cutover (3 days)
 **Purpose:** Execute full-stack generation end-to-end. Orchestrates downstream agents (architect → implementer → quality) in sequence to produce a complete, tested system from clarified requirements.
 
 **Inputs:**
-- path (string): Path to requirements.md (output from orchestrator:plan)
-- context (string, optional): Additional business context
-- tech_stack (string, optional): Preferred tech stack (e.g., "Python FastAPI + React + PostgreSQL")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to requirements.md (output from orchestrator:plan) |
+| context | string | No | Additional business context |
+| tech_stack | string | No | Preferred tech stack (e.g., "Python FastAPI + React + PostgreSQL") |
 
 **Outputs:**
 - Complete system with:
@@ -988,9 +996,11 @@ This single invocation produces a fully documented project, dramatically reducin
 **Purpose:** Build deep project understanding for existing systems. Generates architecture documentation, technology summary, interactive visualization, and knowledge graph. Ideal for onboarding new team members or understanding unfamiliar codebases.
 
 **Inputs:**
-- path (string): Path to project root directory
-- depth (string, optional): Analysis depth ("quick", "standard", "comprehensive")
-- include_knowledge_graph (boolean, optional): Generate knowledge graph with D3 visualization
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to project root directory |
+| depth | string | No | Analysis depth ("quick", "standard", "comprehensive") |
+| include_knowledge_graph | boolean | No | Generate knowledge graph with D3 visualization |
 
 **Outputs:**
 - architecture.md (markdown): C4 system diagram, component descriptions, data flows, caching strategy, deployment topology
@@ -1249,10 +1259,12 @@ orchestrator:context path=./legacy-monolith depth=comprehensive
 **Purpose:** Package generated code, tests, documentation, and deployment config into a GitHub PR. Generates comprehensive PR description with architecture narrative, test results, security audit, and deployment checklist.
 
 **Inputs:**
-- title (string): PR title (e.g., "feat: e-commerce MVP")
-- description (string, optional): PR description (auto-generated if not provided)
-- branch (string, optional): Branch name (auto-generated from title if not provided)
-- artifacts_path (string, optional): Path to generated artifacts (uses current directory if not specified)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| title | string | Yes | PR title (e.g., "feat: e-commerce MVP") |
+| description | string | No | PR description (auto-generated if not provided) |
+| branch | string | No | Branch name (auto-generated from title if not provided) |
+| artifacts_path | string | No | Path to generated artifacts (uses current directory if not specified) |
 
 **Outputs:**
 - GitHub Pull Request with:
@@ -1603,9 +1615,11 @@ Description includes:
 **Purpose:** Conduct strategic architecture review with challenge questions, risk assessment, and 5-year maintainability analysis. Provides senior technical perspective on design decisions before implementation begins.
 
 **Inputs:**
-- path (string): Path to architecture document (architecture.md, design.md, or similar)
-- context (string, optional): Additional business/technical context
-- focus (string, optional): Specific areas to focus on ("scalability", "maintainability", "security")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to architecture document (architecture.md, design.md, or similar) |
+| context | string | No | Additional business/technical context |
+| focus | string | No | Specific areas to focus on ("scalability", "maintainability", "security") |
 
 **Outputs:**
 - design-review.md (markdown): Comprehensive review with sections:
@@ -1884,9 +1898,11 @@ Recommendation: Consider modular monolith initially, migrate to microservices wh
 **Purpose:** Generate 3-option complexity analysis. Compares approaches on effort, complexity, scalability, cost, team capability. Provides ranked recommendation based on constraints and goals.
 
 **Inputs:**
-- goal (string): Goal or problem statement (e.g., "Handle 1M concurrent users with 99.9% uptime")
-- constraints (string, optional): Budget, timeline, team size ("3 engineers, 2 months, $50K")
-- options (string, optional): Specific options to evaluate (comma-separated)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| goal | string | Yes | Goal or problem statement (e.g., "Handle 1M concurrent users with 99.9% uptime") |
+| constraints | string | No | Budget, timeline, team size ("3 engineers, 2 months, $50K") |
+| options | string | No | Specific options to evaluate (comma-separated) |
 
 **Outputs:**
 - tradeoff-analysis.md (markdown): 3 options with detailed comparison
@@ -2294,9 +2310,11 @@ Date: 2026-01-10
 **Purpose:** Risk assessment with failure modes and mitigation strategies. Identifies critical risks before launch, prioritizes by impact and probability. Provides quantified risk (e.g., "10% chance of complete outage, impact $50K/hour").
 
 **Inputs:**
-- path (string): Path to architecture/system design
-- goal (string, optional): Launch/deployment goal
-- timeline (string, optional): Time to launch ("2 weeks", "3 months")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to architecture/system design |
+| goal | string | No | Launch/deployment goal |
+| timeline | string | No | Time to launch ("2 weeks", "3 months") |
 
 **Outputs:**
 - risk-assessment.md (markdown): Risk matrix (CRITICAL/HIGH/MEDIUM/LOW) with:
@@ -2652,9 +2670,11 @@ Risk 7: Synchronous Payment Processing
 **Purpose:** Generate production-ready code from architecture specifications. Auto-detects tech stack and applies appropriate code generation patterns, security practices, and error handling.
 
 **Inputs:**
-- path (string): Path to architecture/requirements file
-- context (string, optional): Additional context or constraints
-- language (string, optional): Target language (auto-detected if not specified)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to architecture/requirements file |
+| context | string | No | Additional context or constraints |
+| language | string | No | Target language (auto-detected if not specified) |
 
 **Outputs:**
 - Source code (complete models, routes, services, utilities)
@@ -2747,9 +2767,11 @@ Complete React components with:
 **Purpose:** Generate comprehensive test suite covering unit, integration, and edge cases. Targets 95%+ code coverage with business-level validation and meaningful test names.
 
 **Inputs:**
-- path (string): Path to source code to test
-- coverage_target (integer, optional): Coverage percentage target (default: 95)
-- framework (string, optional): Test framework (auto-detected if not specified)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to source code to test |
+| coverage_target | integer | No | Coverage percentage target (default: 95) |
+| framework | string | No | Test framework (auto-detected if not specified) |
 
 **Outputs:**
 - Test suite files (tests/test_*.py, *.test.ts, etc.)
@@ -2849,9 +2871,11 @@ implementer:test path=./src/components/Cart.tsx framework=vitest
 **Purpose:** Generate comprehensive documentation including inline code comments, API reference, architecture guides, and deployment instructions.
 
 **Inputs:**
-- path (string): Path to source code
-- format (string, optional): Output format (markdown, HTML, both)
-- include (string, optional): What to generate (api, guides, architecture, all)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to source code |
+| format | string | No | Output format (markdown, HTML, both) |
+| include | string | No | What to generate (api, guides, architecture, all) |
 
 **Outputs:**
 - README.md (project overview, setup, quick start)
@@ -2954,9 +2978,11 @@ implementer:doc path=./src format=html include=api
 **Purpose:** Generate CI/CD pipeline configuration for automated testing, building, and deployment. Supports GitHub Actions, GitLab CI, Jenkins, CircleCI, Azure Pipelines.
 
 **Inputs:**
-- path (string): Project root
-- platform (string): CI/CD platform (github-actions, gitlab-ci, jenkins, circleci, azure)
-- stages (string, optional): Pipeline stages to include (test, lint, build, deploy)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Project root |
+| platform | string | Yes | CI/CD platform (github-actions, gitlab-ci, jenkins, circleci, azure) |
+| stages | string | No | Pipeline stages to include (test, lint, build, deploy) |
 
 **Outputs:**
 - Platform-specific pipeline file (.github/workflows/*.yml, .gitlab-ci.yml, Jenkinsfile, etc.)
@@ -3112,9 +3138,11 @@ deploy:
 **Purpose:** Generate Dockerfile and docker-compose configuration for containerization. Creates multi-stage builds for small images, includes health checks, security best practices.
 
 **Inputs:**
-- path (string): Project root
-- language (string, optional): Programming language (auto-detected if not specified)
-- registry (string, optional): Docker registry (Docker Hub, ECR, GCR, etc.)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Project root |
+| language | string | No | Programming language (auto-detected if not specified) |
+| registry | string | No | Docker registry (Docker Hub, ECR, GCR, etc.) |
 
 **Outputs:**
 - Dockerfile (production image)
@@ -3269,9 +3297,11 @@ implementer:docker path=./ language=node
 **Purpose:** Generate Infrastructure as Code for Terraform, CloudFormation, or Kubernetes manifests. Creates reproducible, version-controlled infrastructure deployments.
 
 **Inputs:**
-- path (string): Project root (infers infrastructure needs from code)
-- provider (string): Cloud provider (aws, gcp, azure, kubernetes)
-- tool (string, optional): IaC tool (terraform, cloudformation, k8s)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Project root (infers infrastructure needs from code) |
+| provider | string | Yes | Cloud provider (aws, gcp, azure, kubernetes) |
+| tool | string | No | IaC tool (terraform, cloudformation, k8s) |
 
 **Outputs:**
 - IaC files (Terraform modules, CloudFormation templates, K8s manifests)
@@ -3583,8 +3613,10 @@ Features:
 **Purpose:** Complete end-to-end implementation lifecycle in single context window. Builds code, generates tests, creates documentation, sets up CI/CD, creates Docker configuration, and generates infrastructure manifests—all without context loss.
 
 **Inputs:**
-- path (string): Path to requirements (from orchestrator:plan output)
-- tech_stack (string, optional): Preferred tech stack
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to requirements (from orchestrator:plan output) |
+| tech_stack | string | No | Preferred tech stack |
 
 **Outputs:**
 - Complete production-ready system with:
@@ -3715,9 +3747,11 @@ implementer:full path=./data-pipeline-requirements.md tech_stack=python
 **Purpose:** Comprehensive PR validation against requirements and quality standards. Reviews code against JIRA acceptance criteria, scores quality across 6 dimensions, generates detailed report with actionable feedback.
 
 **Inputs:**
-- pr (integer): Pull request number
-- ticket (string): JIRA ticket ID
-- context (string, optional): Additional business context
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| pr | integer | Yes | Pull request number |
+| ticket | string | Yes | JIRA ticket ID |
+| context | string | No | Additional business context |
 
 **Outputs:**
 - review-report.md (detailed 6-phase analysis)
@@ -3835,8 +3869,10 @@ Date: 2026-01-15
 **Purpose:** Full codebase audit covering architecture, SOLID principles, code duplication, performance bottlenecks, and tech debt. Produces prioritized refactoring roadmap with effort estimates.
 
 **Inputs:**
-- path (string): Repository path
-- depth (string, optional): Analysis depth (quick, standard, comprehensive)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Repository path |
+| depth | string | No | Analysis depth (quick, standard, comprehensive) |
 
 **Outputs:**
 - audit-report.md (detailed findings)
@@ -3939,8 +3975,10 @@ Phase 3 (3-4 weeks, Scalability):
 **Purpose:** OWASP Top 10 security audit with severity-ranked vulnerability report, remediation code examples, and compliance assessment (PCI-DSS, SOC 2, HIPAA).
 
 **Inputs:**
-- path (string): Repository path
-- compliance (string, optional): Compliance targets (SOC2, PCI-DSS, HIPAA, etc.)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Repository path |
+| compliance | string | No | Compliance targets (SOC2, PCI-DSS, HIPAA, etc.) |
 
 **Outputs:**
 - security-audit.md (OWASP-aligned findings)
@@ -4037,9 +4075,11 @@ Timeline:
 **Purpose:** Performance bottleneck analysis and optimization roadmap. Identifies slow queries, algorithms, and I/O operations with before/after code and benchmarks.
 
 **Inputs:**
-- path (string): Repository path
-- baseline (string, optional): Current performance ("500ms response time", "10s query")
-- scale (string, optional): Target scale ("1M users", "100K concurrent")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Repository path |
+| baseline | string | No | Current performance ("500ms response time", "10s query") |
+| scale | string | No | Target scale ("1M users", "100K concurrent") |
 
 **Outputs:**
 - perf-analysis.md (bottleneck identification)
@@ -4136,9 +4176,11 @@ LONG-TERM (1+ month, production scaling)
 **Purpose:** Root cause analysis from stack trace or error description. Identifies failure mechanism, similar vulnerabilities in codebase, and generates regression tests to prevent recurrence.
 
 **Inputs:**
-- stack_trace (string): Error message + stack trace
-- path (string): Repository path (for context)
-- context (string, optional): Additional information (environment, user actions, logs)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| stack_trace | string | Yes | Error message + stack trace |
+| path | string | Yes | Repository path (for context) |
+| context | string | No | Additional information (environment, user actions, logs) |
 
 **Outputs:**
 - rca-report.md (5-phase RCA with root cause identified)
@@ -4261,8 +4303,10 @@ Stage 3: Audit similar patterns (4 hours) → Fix all 3 similar vulnerabilities
 **Purpose:** Unified synthesis of all quality dimensions (review, audit, security, perf, debug) into single comprehensive HTML report. Aggregates findings, prioritizes by impact, provides consolidated remediation plan.
 
 **Inputs:**
-- path (string): Repository path OR prior analysis outputs
-- comprehensive (boolean, optional): Include all analyses (default: yes)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Repository path OR prior analysis outputs |
+| comprehensive | boolean | No | Include all analyses (default: yes) |
 
 **Outputs:**
 - quality-report.html (interactive, self-contained)
@@ -4360,9 +4404,11 @@ Downloadable: CSV, PDF, JSON exports
 **Purpose:** Parse JIRA export (JSON or CSV) and generate interactive HTML backlog report with filtering, sorting, burndown charts, and metrics.
 
 **Inputs:**
-- file (string): Path to JIRA export (JSON or CSV)
-- project (string, optional): Project key to filter
-- output (string, optional): Output file path
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| file | string | Yes | Path to JIRA export (JSON or CSV) |
+| project | string | No | Project key to filter |
+| output | string | No | Output file path |
 
 **Outputs:**
 - HTML report (interactive, filterable, responsive)
@@ -4449,8 +4495,10 @@ Export:
 **Purpose:** Extract structured data from JIRA export. Normalizes JSON/CSV into clean JSON with all issues and fields, ready for further processing.
 
 **Inputs:**
-- file (string): Path to JIRA export (JSON or CSV)
-- output (string, optional): Output file path (default: parsed.json)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| file | string | Yes | Path to JIRA export (JSON or CSV) |
+| output | string | No | Output file path (default: parsed.json) |
 
 **Outputs:**
 - JSON file (array of normalized issue objects)
@@ -4674,9 +4722,11 @@ Total: ~15,000 words of comprehensive documentation for orchestrator functions.
 **Purpose:** Design complete system topology from scratch (greenfield). Creates C4 system diagram, API contracts, database schema, caching strategy, and deployment infrastructure in comprehensive design document.
 
 **Inputs:**
-- requirements (string): System requirements or business goals
-- scale (string, optional): Scale targets ("100K users", "1M messages/day", "99.99% uptime")
-- constraints (string, optional): Technical or business constraints ("3 engineers", "$50K infrastructure budget")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| requirements | string | Yes | System requirements or business goals |
+| scale | string | No | Scale targets ("100K users", "1M messages/day", "99.99% uptime") |
+| constraints | string | No | Technical or business constraints ("3 engineers", "$50K infrastructure budget") |
 
 **Outputs:**
 - architecture.md (markdown): C4 system diagram (levels 1-3), component descriptions, data flows, caching strategy, deployment topology
@@ -4784,9 +4834,11 @@ See ARCHITECT_SDLC_EXAMPLES.md Phase 0 for complete example with:
 **Purpose:** Plan brownfield refactoring of existing system. Assesses current state, diagnoses problems, designs target state, creates phased migration roadmap with zero-downtime procedures and rollback strategies.
 
 **Inputs:**
-- path (string): Path to existing codebase
-- goal (string): Refactoring goal ("Split monolith into microservices", "Modernize from Django to FastAPI")
-- pain_points (string, optional): Current problems ("4-hour deployments", "tight coupling", "N+1 queries")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to existing codebase |
+| goal | string | Yes | Refactoring goal ("Split monolith into microservices", "Modernize from Django to FastAPI") |
+| pain_points | string | No | Current problems ("4-hour deployments", "tight coupling", "N+1 queries") |
 
 **Outputs:**
 - current-state.md (markdown): Analysis of existing architecture with diagrams, identified coupling, tech debt, pain points
@@ -4893,9 +4945,11 @@ pain_points="All modules import from all other modules, changes affect everythin
 **Purpose:** Design database schema from scratch. Generates CREATE TABLE statements with indexes, constraints, migrations, and partitioning strategy. Optimized for stated scale and query patterns.
 
 **Inputs:**
-- requirements (string): Entity requirements ("Users, products, orders, inventory, payments")
-- db (string): Database system ("postgresql", "mysql", "mssql", "dynamodb")
-- scale (string, optional): Data volume ("100K users", "1M events/day", "50K products")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| requirements | string | Yes | Entity requirements ("Users, products, orders, inventory, payments") |
+| db | string | Yes | Database system ("postgresql", "mysql", "mssql", "dynamodb") |
+| scale | string | No | Data volume ("100K users", "1M events/day", "50K products") |
 
 **Outputs:**
 - schema.sql (SQL): CREATE TABLE, PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK constraints
@@ -5012,9 +5066,11 @@ db=postgresql scale="1M events/second, 100K sensors, 2-year retention"
 **Purpose:** Design REST API contracts (OpenAPI 3.0 specification). Generates endpoint definitions with request/response schemas, status codes, authentication, rate limiting, and examples. API-first design enables frontend and backend to work in parallel.
 
 **Inputs:**
-- requirements (string): API requirements ("List products", "Create order", "Search by category")
-- format (string, optional): OpenAPI version ("openapi3.0", "openapi3.1", "swagger2")
-- auth (string, optional): Authentication method ("oauth2", "jwt", "api-key")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| requirements | string | Yes | API requirements ("List products", "Create order", "Search by category") |
+| format | string | No | OpenAPI version ("openapi3.0", "openapi3.1", "swagger2") |
+| auth | string | No | Authentication method ("oauth2", "jwt", "api-key") |
 
 **Outputs:**
 - api-spec.yaml (YAML): Full OpenAPI 3.0 specification with all endpoints, schemas, examples
@@ -5119,9 +5175,11 @@ webhook for payment confirmation" format=openapi3.0 auth=jwt
 **Purpose:** Design React component architecture. Specifies component hierarchy, state management approach, composition patterns, and accessibility strategy. Enables frontend engineer to implement without architecture surprises.
 
 **Inputs:**
-- requirements (string): Feature requirements ("Product list with filters", "Shopping cart", "Checkout form")
-- framework (string, optional): Frontend framework ("react", "vue", "svelte")
-- state_management (string, optional): State approach ("context-api", "redux", "zustand", "jotai")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| requirements | string | Yes | Feature requirements ("Product list with filters", "Shopping cart", "Checkout form") |
+| framework | string | No | Frontend framework ("react", "vue", "svelte") |
+| state_management | string | No | State approach ("context-api", "redux", "zustand", "jotai") |
 
 **Outputs:**
 - component-architecture.md (markdown): Component tree, props interfaces, state model
@@ -5275,8 +5333,10 @@ framework=react state_management=context-api
 **Purpose:** Accessibility (A11y) audit of existing UI components. Evaluates WCAG 2.1 AA compliance, identifies missing semantic HTML, ARIA labels, keyboard navigation, color contrast issues. Provides remediation code and fixes.
 
 **Inputs:**
-- path (string): Path to component files (React TSX, Vue, HTML)
-- target (string, optional): WCAG target level ("wcag2.1-a", "wcag2.1-aa", "wcag2.1-aaa")
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | Yes | Path to component files (React TSX, Vue, HTML) |
+| target | string | No | WCAG target level ("wcag2.1-a", "wcag2.1-aa", "wcag2.1-aaa") |
 
 **Outputs:**
 - accessibility-audit.md (markdown): Detailed findings with WCAG criteria, severity (critical/high/medium/low)
