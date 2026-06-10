@@ -881,7 +881,36 @@ path = gen.generate(review_data, "PROJ-123")
 
 ---
 
-## 🌟 Recent Updates (v4.2.0)
+## 🌟 Recent Updates (v3.1 & v4.2.0)
+
+### ✨ New in June 2026 (v3.1)
+
+**Documentation Format Improvements:**
+- ✅ **Hybrid MCP-Inspired Format** — All agent functions use markdown tables for parameters
+  - Replaces prose bullet lists with structured parameter tables
+  - Format: `| Parameter | Type | Required | Description |` for clarity
+  - Easier to scan, machine-parseable, industry-standard pattern
+  - Applied to all 28 agent functions in [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md)
+
+- ✅ **"Use When" Guidance** — Added to orchestrator:plan, orchestrator:build, orchestrator:context
+  - Helps users select the right function for their workflow
+  - Includes "Use When" and "Don't Use When" sections
+  - Example: `orchestrator:build` for full-stack generation, not for architecture design
+
+- ✅ **Exporter Tool Analysis** — Reviewed against DeployHQ best practices
+  - Current status: ✅ **File-based configuration** (matches industry standards)
+  - Improvement roadmap identified (4 priorities):
+    1. **Generate platform-specific masters** (CLAUDE.md, AGENTS.md, CURSOR.md, WINDSURF.md, GEMINI.md, CONTINUE.md, AIDER.md)
+    2. **Inline config support** (--inline flag for small skills in CLAUDE.md)
+    3. **Config validation** (verify exported configs work with target platforms)
+    4. **Unified master config** (.claude/config.yaml as single source of truth)
+  - See [docs/EXPORTER_ANALYSIS.md](docs/EXPORTER_ANALYSIS.md) for full analysis
+
+- ✅ **Platform-Specific Master Files Strategy** — Recommended: Option C (Unified Master + Platform Overrides)
+  - Single source of truth: `.claude/config.yaml`
+  - Auto-generated per-platform masters: CLAUDE.md, AGENTS.md, CURSOR.md, etc.
+  - Each platform reads its own master, derives from unified config
+  - Enables shared settings + platform-specific customization
 
 ### ✨ New in May 2026
 
@@ -912,6 +941,82 @@ path = gen.generate(review_data, "PROJ-123")
   - Tech stack reference tables
   - Interactive HTML visualization
   - JSON metadata for tools
+
+---
+
+## 🔧 Exporter Tool & Platform Configuration (v3.1)
+
+### Current Status: ✅ File-Based Configuration
+
+The exporter tool (`tools/exporter.py`) exports agents and skills to **file-based, version-controlled configurations** — aligned with industry best practices (DeployHQ, GitHub, Cursor, Windsurf).
+
+**Supported Platforms:**
+- ✅ Claude Code (`.claude/`)
+- ✅ GitHub Copilot (`.github/instructions/`)
+- ✅ Cursor (`.cursor/`)
+- ✅ Windsurf (`.windsurf/`)
+- ✅ Gemini CLI (`.gemini/`)
+- ✅ Continue.dev (`.continue/`)
+- ✅ Aider (`.aider/`)
+- ✅ OpenAI / Others (`.config/`)
+
+### Platform-Specific Master Files Strategy
+
+**Recommended Approach (Option C): Unified Master + Platform Overrides**
+
+Each AI platform needs its own master configuration file (CLAUDE.md, AGENTS.md, CURSOR.md, etc.):
+
+```
+.claude/config.yaml           ← UNIFIED MASTER (single source of truth)
+    ├─ Global instructions (shared across all platforms)
+    ├─ Agent definitions
+    ├─ Skill references
+    └─ Platform-specific overrides
+
+Auto-generated platform masters:
+    ├─ CLAUDE.md              ← Claude Code specific
+    ├─ AGENTS.md              ← Copilot specific
+    ├─ CURSOR.md              ← Cursor specific
+    ├─ WINDSURF.md            ← Windsurf specific
+    ├─ GEMINI.md              ← Gemini specific
+    ├─ CONTINUE.md            ← Continue.dev specific
+    └─ AIDER.md               ← Aider specific
+```
+
+**Benefits:**
+- ✅ Single source of truth (config.yaml)
+- ✅ DRY principle (no repeated instructions)
+- ✅ Platform-specific customization supported
+- ✅ Clear separation of concerns
+- ✅ Team-shareable, version-controlled
+- ✅ CI/CD friendly
+
+### Exporter Improvement Roadmap
+
+**Priority 1: Generate Platform-Specific Masters** 🚀
+- Auto-generate `.claude/config.yaml` (unified master)
+- Generate CLAUDE.md, AGENTS.md, CURSOR.md, etc. from config
+- Command: `python tools/exporter.py --generate-masters`
+
+**Priority 2: Inline Config Support** ⚠️
+- Add `--inline` flag for small skills in master files
+- Keeps CLAUDE.md clean by inlining essential hooks
+- Separate large agents/skills into files
+
+**Priority 3: Config Validation** ⚠️
+- Validate exported configs work with target platforms
+- Check syntax, test parsing, warn on deprecated patterns
+- Command: `python tools/exporter.py --validate`
+
+**Priority 4: Unified Master Config** ⚠️
+- Create `.claude/config.yaml` with:
+  - Auto-generation settings
+  - Skill depth configuration
+  - Platform overrides
+  - Version tracking
+  - Validation schemas
+
+**Implementation Plan:** See `docs/superpowers/specs/` for detailed specs (Issue #11)
 
 ---
 
@@ -961,36 +1066,62 @@ path = gen.generate(review_data, "PROJ-123")
 
 ## 🗺️ Roadmap
 
+### Active Development (June 2026)
+- 🚀 **Issue #9: Auto Context Generation** (COMPLETE)
+  - Backend auto-chaining: orchestrator:build → orchestrator:context
+  - Dual commits (code + context) with error handling
+  - Configuration-driven feature (enable/disable)
+  - Status: Implemented, 43 tests passing ✅
+
+- 🚀 **Issue #10: Exporter Tool Improvements** (PLANNED)
+  - Generate platform-specific masters (CLAUDE.md, AGENTS.md, CURSOR.md, etc.)
+  - Unified master config (`.claude/config.yaml`)
+  - Inline config support (--inline flag)
+  - Config validation (--validate flag)
+
+- 🚀 **Issue #11: Centralized Instructions Framework** (PLANNED)
+  - Master instruction schema
+  - Provider-specific templates
+  - Hierarchical instructions (global → provider → agent-specific)
+  - Versioning and validation
+
 ### Q3 2026
 - [ ] GitHub Actions integration for auto-testing
 - [ ] Custom weight configuration for scorecard grading
 - [ ] Inline PR comments (per-file issue reporting)
 - [ ] Trend tracking (grade history per repo)
+- [ ] MCP server improvements (JIRA, VCS integrations)
 
 ### Q4 2026
 - [ ] AI-powered auto-fix suggestions
 - [ ] CI/CD pipeline generation
 - [ ] Database migration advisor
 - [ ] Performance profiling agent
+- [ ] Exporter tool Priority 2-4 (inline, validation, interactive setup)
 
 ### 2027+
 - [ ] Multi-language support (30+ languages)
 - [ ] GraphQL API generation
 - [ ] Microservices architecture advisor
 - [ ] Cloud deployment orchestrator (AWS/GCP/Azure)
+- [ ] Custom agent marketplace
 
 ---
 
 ## 📚 Learn More
 
-| Resource | Link |
-|----------|------|
-| **Agent Directory** | [agents/README.md](agents/README.md) |
-| **Autonomous Dev Guide** | [AUTONOMOUS_DEVELOPER_README.md](AUTONOMOUS_DEVELOPER_README.md) |
-| **Skill Catalog** | [skills/](skills/) |
-| **Project Templates** | [docs/context/](docs/context/) |
-| **Design Specs** | [docs/superpowers/specs/](docs/superpowers/specs/) |
-| **Implementation Plans** | [docs/superpowers/plans/](docs/superpowers/plans/) |
+| Resource | Link | Purpose |
+|----------|------|---------|
+| **All Agent Functions** | [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) | Complete reference for 28 functions with MCP-style tables |
+| **Agent Directory** | [agents/README.md](agents/README.md) | Agent definitions + dispatch syntax |
+| **Specialist Modes** | [SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md) | 9 specialized agent roles |
+| **Function Examples** | [FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md) | Real-world examples for all functions |
+| **Exporter Analysis** | [docs/EXPORTER_ANALYSIS.md](docs/EXPORTER_ANALYSIS.md) | DeployHQ best practices analysis + roadmap |
+| **Skill Catalog** | [skills/](skills/) | 24 reusable skills with documentation |
+| **Project Context** | [docs/context/](docs/context/) | Sample architecture.md, tech-stack.md, design.html |
+| **Design Specs** | [docs/superpowers/specs/](docs/superpowers/specs/) | Issue specs (Issue #9, #10, #11) |
+| **Implementation Plans** | [docs/superpowers/plans/](docs/superpowers/plans/) | Task-by-task implementation guides |
+| **Master Instructions** | [instructions/master_instruction_set.md](instructions/master_instruction_set.md) | 4 foundational principles for all agents |
 
 ---
 
@@ -1019,6 +1150,6 @@ See [LICENSE](LICENSE) for details.
 
 **Made with ❤️ by [Puneet Sharma](https://github.com/sharmapuneet1510)**
 
-Last updated: June 8, 2026 | v3.1.0
+Last updated: June 10, 2026 | v3.1.0
 
 </div>
