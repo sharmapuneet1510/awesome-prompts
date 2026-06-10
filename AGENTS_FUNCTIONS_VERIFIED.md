@@ -446,6 +446,19 @@ Phase 3 is buffer / future-proof.
 - Dependencies are explicit and mapped (prevents surprises during execution)
 - Scope boundaries are clearly stated ("in scope" vs "not in scope")
 
+**Use When:**
+- ✅ Requirements are **rough or incomplete** (need clarification before building)
+- ✅ You want **detailed task breakdown** with dependencies and effort estimates
+- ✅ Scope needs **explicit "in" vs "out"** definition
+- ✅ Multiple stakeholders need **alignment** on what's being built
+- ✅ Requirements come from **free text, JIRA, or email** (need parsing)
+
+**Don't Use When:**
+- ❌ Requirements are **already detailed and broken down** (jump to orchestrator:build)
+- ❌ You just need **quick estimates** (use orchestrator:tradeoff)
+- ❌ This is **refactoring existing code** (use architect:refactor)
+- ❌ You only need **architecture review** (use architect:design)
+
 **Examples:**
 
 #### Example 1: E-Commerce MVP Requirement Breakdown
@@ -708,6 +721,20 @@ Task 08: Deployment & Cutover (3 days)
 - System is production-ready, not "almost done"—includes tests, docs, CI/CD, deployment config
 - All requirements from requirements.md are implemented (verification at each phase)
 - No code without tests, no tests without documentation
+
+**Use When:**
+- ✅ Building **new systems from scratch** (greenfield) with full implementation needed
+- ✅ You want **complete deliverables** (code + tests + docs + deployment) in one call
+- ✅ Requirements are **clarified and detailed** (from `orchestrator:plan`)
+- ✅ You need **dual commits with auto-generated context** (architecture + tech-stack documentation)
+- ✅ Full **end-to-end generation** is acceptable (no partial/selective builds)
+
+**Don't Use When:**
+- ❌ Building only **specific components** (use `architect:design` or `implementer:build` instead)
+- ❌ Requirements are **vague or incomplete** (use `orchestrator:plan` first)
+- ❌ You need **interactive iteration** on design (use `architect:design` for back-and-forth)
+- ❌ Refactoring **existing code** (use `architect:refactor`)
+- ❌ You want **different agents per task** (use individual agent functions)
 
 **Examples:**
 
@@ -978,6 +1005,19 @@ This single invocation produces a fully documented project, dramatically reducin
 - Knowledge graph is accurate and complete (no missing dependencies)
 - Output is version-controlled friendly (markdown + JSON for diffs)
 - Visualization works offline (no external CDN dependencies)
+
+**Use When:**
+- ✅ Onboarding **new team members** to existing codebase
+- ✅ Need **architecture documentation** for unfamiliar projects
+- ✅ Understanding **tech stack and dependencies** 
+- ✅ **Auto-invoked by orchestrator:build** (automatic context after generation)
+- ✅ Performing **knowledge transfer** between teams
+
+**Don't Use When:**
+- ❌ Building **new systems** (orchestrator:build auto-chains this)
+- ❌ Need **code changes** (read-only context generation only)
+- ❌ Projects are **very small** (overhead not justified)
+- ❌ You need **live monitoring** (this is static analysis)
 
 **Examples:**
 
