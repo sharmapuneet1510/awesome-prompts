@@ -115,18 +115,48 @@ Our exporter writes to platform-native directories:
 
 ## Recommended Improvements
 
-### Priority 1: CLAUDE.md Generation
-```markdown
-**What:** Generate CLAUDE.md automatically from our agent definitions
-**Why:** CLAUDE.md is the master configuration file
-**How:** Parse agents/, skills/ and generate CLAUDE.md with embeddings
+### Priority 1: Generate Platform-Specific Masters (CLAUDE.md, AGENTS.md, CURSOR.md, etc.)
 
-Output example:
-.claude/CLAUDE.md  ← Master config, checked into repo
-├─ Agent definitions
-├─ Skill references
-├─ Hook configurations
-└─ Project-specific rules
+**Critical Discovery:** Each platform needs its own master file!
+
+**DeployHQ Best Practice:**
+- CLAUDE.md for Claude Code
+- AGENTS.md for GitHub Copilot
+- CURSOR.md for Cursor
+- WINDSURF.md for Windsurf
+- Similar pattern for all 8 platforms
+
+**Recommended Approach: Unified Master + Platform Overrides (Option C)**
+
+```
+.claude/config.yaml (UNIFIED MASTER - source of truth)
+    ├─ Global instructions (shared across all platforms)
+    ├─ Agent definitions
+    ├─ Skill references
+    └─ Platform-specific overrides
+
+Auto-generated platform masters:
+    ├─ .claude/CLAUDE.md      ← Claude Code specific
+    ├─ .claude/AGENTS.md      ← Copilot specific  
+    ├─ .claude/CURSOR.md      ← Cursor specific
+    ├─ .claude/WINDSURF.md    ← Windsurf specific
+    ├─ .claude/GEMINI.md      ← Gemini specific
+    ├─ .claude/CONTINUE.md    ← Continue.dev specific
+    └─ .claude/AIDER.md       ← Aider specific
+
+Platform exporters then use these to generate:
+    .claude/CLAUDE.md → .claude/CLAUDE.md (Claude Code)
+    .claude/AGENTS.md → .github/instructions/AGENTS.md (Copilot)
+    .claude/CURSOR.md → .cursor/rules.md (Cursor)
+    etc.
+```
+
+**Benefits:**
+- ✅ Single source of truth (config.yaml)
+- ✅ DRY principle (don't repeat universal instructions)
+- ✅ Platform-specific customization
+- ✅ Clear separation of concerns
+- ✅ Matches DeployHQ pattern exactly
 ```
 
 ### Priority 2: Inline Config Support
@@ -169,10 +199,27 @@ Output example:
 - Git-friendly (correct approach)
 
 ### Needed: 🔧 IMPROVEMENTS
-- **Priority 1:** Auto-generate CLAUDE.md as master config
+
+**Priority 1: Generate Platform-Specific Masters** 🚀
+- ✅ Generate .claude/config.yaml (unified master)
+- ✅ Generate .claude/CLAUDE.md (Claude Code master)
+- ✅ Generate .claude/AGENTS.md (Copilot master)
+- ✅ Generate .claude/CURSOR.md (Cursor master)
+- ✅ Generate .claude/WINDSURF.md (Windsurf master)
+- ✅ Generate .claude/GEMINI.md (Gemini master)
+- ✅ Generate .claude/CONTINUE.md (Continue.dev master)
+- ✅ Generate .claude/AIDER.md (Aider master)
+
+**Exporter Commands:**
+```bash
+python tools/exporter.py --generate-masters     # Generate all masters
+python tools/exporter.py --export-all           # Export to platforms
+python tools/exporter.py --generate-and-export  # Both in one go
+```
+
 - **Priority 2:** Add inline config option (--inline flag)
 - **Priority 3:** Validate exported configs
-- **Priority 4:** Create .claude/config.yaml as unified master
+- **Priority 4:** Enhanced interactive setup
 
 ### Alignment with Industry Standards
 - ✅ Matches DeployHQ best practices
