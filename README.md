@@ -7,7 +7,7 @@
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge&logo=checkmarx)](https://github.com/sharmapuneet1510/awesome-prompts)
 [![Version](https://img.shields.io/badge/Version-3.1-blueviolet?style=for-the-badge&logo=semanticrelease)](https://github.com/sharmapuneet1510/awesome-prompts/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge&logo=opensourceinitiative)](LICENSE)
-[![Updated](https://img.shields.io/badge/Updated-June%208%202026-darkblue?style=for-the-badge&logo=calendar)](https://github.com/sharmapuneet1510/awesome-prompts/commits/main)
+[![Updated](https://img.shields.io/badge/Updated-June%2010%202026-darkblue?style=for-the-badge&logo=calendar)](https://github.com/sharmapuneet1510/awesome-prompts/commits/main)
 [![Platform](https://img.shields.io/badge/Platforms-9+-ff69b4?style=for-the-badge&logo=electron)](docs/)
 
 **Compatible with:** Claude Code • GitHub Copilot • Cursor • Windsurf • VS Code • Gemini CLI • Continue.dev • OpenAI • Aider
@@ -20,6 +20,7 @@
 
 ### ✨ Latest Features
 
+- ✅ **Auto-Context Generation** — `orchestrator:build` now automatically generates project context (architecture.md, tech-stack.md, design.html) with dual commits, no manual steps (Issue #9)
 - ✅ **Foundational Behavioral Principles** — All agents now operate under 4 core principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution)
 - ✅ **9 Specialist Agent Modes** — Invoke agents as Full-Stack Engineer, Code Auditor, Debugging Expert, Technical Lead, Performance Expert, etc.
 - ✅ **28 Real-World Function Examples** — Complete examples for every agent function (see [FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md))
