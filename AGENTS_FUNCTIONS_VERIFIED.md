@@ -870,6 +870,92 @@ orchestrator:build path=./oauth2-requirements.md tech_stack="Java Spring Boot"
 
 ---
 
+### Auto-Chaining Behavior (NEW)
+
+When orchestrator:build completes successfully, it automatically generates and documents the project context without any additional invocations:
+
+**What Happens Automatically:**
+
+1. **Automatic Context Generation** — After build completion, orchestrator:build automatically invokes orchestrator:context with the generated project directory
+2. **Comprehensive Documentation** — Generates complete project context artifacts:
+   - `docs/context/architecture.md` — C4 system architecture, components, data flows
+   - `docs/context/tech-stack.md` — Technology reference (languages, frameworks, databases, infrastructure)
+   - `docs/context/design.html` — Interactive 4-tab visualization (architecture, tech stack, file tree, API endpoints)
+   - `docs/context/context.json` — Machine-readable project metadata (modules, dependencies, deployment)
+3. **Dual Commits** — Creates two separate, linked commits for atomic review:
+   - **Commit 1:** Code artifacts (src/, tests/, docs/, .github/workflows/, Dockerfile, terraform/)
+   - **Commit 2:** Context artifacts (docs/context/architecture.md, docs/context/tech-stack.md, design.html, context.json)
+4. **Atomic PR** — Both commits automatically included in a single GitHub PR for combined review and merge
+
+**Configuration Options:**
+
+This auto-chaining behavior can be customized via `.claude/settings.json`:
+
+```yaml
+orchestrator:
+  build:
+    auto_generate_context: true          # Enable/disable auto-chaining (default: true)
+    context_depth: "comprehensive"       # comprehensive|standard|quick (default: comprehensive)
+    separate_context_commit: true        # Create separate context commit (default: true)
+    skip_on_context_failure: false       # Continue to PR if context generation fails (default: false)
+```
+
+**Error Handling:**
+
+- **Build fails** → No auto-chaining triggered, error returned to user
+- **Build succeeds, context generation fails** → Code commit created (marked as partial_success), PR still proceeds
+- **Commit fails** → Error returned to user, artifacts preserved in working directory for manual recovery
+- **PR creation fails** → All commits already on feature branch, user can create PR manually via GitHub UI
+
+**Example Output:**
+
+When orchestrator:build completes with auto-chaining enabled:
+
+```json
+{
+  "status": "success",
+  "pr_url": "https://github.com/user/repo/pull/123",
+  "pr_number": 123,
+  "commits": [
+    {
+      "hash": "abc1234567890",
+      "message": "feat: e-commerce MVP (product catalog, shopping cart, checkout)",
+      "type": "code_artifacts",
+      "files_changed": 103
+    },
+    {
+      "hash": "def5678901234",
+      "message": "docs: auto-generated project context (architecture, tech-stack, design)",
+      "type": "context_artifacts",
+      "files_changed": 4
+    }
+  ],
+  "build_status": "success",
+  "context_generation_status": "success",
+  "summary": "Complete e-commerce MVP with full project documentation"
+}
+```
+
+**Backward Compatibility:**
+
+- ✅ **API unchanged** — orchestrator:build call signature remains identical
+- ✅ **Opt-in behavior** — Auto-chaining enabled by default, can be disabled via configuration
+- ✅ **No breaking changes** — All existing code calling orchestrator:build works unchanged
+- ✅ **Manual override** — Users can set `auto_generate_context: false` in settings for manual control
+
+**User Experience:**
+
+Users invoke `orchestrator:build` once and receive:
+- Complete, tested codebase (code artifacts)
+- Comprehensive project documentation (context artifacts)
+- Ready-to-review GitHub PR with full history
+- No manual follow-up steps needed
+- No context loss between build and documentation phases
+
+This single invocation produces a fully documented project, dramatically reducing setup time for development teams and improving onboarding for new engineers.
+
+---
+
 ### orchestrator:context
 
 **Purpose:** Build deep project understanding for existing systems. Generates architecture documentation, technology summary, interactive visualization, and knowledge graph. Ideal for onboarding new team members or understanding unfamiliar codebases.
