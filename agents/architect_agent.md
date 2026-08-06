@@ -252,6 +252,14 @@ Ask user:
 
 ## FUNCTION: architect:design
 
+> **Spec-Driven Gate (RULE 11):** Before running, confirm
+> `specs/<feature-name>/requirements.md` exists and is `Status: Approved`.
+> If it isn't, stop and tell the user to complete `orchestrator:plan`
+> (the specify stage) first — do not proceed to design. On completion,
+> write `specs/<feature-name>/design.md` per
+> `skills/spec_driven_development_skill.md`, present it, and wait for
+> `Status: Approved` before any implementer function runs.
+
 > **Function:** `architect:design` — Greenfield system design with C4 topology, caching, deployment
 
 ### STEP 1 — Design System Topology
