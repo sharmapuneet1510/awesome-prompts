@@ -149,6 +149,13 @@ OUTPUT:
 
 ## FUNCTION 1: quality:review
 
+> **Spec-Driven Traceability (RULE 11):** If the feature under review has
+> `specs/<feature-name>/` artifacts, run the Traceability Rule from
+> `skills/spec_driven_development_skill.md` before sign-off: every
+> `tasks.md` entry cites a `REQ-N`, every `REQ-N` is cited by at least one
+> task, and `design.md` was Approved before any task was marked complete.
+> Report violations as review findings — do not silently pass them.
+
 > **Absorbed from:** code_review_agent.md (full 6-phase review framework)
 
 **Purpose:** Validate PR/code against requirements, assess code quality, verify test coverage. Supports context-driven reviews with auto-detected JIRA tickets and detailed per-issue code fixes.
