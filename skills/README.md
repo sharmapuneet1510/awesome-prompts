@@ -1,8 +1,8 @@
 # 🛠️ Skills Directory (v2.1 — Consolidated)
 
-> Reusable, tech-specific implementation modules used by agents. 25 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 26 skills, zero orphans.
 
-## Quick Navigation (25 Skills)
+## Quick Navigation (26 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -31,6 +31,7 @@
 | 23 | [BA Create](ba_create_skill.md) | Parse plain-text requirements → JIRA JSON + BDD HTML cards | Language-agnostic | Business Analyst |
 | 24 | [Multi-Review HTML](multi_review_html_skill.md) | Batch PR review HTML with sidebar tabs + summary dashboard | Language-agnostic | Quality Agent |
 | 25 | [JIRA Incremental Spec Generator](jira_incremental_spec_generator_skill.md) | Read JIRA incrementally, generate comprehensive application spec (book format) | Language-agnostic | Orchestrator, Architect |
+| 26 | [Spec-Driven Development](spec_driven_development_skill.md) | Requirements → design → tasks gate before implementation | Language-agnostic | Orchestrator, Architect, Implementer, Quality |
 
 ---
 
