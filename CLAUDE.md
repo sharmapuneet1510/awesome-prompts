@@ -120,6 +120,7 @@ Agents are organized by responsibility using a **lean, role-based architecture**
 Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (22 total):
 
 ```
+    (specify: requirements.md → plan: design.md → tasks: tasks.md, each Approved — RULE 11)
 orchestrator:plan → orchestrator:build
     ↓
 architect:design (topology, API, schema)

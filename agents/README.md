@@ -46,6 +46,12 @@ quality:review             ← Validate, score, generate report
 orchestrator:pr            ← Package and open GitHub PR
 ```
 
+**Spec-driven gate (RULE 11):** `orchestrator:plan` = specify
+(`requirements.md`), `architect:design` = plan (`design.md`),
+`implementer` task generation = tasks (`tasks.md`) — each must be
+`Status: Approved` before the next stage runs. See
+`skills/spec_driven_development_skill.md`.
+
 **Key Innovation:** `implementer:full` runs build → test → doc in a single execution, maintaining full context awareness through all phases. This prevents the state-transfer overhead that existed in v2.0.
 
 ---
