@@ -504,3 +504,97 @@ Ask when:
 - The business logic is unclear (do zero-value orders succeed or fail?)
 
 Maximum 3 questions at a time. Be specific. Offer options where possible.
+
+---
+
+## RULE 10 — Surgical Precision & Token Efficiency
+
+These four practices ensure minimal overhead and maximum clarity in every interaction.
+
+### 10.1 — Surgical Modification: Touch Only What You Must
+
+**Never refactor peripheral code or "improve" adjacent areas unless explicitly required.**
+
+When editing existing code:
+- Modify only the files and functions directly needed for the task
+- Don't touch formatting, comments, or style of unrelated code
+- If you notice unrelated dead code or improvements, mention it but don't fix it
+- Match existing style exactly, even if you'd code it differently
+- Only remove imports/variables YOUR changes made unused
+
+**The test:** Every modified line should trace directly back to the user's request.
+
+**When to apply:** Every code change, every refactor, every merge.
+
+### 10.2 — Diff-Only Outputs: No Boilerplate Reprinting
+
+**When providing code updates, output ONLY the lines that changed.**
+
+- Use unified diff format (or explicit line ranges)
+- Never reprint unchanged helper functions, boilerplate, or supporting code
+- Don't repeat imports, class definitions, or class bodies that aren't changing
+- Reference unchanged sections with `// ... rest of class unchanged` or similar
+- Extract the exact diff and make it obvious what needs changing
+
+**Why:** Saves context tokens and makes changes visually scannable. If the full function needs reprinting, note it.
+
+**When to apply:** Every code snippet you provide. Always.
+
+### 10.3 — Graph-Style Context Curation: Map Before Coding
+
+**Before writing code, mentally structure the project as a Semantic Dependency Graph.**
+
+Steps:
+1. **Identify nodes:** Files, modules, classes, functions involved in the feature
+2. **Map edges:** How changing node A impacts downstream nodes B, C, D
+3. **Isolate scope:** List ONLY the specific files that need to be opened/modified
+4. **Trace impact:** State explicitly how changes propagate downstream
+5. **Request minimal context:** Ask for type definitions or structural outlines instead of full files
+
+**Why:** Avoids loading unnecessary context. Saves tokens. Keeps focus surgical.
+
+**When to apply:** Every multi-file change, every refactor, every architectural decision.
+
+### 10.4 — Token & Memory Efficiency: Compact State
+
+**Keep conversation history compressed and actionable.**
+
+Practices:
+- Use "System State Summary" to capture only critical decisions, outstanding bugs, variable states
+- Remove verbose exploration once findings are captured
+- Link related memories with `[[memory-name]]` syntax
+- Archive long debugging sessions into structured findings
+- Reuse prior context by referencing line numbers and file paths
+
+**Why:** Longer conversations cost more tokens and create worse context windows for decision-making.
+
+**When to apply:** Every long task, every multi-step workflow, every session boundary.
+
+### 10.5 — Execution Workflow: Plan Before Acting
+
+**Every task follows this atomic 4-step pattern.**
+
+1. **Scope Check:** List the ONLY files that need to be opened or modified. State nothing else changes.
+2. **Map Dependencies:** Explicitly state how changes to these files impact downstream nodes.
+3. **Atomic Plan:** Provide a brief bulleted implementation checklist with clear success criteria.
+4. **High-Density Output:** Deliver optimized code matching the mapped graph. No extra context.
+
+**Example:**
+```
+Scope: Only modify User.java (line 42-55) and UserRepository.java (line 18)
+Impact: UserService (line 35) calls deposit() — ensure signature matches
+Plan:
+  1. Add @Transactional to deposit() → verify: UserService still compiles
+  2. Update UserRepository.find() return type → verify: no call sites break
+  3. Run tests → verify: all pass
+Output: [code]
+```
+
+**When to apply:** Every implementation task, every refactor, every multi-file change.
+
+---
+
+## Attribution & Integration
+
+These 10 rules + 4 Foundational Principles together form the **Master Instruction Set v2.0**.
+All agents follow these rules without exception. Principles are woven into agent DNA, not enforced as checklists.
