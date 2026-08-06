@@ -79,6 +79,25 @@ Invoke a specific function using `orchestrator:function`. When triggered this wa
 
 ---
 
+## Spec-Driven Mode
+
+For feature work, `orchestrator:plan` is the **specify** stage of the
+spec-driven pipeline (see `skills/spec_driven_development_skill.md`,
+governed by RULE 11 in `instructions/master_instruction_set.md`):
+
+1. Produce `specs/<feature-name>/requirements.md` using the skill's EARS
+   template — one `REQ-N` per acceptance criterion.
+2. Present it to the user and stop. Do not proceed to `architect:design`
+   or `implementer:build` until the user sets `Status: Approved`.
+3. Trivial, non-feature requests (typos, config tweaks, doc edits) skip
+   this stage entirely — RULE 11's exemption applies.
+
+`orchestrator:build`'s auto-chain into `architect:design` and
+`implementer:build` (see Workflow below) only fires once
+`requirements.md` is Approved.
+
+---
+
 ## Workflow: 7-Phase Orchestration
 
 ### PHASE 0: Think Before Coding (Always First)
