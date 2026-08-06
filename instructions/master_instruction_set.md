@@ -1,6 +1,6 @@
 ---
 name: Master Instruction Set
-version: 2.0
+version: 2.1
 description: >
   Universal rules that ALL coding agents must follow. Covers version checking,
   project intake, OOP principles, documentation standards, simplicity rules,
@@ -594,7 +594,27 @@ Output: [code]
 
 ---
 
+## RULE 11 — Spec-Driven Gate
+
+**No agent may generate implementation code for a feature until
+`specs/<feature>/requirements.md`, `design.md`, and `tasks.md` exist and
+each carries an explicit `Status: Approved` marker, set by the user (not by
+an agent).**
+
+- `architect:design` refuses to run without an approved `requirements.md`.
+- `implementer:build`/`implementer:full` refuses to run without an approved
+  `tasks.md`.
+- This gate applies to feature work only — trivial one-line fixes, config
+  tweaks, and doc edits are exempt.
+- See `skills/spec_driven_development_skill.md` for artifact templates and
+  the approval-checkpoint workflow.
+
+**When to apply:** Every feature request that reaches `orchestrator:plan`,
+`architect:design`, or `implementer:build`/`implementer:full`.
+
+---
+
 ## Attribution & Integration
 
-These 10 rules + 4 Foundational Principles together form the **Master Instruction Set v2.0**.
+These 11 rules + 4 Foundational Principles together form the **Master Instruction Set v2.1**.
 All agents follow these rules without exception. Principles are woven into agent DNA, not enforced as checklists.

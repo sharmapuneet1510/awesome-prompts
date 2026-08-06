@@ -11,9 +11,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. **Surgical Changes** — Touch only what you must, clean up only your mess
 4. **Goal-Driven Execution** — Define success criteria, loop until verified
 
-See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES + RULES 0-10 sections) for details.
+See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES + RULES 0-11 sections) for details.
 
 **New in v2.0:** RULE 10 adds five token-efficient practices: Surgical Modification, Diff-Only Outputs, Graph-Style Context Curation, Token & Memory Efficiency, and Execution Workflow (master_instruction_set.md lines 510-595).
+
+**New in v2.1:** RULE 11 adds the Spec-Driven Gate — no feature code without an approved requirements → design → tasks chain. See `skills/spec_driven_development_skill.md`.
 
 ---
 
