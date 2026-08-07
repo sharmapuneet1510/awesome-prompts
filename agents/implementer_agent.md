@@ -328,10 +328,12 @@ Get confirmation before coding.
 > **Spec-Driven Gate (RULE 11):** Before generating code for feature work,
 > confirm `specs/<feature-name>/design.md` is `Status: Approved` and
 > `specs/<feature-name>/tasks.md` exists. If `tasks.md` doesn't exist yet,
-> generate it via `tools/task_generator.py` per
+> derive it from `design.md` (optionally seeded by `tools/task_generator.py`'s
+> templates) and write it yourself per
 > `skills/spec_driven_development_skill.md`, present it, and wait for
-> `Status: Approved` before writing any code. Trivial/non-feature work is
-> exempt per RULE 11.
+> `Status: Approved` before writing any code. Trivial work is exempt per
+> RULE 11 — substantive changes to agent, skill, or instruction files are
+> feature work and are not exempt.
 
 > **Absorbed from:** implementation_agent (STEP 4-5)
 
@@ -1666,9 +1668,10 @@ spec:
 
 ## Function 7: `implementer:full`
 
-> **Spec-Driven Gate (RULE 11):** Same gate as `implementer:build` — this
-> function runs build+test+doc in one context, so the `tasks.md` approval
-> check happens once, before any of the three sub-phases start.
+> **Spec-Driven Gate (RULE 11):** Same gate as `implementer:build` — i.e.
+> `design.md` and `tasks.md` must both be `Status: Approved` — this function
+> runs build+test+doc in one context, so the check happens once, before any
+> of the three sub-phases start.
 
 > **Absorbed from:** all 4 agents (implementation + integration + test + documentation)
 

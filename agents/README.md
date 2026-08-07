@@ -35,7 +35,7 @@ See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES section) f
 ```
 User Requirement
     ↓
-orchestrator:plan          ← Parse requirement, break into tasks
+orchestrator:plan          ← Parse requirement, produce requirements.md
     ↓
 architect:design           ← System topology, API contracts, DB schema
     ↓

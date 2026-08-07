@@ -28,13 +28,25 @@ Governed by **RULE 11 — Spec-Driven Gate** in
 | Stage | Owner | Artifact | Gate |
 |---|---|---|---|
 | constitution | `instructions/master_instruction_set.md` | — | n/a (pre-existing) |
-| specify | `orchestrator:plan` | `specs/<feature>/requirements.md` | none (first artifact) |
-| plan | `architect:design` | `specs/<feature>/design.md` | `requirements.md` must be `Status: Approved` |
-| tasks | `implementer` (via `tools/task_generator.py`) | `specs/<feature>/tasks.md` | `design.md` must be `Status: Approved` |
+| specify | `orchestrator:plan` | `specs/<feature-name>/requirements.md` | none (first artifact) |
+| plan | `architect:design` | `specs/<feature-name>/design.md` | `requirements.md` must be `Status: Approved` |
+| tasks | `implementer` (via `tools/task_generator.py`) | `specs/<feature-name>/tasks.md` | `design.md` must be `Status: Approved` |
 | implement | `implementer:build` / `implementer:full` | code, tests, docs | `tasks.md` must be `Status: Approved` |
 
 `quality:review` additionally runs the Traceability Rule (below) against
 delivered code.
+
+---
+
+## Artifact Location
+
+`specs/<feature-name>/` lives at the root of the *downstream* project being
+built — not in this repo's own `docs/` tree. Keep it distinct from:
+- `docs/superpowers/specs/` — this repo's own brainstorming design docs,
+  produced via the `superpowers:brainstorming` skill.
+- `docs/context/` — `context_builder_skill` output (architecture.md,
+  tech-stack.md, context.json, design.html), which documents an existing
+  codebase rather than gating new feature work.
 
 ---
 
@@ -90,9 +102,10 @@ approval without restarting the stage.
 
 ### `tasks.md` (written by `implementer` via `tools/task_generator.py`)
 
-`tools/task_generator.py` already generates individual numbered task spec
-files (e.g. `task-01-database-schema.md`, `task-02-backend-api.md`). This
-skill adds one file that indexes them against requirement IDs:
+Derive tasks from `design.md`, optionally seeding structure from
+`tools/task_generator.py`'s templates (database schema, backend API,
+frontend UI, integration tests, deployment) — the tool returns task data
+in memory; the agent writes `tasks.md` itself as the index below.
 
 ```markdown
 # <Feature Name> — Tasks
@@ -118,8 +131,10 @@ After writing `requirements.md`, `design.md`, or `tasks.md`, the agent:
 
 1. Stops before proceeding to the next stage.
 2. Tells the user exactly what was written and where (file path).
-3. Asks the user to review and either approve (agent flips `Status:` to
-   `Approved`) or request changes (agent revises and re-presents).
+3. Asks the user to review and either approve (agent writes `Status:
+   Approved` into the file, but only once the user has explicitly said to
+   approve — never inferred from silence or a vague acknowledgement) or
+   request changes (agent revises and re-presents).
 4. Does not advance to the next stage until `Status: Approved` is set.
 
 This is the same approval UX used by the `superpowers:brainstorming` skill.

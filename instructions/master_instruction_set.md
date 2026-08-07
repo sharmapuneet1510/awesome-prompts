@@ -597,15 +597,18 @@ Output: [code]
 ## RULE 11 — Spec-Driven Gate
 
 **No agent may generate implementation code for a feature until
-`specs/<feature>/requirements.md`, `design.md`, and `tasks.md` exist and
+`specs/<feature-name>/requirements.md`, `design.md`, and `tasks.md` exist and
 each carries an explicit `Status: Approved` marker, set by the user (not by
-an agent).**
+an agent) — the agent may write the marker into the file, but only after
+the user has explicitly approved — never on its own inference.**
 
 - `architect:design` refuses to run without an approved `requirements.md`.
 - `implementer:build`/`implementer:full` refuses to run without an approved
   `tasks.md`.
-- This gate applies to feature work only — trivial one-line fixes, config
-  tweaks, and doc edits are exempt.
+- This gate applies to feature work only — trivial work (one-line fixes,
+  config tweaks, and small documentation edits) is exempt. Substantive
+  changes to agent, skill, or instruction files are feature work and are
+  not exempt.
 - See `skills/spec_driven_development_skill.md` for artifact templates and
   the approval-checkpoint workflow.
 
