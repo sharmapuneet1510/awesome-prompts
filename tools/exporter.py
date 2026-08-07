@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-exporter.py — Unified agent & skill exporter for AI assistant platforms.
+exporter.py — Unified skill, agent, & instruction exporter for AI assistant platforms.
 
-Reads skill files from skills/ and agent files from agents/ and writes
-one file per item to the platform-native directory for each target.
+Reads skills from skills/, agents from agents/, and auto-discovers instructions
+referenced by agents, then writes one file per item to platform-native directories.
 
 Usage:
     python tools/exporter.py                          # all → all platforms
     python tools/exporter.py --target copilot claude  # specific platforms
     python tools/exporter.py --skills java,spring     # filter skills
     python tools/exporter.py --agents developer       # filter agents by role
+    python tools/exporter.py --instructions master    # filter instructions (auto-referenced by default)
     python tools/exporter.py --hooks promptshield     # filter hooks
     python tools/exporter.py --list                   # list all items
     python tools/exporter.py --dry-run                # preview without writing
@@ -332,6 +333,41 @@ class FunctionFile(BaseFile):
 
 
 @dataclass
+class InstructionFile(BaseFile):
+    """Parsed representation of an instruction .md file from instructions/.
+
+    Attributes:
+        applies_to: Technology areas or use cases this instruction covers.
+    """
+
+    applies_to: list[str]
+
+    @classmethod
+    def from_path(cls, path: Path) -> "InstructionFile":
+        """Parses an instruction markdown file.
+
+        Args:
+            path: Path to the instructions/*.md file.
+
+        Returns:
+            A populated InstructionFile instance.
+
+        Raises:
+            ValueError: If the file has no YAML frontmatter.
+        """
+        fm, body = cls._parse_frontmatter(path)
+        return cls(
+            path=path,
+            name=cls._extract_scalar(fm, "name", default=path.stem),
+            version=cls._extract_scalar(fm, "version", default="1.0"),
+            description=cls._extract_scalar(fm, "description"),
+            applies_to=cls._extract_list(fm, "applies_to"),
+            content=body,
+            slug=path.stem,
+        )
+
+
+@dataclass
 class HookFile(BaseFile):
     """Parsed representation of a hook file (.sh or .py) from hooks/.
 
@@ -407,6 +443,71 @@ class HookFile(BaseFile):
         )
 
 
+@dataclass
+class PromptFile(BaseFile):
+    """Parsed representation of a prompt template file from prompts/**/.
+
+    Unlike skills/agents/instructions/hooks, prompt files are not required to
+    carry YAML frontmatter — most are plain copy-paste templates (.md or .txt).
+    If frontmatter is present it's used; otherwise name/description are
+    derived heuristically from the file content.
+
+    Attributes:
+        category: The prompt's category, derived from its parent directory
+                   name (e.g. 'code-review', 'devops-sre').
+    """
+
+    category: str
+
+    @classmethod
+    def from_path(cls, path: Path) -> "PromptFile":
+        """Parses a prompt template file (.md or .txt).
+
+        Args:
+            path: Path to the prompts/<category>/*.md or *.txt file.
+
+        Returns:
+            A populated PromptFile instance.
+        """
+        raw = path.read_text(encoding="utf-8-sig")
+        if cls._FRONTMATTER_RE.match(raw):
+            fm, body = cls._parse_frontmatter(path)
+            name = cls._extract_scalar(fm, "name", default=path.stem)
+            version = cls._extract_scalar(fm, "version", default="1.0")
+            description = cls._extract_scalar(fm, "description")
+        else:
+            body = raw.strip()
+            name = cls._first_heading(body) or path.stem.replace("_", " ")
+            version = "1.0"
+            description = cls._first_paragraph(body)
+
+        return cls(
+            path=path,
+            name=name,
+            version=version,
+            description=description,
+            category=path.parent.name,
+            content=body,
+            slug=path.stem,
+        )
+
+    @staticmethod
+    def _first_heading(text: str) -> str:
+        """Returns the text of the first Markdown '# ' heading, or ''."""
+        match = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
+        return match.group(1).strip() if match else ""
+
+    @staticmethod
+    def _first_paragraph(text: str) -> str:
+        """Returns the first non-empty, non-heading line, truncated to 200 chars."""
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            return stripped[:200]
+        return ""
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Export Result
 # ─────────────────────────────────────────────────────────────────────────────
@@ -416,14 +517,16 @@ class ExportResult:
     """Result of one platform export run.
 
     Attributes:
-        target:         Platform name (e.g. 'claude').
-        skill_files:    Paths of written (or would-be-written) skill files.
-        agent_files:    Paths of written (or would-be-written) agent files.
-        module_files:   Paths of written (or would-be-written) module files.
-        function_files: Paths of written (or would-be-written) function files.
-        hook_files:     Paths of discovered hook files.
-        removed_files:  Paths of old files removed during cleanup.
-        dry_run:        True if files were NOT actually written.
+        target:           Platform name (e.g. 'claude').
+        skill_files:      Paths of written (or would-be-written) skill files.
+        agent_files:      Paths of written (or would-be-written) agent files.
+        module_files:     Paths of written (or would-be-written) module files.
+        function_files:   Paths of written (or would-be-written) function files.
+        instruction_files: Paths of written (or would-be-written) instruction files.
+        hook_files:       Paths of discovered hook files.
+        prompt_files:     Paths of written (or would-be-written) prompt files.
+        removed_files:    Paths of old files removed during cleanup.
+        dry_run:          True if files were NOT actually written.
     """
 
     target: str
@@ -431,7 +534,9 @@ class ExportResult:
     agent_files: list[Path]
     module_files: list[Path] = field(default_factory=list)
     function_files: list[Path] = field(default_factory=list)
+    instruction_files: list[Path] = field(default_factory=list)
     hook_files: list[Path] = field(default_factory=list)
+    prompt_files: list[Path] = field(default_factory=list)
     removed_files: list[Path] = field(default_factory=list)
     dry_run: bool = False
 
@@ -439,14 +544,16 @@ class ExportResult:
         """Human-readable summary of exported files."""
         lines = [
             f"✅ {self.target.upper()}",
-            f"   Skills:    {len(self.skill_files)}",
-            f"   Agents:    {len(self.agent_files)}",
-            f"   Modules:   {len(self.module_files)}",
-            f"   Functions: {len(self.function_files)}",
-            f"   Hooks:     {len(self.hook_files)}",
+            f"   Skills:        {len(self.skill_files)}",
+            f"   Agents:        {len(self.agent_files)}",
+            f"   Modules:       {len(self.module_files)}",
+            f"   Functions:     {len(self.function_files)}",
+            f"   Instructions:  {len(self.instruction_files)}",
+            f"   Hooks:         {len(self.hook_files)}",
+            f"   Prompts:       {len(self.prompt_files)}",
         ]
         if self.removed_files:
-            lines.append(f"   Removed:   {len(self.removed_files)}")
+            lines.append(f"   Removed:       {len(self.removed_files)}")
         return "\n".join(lines)
 
 
@@ -489,6 +596,10 @@ class PlatformExporter(ABC):
         """Directory where function files are written. Default: agent_output_dir/functions."""
         return self.agent_output_dir() / "functions"
 
+    def instruction_output_dir(self) -> Path:
+        """Directory where instruction files are written. Default: agent_output_dir/instructions."""
+        return self.agent_output_dir() / "instructions"
+
     @abstractmethod
     def hook_output_dir(self) -> Path:
         """Directory where hook files are written.
@@ -497,6 +608,15 @@ class PlatformExporter(ABC):
             - Claude: ~/.claude/hooks/
             - Copilot: .github/hooks/
         """
+
+    def prompt_output_dir(self) -> Path:
+        """Directory where prompt files are written.
+
+        Default: sibling of skill_output_dir(), named 'prompts'. Override
+        when a platform already uses that name for something else (e.g.
+        Continue.dev's skill_output_dir() IS '.continue/prompts').
+        """
+        return self.skill_output_dir().parent / "prompts"
 
     @abstractmethod
     def format_skill(self, skill: SkillFile) -> str:
@@ -514,6 +634,14 @@ class PlatformExporter(ABC):
         """Formats a function for this platform. Default: same as agent."""
         return self.format_agent(function)  # type: ignore
 
+    def format_instruction(self, instruction: InstructionFile) -> str:
+        """Formats an instruction for this platform. Default: same as agent."""
+        return self.format_agent(instruction)  # type: ignore
+
+    def format_prompt(self, prompt: PromptFile) -> str:
+        """Formats a prompt template for this platform. Default: pass through content as-is."""
+        return prompt.content if prompt.content.endswith("\n") else prompt.content + "\n"
+
     def skill_filename(self, skill: SkillFile) -> str:
         """Output filename for a skill. Override for non-.md extensions."""
         return f"{skill.slug}.md"
@@ -530,9 +658,17 @@ class PlatformExporter(ABC):
         """Output filename for a function. Override for non-.md extensions."""
         return f"{function.slug}.md"
 
+    def instruction_filename(self, instruction: InstructionFile) -> str:
+        """Output filename for an instruction. Override for non-.md extensions."""
+        return f"{instruction.slug}.md"
+
     def hook_filename(self, hook: HookFile) -> str:
         """Output filename for a hook. Override for platform-specific naming."""
         return hook.path.name
+
+    def prompt_filename(self, prompt: PromptFile) -> str:
+        """Output filename for a prompt, nested under its category. Preserves original extension."""
+        return f"{prompt.category}/{prompt.slug}{prompt.path.suffix}"
 
     def format_hook(self, hook: HookFile) -> str:
         """Format hook content for platform. Override if platform needs special formatting."""
@@ -568,6 +704,28 @@ class PlatformExporter(ABC):
 
         return hook_paths
 
+    def export_prompts(self, prompts: list[PromptFile], dry_run: bool = False) -> list[Path]:
+        """Copies prompt template files to the platform's prompt directory.
+
+        Args:
+            prompts: Prompt files to export.
+            dry_run: If True, generate paths but do not write files.
+
+        Returns:
+            List of written (or would-be-written) prompt file paths.
+        """
+        prompt_paths: list[Path] = []
+
+        for prompt in prompts:
+            out = self.prompt_output_dir() / self.prompt_filename(prompt)
+            prompt_paths.append(out)
+
+            if not dry_run:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(self.format_prompt(prompt), encoding="utf-8")
+
+        return prompt_paths
+
     def _manifest_path(self) -> Path:
         """Path to export manifest file for this platform."""
         return self.skill_output_dir().parent / f".{self.target_name}-export-manifest.json"
@@ -576,26 +734,29 @@ class PlatformExporter(ABC):
         """Load previous export manifest for this platform.
 
         Returns:
-            Dict with 'skills', 'agents', 'modules', 'functions', 'hooks' lists of previous export paths.
+            Dict with 'skills', 'agents', 'modules', 'functions', 'instructions', 'hooks' lists of previous export paths.
         """
         manifest_file = self._manifest_path()
         if manifest_file.exists():
             try:
                 return json.loads(manifest_file.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, OSError):
-                return {"skills": [], "agents": [], "modules": [], "functions": [], "hooks": []}
-        return {"skills": [], "agents": [], "modules": [], "functions": [], "hooks": []}
+                return {"skills": [], "agents": [], "modules": [], "functions": [], "instructions": [], "hooks": [], "prompts": []}
+        return {"skills": [], "agents": [], "modules": [], "functions": [], "instructions": [], "hooks": [], "prompts": []}
 
     def _save_manifest(self, skills: list[Path], agents: list[Path], modules: list[Path],
-                       functions: list[Path], hooks: list[Path]) -> None:
+                       functions: list[Path], instructions: list[Path], hooks: list[Path],
+                       prompts: list[Path] = []) -> None:
         """Save export manifest for this platform.
 
         Args:
-            skills:    List of exported skill file paths.
-            agents:    List of exported agent file paths.
-            modules:   List of exported module file paths.
-            functions: List of exported function file paths.
-            hooks:     List of exported hook file paths.
+            skills:       List of exported skill file paths.
+            agents:       List of exported agent file paths.
+            modules:      List of exported module file paths.
+            functions:    List of exported function file paths.
+            instructions: List of exported instruction file paths.
+            hooks:        List of exported hook file paths.
+            prompts:      List of exported prompt file paths.
         """
         manifest_file = self._manifest_path()
         manifest_file.parent.mkdir(parents=True, exist_ok=True)
@@ -604,22 +765,27 @@ class PlatformExporter(ABC):
             "agents": [str(p) for p in agents],
             "modules": [str(p) for p in modules],
             "functions": [str(p) for p in functions],
+            "instructions": [str(p) for p in instructions],
             "hooks": [str(p) for p in hooks],
+            "prompts": [str(p) for p in prompts],
         }
         manifest_file.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     def _cleanup_old_exports(self, current_skills: list[Path], current_agents: list[Path],
                              current_modules: list[Path], current_functions: list[Path],
-                             current_hooks: list[Path], dry_run: bool = False) -> list[Path]:
+                             current_instructions: list[Path], current_hooks: list[Path],
+                             dry_run: bool = False, current_prompts: list[Path] = []) -> list[Path]:
         """Remove old exported files not in current export.
 
         Args:
-            current_skills:    Paths of newly exported skills.
-            current_agents:    Paths of newly exported agents.
-            current_modules:   Paths of newly exported modules.
-            current_functions: Paths of newly exported functions.
-            current_hooks:     Paths of newly exported hooks.
-            dry_run:           If True, only list files to be removed.
+            current_skills:       Paths of newly exported skills.
+            current_agents:       Paths of newly exported agents.
+            current_modules:      Paths of newly exported modules.
+            current_functions:    Paths of newly exported functions.
+            current_instructions: Paths of newly exported instructions.
+            current_hooks:        Paths of newly exported hooks.
+            dry_run:              If True, only list files to be removed.
+            current_prompts:      Paths of newly exported prompts.
 
         Returns:
             List of removed file paths.
@@ -629,7 +795,8 @@ class PlatformExporter(ABC):
 
         # Convert current exports to set of strings for efficient lookup
         current_paths = set(str(p) for p in (
-            current_skills + current_agents + current_modules + current_functions + current_hooks
+            current_skills + current_agents + current_modules + current_functions
+            + current_instructions + current_hooks + current_prompts
         ))
 
         # Check old skills
@@ -668,8 +835,26 @@ class PlatformExporter(ABC):
                     if not dry_run:
                         old_path.unlink()
 
+        # Check old instructions
+        for old_path_str in manifest.get("instructions", []):
+            if old_path_str not in current_paths:
+                old_path = Path(old_path_str)
+                if old_path.exists():
+                    removed.append(old_path)
+                    if not dry_run:
+                        old_path.unlink()
+
         # Check old hooks
         for old_path_str in manifest.get("hooks", []):
+            if old_path_str not in current_paths:
+                old_path = Path(old_path_str)
+                if old_path.exists():
+                    removed.append(old_path)
+                    if not dry_run:
+                        old_path.unlink()
+
+        # Check old prompts
+        for old_path_str in manifest.get("prompts", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
                 if old_path.exists():
@@ -685,18 +870,22 @@ class PlatformExporter(ABC):
         agents: list[AgentFile],
         modules: list[ModuleFile],
         functions: list[FunctionFile],
+        instructions: list[InstructionFile],
         hooks: list[HookFile],
         dry_run: bool = False,
+        prompts: list[PromptFile] = [],
     ) -> ExportResult:
-        """Writes one file per skill, agent, module, function, and hook. Removes old versions not in current export.
+        """Writes one file per skill, agent, module, function, instruction, hook, and prompt. Removes old versions not in current export.
 
         Args:
-            skills:    Skill files to export.
-            agents:    Agent files to export.
-            modules:   Module files to export.
-            functions: Function files to export.
-            hooks:     Hook files to export.
-            dry_run:   If True, generate paths but do not write files.
+            skills:       Skill files to export.
+            agents:       Agent files to export.
+            modules:      Module files to export.
+            functions:    Function files to export.
+            instructions: Instruction files to export.
+            hooks:        Hook files to export.
+            dry_run:      If True, generate paths but do not write files.
+            prompts:      Prompt files to export.
 
         Returns:
             ExportResult with all written (or planned) file paths and removed old files.
@@ -705,6 +894,7 @@ class PlatformExporter(ABC):
         agent_paths: list[Path] = []
         module_paths: list[Path] = []
         function_paths: list[Path] = []
+        instruction_paths: list[Path] = []
 
         for skill in skills:
             out = self.skill_output_dir() / self.skill_filename(skill)
@@ -734,16 +924,26 @@ class PlatformExporter(ABC):
                 out.parent.mkdir(parents=True, exist_ok=True)
                 out.write_text(self.format_function(function), encoding="utf-8")
 
+        for instruction in instructions:
+            out = self.instruction_output_dir() / self.instruction_filename(instruction)
+            instruction_paths.append(out)
+            if not dry_run:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(self.format_instruction(instruction), encoding="utf-8")
+
         hook_paths = self.export_hooks(hooks, dry_run=dry_run)
+        prompt_paths = self.export_prompts(prompts, dry_run=dry_run)
 
         # Clean up old exports not in current set
         removed_files = self._cleanup_old_exports(
-            skill_paths, agent_paths, module_paths, function_paths, hook_paths, dry_run=dry_run
+            skill_paths, agent_paths, module_paths, function_paths, instruction_paths,
+            hook_paths, dry_run=dry_run, current_prompts=prompt_paths
         )
 
         # Save manifest for next export
         if not dry_run:
-            self._save_manifest(skill_paths, agent_paths, module_paths, function_paths, hook_paths)
+            self._save_manifest(skill_paths, agent_paths, module_paths, function_paths,
+                              instruction_paths, hook_paths, prompts=prompt_paths)
 
         return ExportResult(
             target=self.target_name,
@@ -751,7 +951,9 @@ class PlatformExporter(ABC):
             agent_files=agent_paths,
             module_files=module_paths,
             function_files=function_paths,
+            instruction_files=instruction_paths,
             hook_files=hook_paths,
+            prompt_files=prompt_paths,
             removed_files=removed_files,
             dry_run=dry_run,
         )
@@ -832,6 +1034,15 @@ class ClaudeExporter(PlatformExporter):
 
     def format_agent(self, agent: AgentFile) -> str:
         return self._header(f"agents/{agent.role}/{agent.slug}.md") + agent.content + "\n"
+
+    def format_module(self, module: ModuleFile) -> str:
+        return self._header(f"agents/{module.agent_type}/modules/{module.slug}.md") + module.content + "\n"
+
+    def format_function(self, function: FunctionFile) -> str:
+        return self._header(f"agents/{function.agent_type}/functions/{function.slug}.md") + function.content + "\n"
+
+    def format_instruction(self, instruction: InstructionFile) -> str:
+        return self._header(f"instructions/{instruction.slug}.md") + instruction.content + "\n"
 
 
 class CursorExporter(PlatformExporter):
@@ -915,6 +1126,15 @@ class WindsurfExporter(PlatformExporter):
     def format_agent(self, agent: AgentFile) -> str:
         return self._header(agent.name, f"agents/{agent.role}/{agent.slug}.md") + agent.content + "\n"
 
+    def format_module(self, module: ModuleFile) -> str:
+        return self._header(module.name, f"agents/{module.agent_type}/modules/{module.slug}.md") + module.content + "\n"
+
+    def format_function(self, function: FunctionFile) -> str:
+        return self._header(function.name, f"agents/{function.agent_type}/functions/{function.slug}.md") + function.content + "\n"
+
+    def format_instruction(self, instruction: InstructionFile) -> str:
+        return self._header(instruction.name, f"instructions/{instruction.slug}.md") + instruction.content + "\n"
+
 
 class GeminiExporter(PlatformExporter):
     """Gemini CLI — .gemini/skills/ and .gemini/agents/"""
@@ -945,6 +1165,15 @@ class GeminiExporter(PlatformExporter):
     def format_agent(self, agent: AgentFile) -> str:
         return self._header(agent.name, f"agents/{agent.role}/{agent.slug}.md") + agent.content + "\n"
 
+    def format_module(self, module: ModuleFile) -> str:
+        return self._header(module.name, f"agents/{module.agent_type}/modules/{module.slug}.md") + module.content + "\n"
+
+    def format_function(self, function: FunctionFile) -> str:
+        return self._header(function.name, f"agents/{function.agent_type}/functions/{function.slug}.md") + function.content + "\n"
+
+    def format_instruction(self, instruction: InstructionFile) -> str:
+        return self._header(instruction.name, f"instructions/{instruction.slug}.md") + instruction.content + "\n"
+
 
 class ContinueExporter(PlatformExporter):
     """Continue.dev — .continue/prompts/*.prompt and .continue/prompts/agents/*.prompt"""
@@ -961,6 +1190,11 @@ class ContinueExporter(PlatformExporter):
 
     def hook_output_dir(self) -> Path:
         return self._repo_root / ".continue" / "hooks"
+
+    def prompt_output_dir(self) -> Path:
+        # skill_output_dir() is already '.continue/prompts' (Continue's own
+        # term for skills) — use a distinct name to avoid collision.
+        return self._repo_root / ".continue" / "prompt-library"
 
     def skill_filename(self, skill: SkillFile) -> str:
         return f"{skill.slug}.prompt"
@@ -1070,6 +1304,15 @@ class AiderExporter(PlatformExporter):
     def format_agent(self, agent: AgentFile) -> str:
         return self._header(agent.name, f"agents/{agent.role}/{agent.slug}.md") + agent.content + "\n"
 
+    def format_module(self, module: ModuleFile) -> str:
+        return self._header(module.name, f"agents/{module.agent_type}/modules/{module.slug}.md") + module.content + "\n"
+
+    def format_function(self, function: FunctionFile) -> str:
+        return self._header(function.name, f"agents/{function.agent_type}/functions/{function.slug}.md") + function.content + "\n"
+
+    def format_instruction(self, instruction: InstructionFile) -> str:
+        return self._header(instruction.name, f"instructions/{instruction.slug}.md") + instruction.content + "\n"
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Orchestrator
@@ -1102,6 +1345,14 @@ class ExportOrchestrator:
         "tools/output/openai",
         ".aider/skills",
         ".aider/agents",
+        ".github/prompts",
+        ".claude/prompts",
+        ".cursor/prompts",
+        ".windsurf/prompts",
+        ".gemini/prompts",
+        ".continue/prompt-library",
+        "tools/output/openai/prompts",
+        ".aider/prompts",
     ]
 
     def __init__(self, repo_root: Path) -> None:
@@ -1111,6 +1362,8 @@ class ExportOrchestrator:
         self._agents_dir = repo_root / "agents"
         self._modules_dir = repo_root / "agents"
         self._functions_dir = repo_root / "agents"
+        self._instructions_dir = repo_root / "instructions"
+        self._prompts_dir = repo_root / "prompts"
 
     def discover_skills(self) -> list[SkillFile]:
         if not self._skills_dir.exists():
@@ -1183,6 +1436,64 @@ class ExportOrchestrator:
                 pass
         return functions
 
+    def discover_instructions(self) -> list[InstructionFile]:
+        """Scan instructions/ directory and parse all instruction files.
+
+        Returns:
+            List of parsed InstructionFile objects.
+
+        Note:
+            Returns empty list if instructions/ directory doesn't exist.
+        """
+        if not self._instructions_dir.exists():
+            return []
+
+        instructions: list[InstructionFile] = []
+        for path in sorted(self._instructions_dir.glob("*.md")):
+            if path.name.lower() == "readme.md":
+                continue
+            try:
+                instructions.append(InstructionFile.from_path(path))
+            except (ValueError, OSError):
+                # Silently skip files with invalid frontmatter
+                pass
+        return instructions
+
+    def discover_referenced_instructions(self, agents: list[AgentFile]) -> list[InstructionFile]:
+        """Discover instruction files referenced by agents.
+
+        Args:
+            agents: List of agent files that may reference instruction_set
+
+        Returns:
+            List of unique InstructionFile objects referenced by agents
+        """
+        all_instructions = self.discover_instructions()
+        referenced_paths = set()
+
+        # Collect paths of instructions referenced by agents
+        for agent in agents:
+            if agent.instruction_set:
+                # Resolve relative path from repo root
+                instr_path = (self._repo_root / agent.instruction_set).resolve()
+                referenced_paths.add(instr_path)
+
+        # Filter to only referenced instructions
+        referenced = [
+            instr for instr in all_instructions
+            if instr.path.resolve() in referenced_paths
+        ]
+
+        # Also auto-include master_instruction_set.md if it exists
+        master_path = self._instructions_dir / "master_instruction_set.md"
+        if master_path.exists() and not any(i.path == master_path for i in referenced):
+            try:
+                referenced.append(InstructionFile.from_path(master_path))
+            except (ValueError, OSError):
+                pass
+
+        return referenced
+
     def discover_hooks(self) -> list[HookFile]:
         """Scan hooks/ directory and parse all hook files.
 
@@ -1223,6 +1534,53 @@ class ExportOrchestrator:
                 print(f"Warning: Could not read {path.name}: {e}", file=sys.stderr)
 
         return hooks
+
+    def discover_prompts(self) -> list[PromptFile]:
+        """Scan prompts/<category>/ directories and parse all prompt template files.
+
+        Returns:
+            List of parsed PromptFile objects (.md and .txt, README.md files skipped).
+
+        Note:
+            Returns empty list if prompts/ directory doesn't exist.
+        """
+        if not self._prompts_dir.exists():
+            return []
+
+        prompts: list[PromptFile] = []
+        for path in sorted(self._prompts_dir.rglob("*")):
+            if path.is_dir() or path.name.lower() == "readme.md":
+                continue
+            if path.suffix not in [".md", ".txt"]:
+                continue
+            try:
+                prompts.append(PromptFile.from_path(path))
+            except OSError as e:
+                print(f"Warning: Could not read {path.name}: {e}", file=sys.stderr)
+        return prompts
+
+    def filter_prompts(self, prompts: list[PromptFile], requested: list[str]) -> list[PromptFile]:
+        """Filter prompts by category or name if specified.
+
+        Args:
+            prompts:   All discovered prompts.
+            requested: Comma-separated category or slug names to filter by.
+
+        Returns:
+            Filtered list of prompts.
+        """
+        if not requested:
+            return prompts
+        req_lower = [r.lower() for r in requested]
+        result = [
+            p for p in prompts
+            if any(req in " ".join([p.slug.lower(), p.name.lower(), p.category.lower()])
+                   for req in req_lower)
+        ]
+        if not result:
+            print(f"  No prompts matched: {requested}. Available categories: "
+                  f"{sorted(set(p.category for p in prompts))}")
+        return result
 
     def filter_skills(self, skills: list[SkillFile], requested: list[str]) -> list[SkillFile]:
         if not requested:
@@ -1306,6 +1664,30 @@ class ExportOrchestrator:
             print(f"  No functions matched: {requested}. Available: {[f.slug for f in functions]}")
         return result
 
+    def filter_instructions(self, instructions: list[InstructionFile], requested: list[str]) -> list[InstructionFile]:
+        """Filter instructions by name if specified.
+
+        Args:
+            instructions: All discovered instructions
+            requested:    Comma-separated instruction names (slugs to filter by)
+
+        Returns:
+            Filtered list of instructions
+        """
+        if not requested:
+            return instructions
+        req_lower = [r.lower() for r in requested]
+        result = [
+            i for i in instructions
+            if any(
+                req in " ".join([i.slug.lower(), i.name.lower()] + [t.lower() for t in i.applies_to])
+                for req in req_lower
+            )
+        ]
+        if not result:
+            print(f"  No instructions matched: {requested}. Available: {[i.slug for i in instructions]}")
+        return result
+
     def filter_hooks(self, hooks: list[HookFile], requested: list[str]) -> list[HookFile]:
         """Filter hooks by name if specified.
 
@@ -1344,21 +1726,27 @@ class ExportOrchestrator:
         agent_filter: list[str],
         module_filter: list[str] = [],
         function_filter: list[str] = [],
+        instruction_filter: list[str] = [],
         hook_filter: list[str] = [],
         dry_run: bool = False,
+        prompt_filter: list[str] = [],
     ) -> list[ExportResult]:
         all_skills = self.discover_skills()
         all_agents = self.discover_agents()
         all_modules = self.discover_modules()
         all_functions = self.discover_functions()
+        all_instructions = self.discover_referenced_instructions(all_agents)
         all_hooks = self.discover_hooks()
+        all_prompts = self.discover_prompts()
         skills = self.filter_skills(all_skills, skill_filter)
         agents = self.filter_agents(all_agents, agent_filter)
         modules = self.filter_modules(all_modules, module_filter)
         functions = self.filter_functions(all_functions, function_filter)
+        instructions = self.filter_instructions(all_instructions, instruction_filter)
         hooks = self.filter_hooks(all_hooks, hook_filter)
+        prompts = self.filter_prompts(all_prompts, prompt_filter)
 
-        print(f"\n{'DRY RUN — ' if dry_run else ''}Exporting {len(skills)} skill(s), {len(agents)} agent(s), {len(modules)} module(s), {len(functions)} function(s), {len(hooks)} hook(s)")
+        print(f"\n{'DRY RUN — ' if dry_run else ''}Exporting {len(skills)} skill(s), {len(agents)} agent(s), {len(modules)} module(s), {len(functions)} function(s), {len(instructions)} instruction(s), {len(hooks)} hook(s), {len(prompts)} prompt(s)")
 
         if "all" in targets or not targets:
             exporter_classes = list(self.EXPORTERS.values())
@@ -1376,7 +1764,8 @@ class ExportOrchestrator:
         for cls in exporter_classes:
             exporter = cls(self._repo_root)
             try:
-                result = exporter.export(skills, agents, modules, functions, hooks, dry_run=dry_run)
+                result = exporter.export(skills, agents, modules, functions, instructions, hooks,
+                                          dry_run=dry_run, prompts=prompts)
                 results.append(result)
                 action = "Would write" if dry_run else "Wrote"
                 msg = (
@@ -1385,7 +1774,9 @@ class ExportOrchestrator:
                     f"{len(result.agent_files)} agent(s), "
                     f"{len(result.module_files)} module(s), "
                     f"{len(result.function_files)} function(s), "
-                    f"{len(result.hook_files)} hook(s)"
+                    f"{len(result.instruction_files)} instruction(s), "
+                    f"{len(result.hook_files)} hook(s), "
+                    f"{len(result.prompt_files)} prompt(s)"
                 )
                 if result.removed_files:
                     msg += f", removed {len(result.removed_files)} old file(s)"
@@ -1401,15 +1792,17 @@ class ExportOrchestrator:
         print("\n" + "─" * 60)
         print(f"{'DRY RUN ' if dry_run else ''}EXPORT SUMMARY")
         print("─" * 60)
-        print(f"  Platforms  : {len(results)}")
-        print(f"  Skills     : {sum(len(r.skill_files) for r in results)} file(s)")
-        print(f"  Agents     : {sum(len(r.agent_files) for r in results)} file(s)")
-        print(f"  Modules    : {sum(len(r.module_files) for r in results)} file(s)")
-        print(f"  Functions  : {sum(len(r.function_files) for r in results)} file(s)")
-        print(f"  Hooks      : {sum(len(r.hook_files) for r in results)} file(s)")
+        print(f"  Platforms    : {len(results)}")
+        print(f"  Skills       : {sum(len(r.skill_files) for r in results)} file(s)")
+        print(f"  Agents       : {sum(len(r.agent_files) for r in results)} file(s)")
+        print(f"  Modules      : {sum(len(r.module_files) for r in results)} file(s)")
+        print(f"  Functions    : {sum(len(r.function_files) for r in results)} file(s)")
+        print(f"  Instructions : {sum(len(r.instruction_files) for r in results)} file(s)")
+        print(f"  Hooks        : {sum(len(r.hook_files) for r in results)} file(s)")
+        print(f"  Prompts      : {sum(len(r.prompt_files) for r in results)} file(s)")
         total_removed = sum(len(r.removed_files) for r in results)
         if total_removed:
-            print(f"  Removed    : {total_removed} old file(s)")
+            print(f"  Removed      : {total_removed} old file(s)")
         print("─" * 60)
 
 
@@ -1461,11 +1854,25 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Comma-separated function slugs/prefixes to include (default: all).",
     )
     parser.add_argument(
+        "--instructions",
+        type=lambda v: [x.strip() for x in v.split(",") if x.strip()],
+        default=[],
+        metavar="INSTRUCTION[,INSTRUCTION...]",
+        help="Comma-separated instruction slugs to include (default: auto-referenced by agents).",
+    )
+    parser.add_argument(
         "--hooks", "-k",
         type=lambda v: [x.strip() for x in v.split(",") if x.strip()],
         default=[],
         metavar="HOOK[,HOOK...]",
         help="Comma-separated hook slugs to include (default: all).",
+    )
+    parser.add_argument(
+        "--prompts", "-p",
+        type=lambda v: [x.strip() for x in v.split(",") if x.strip()],
+        default=[],
+        metavar="PROMPT[,PROMPT...]",
+        help="Comma-separated prompt categories/slugs to include (default: all).",
     )
     parser.add_argument("--list", "-l", action="store_true",
                         help="List all discovered skills and agents, then exit.")
@@ -1503,8 +1910,11 @@ def copy_to_target_project(
     agents: list[AgentFile],
     modules: list[ModuleFile],
     functions: list[FunctionFile],
+    instructions: list[InstructionFile],
+    hooks: list[HookFile],
     target_project: Path,
     platforms: list[str],
+    prompts: list[PromptFile] = [],
 ) -> None:
     """Copy exported files to a target project directory.
 
@@ -1515,22 +1925,25 @@ def copy_to_target_project(
         agents: List of agent files to copy
         modules: List of module files to copy
         functions: List of function files to copy
+        instructions: List of instruction files to copy
+        hooks: List of hook files to copy
         target_project: Path to target project directory
         platforms: List of platform targets (determines folder structure)
+        prompts: List of prompt files to copy
     """
     target_project = target_project.resolve()
     target_project.mkdir(parents=True, exist_ok=True)
 
     # Map platforms to their folder structures (using Path for cross-platform compatibility)
     platform_dirs = {
-        "claude": (Path(".claude") / "skills", Path(".claude") / "agents", Path(".claude") / "agents" / "modules", Path(".claude") / "agents" / "functions"),
-        "copilot": (Path(".github") / "instructions", Path(".github") / "agents", Path(".github") / "agents" / "modules", Path(".github") / "agents" / "functions"),
-        "cursor": (Path(".cursor") / "rules", Path(".cursor") / "rules" / "agents", Path(".cursor") / "rules" / "agents" / "modules", Path(".cursor") / "rules" / "agents" / "functions"),
-        "windsurf": (Path(".windsurf") / "rules", Path(".windsurf") / "rules" / "agents", Path(".windsurf") / "rules" / "agents" / "modules", Path(".windsurf") / "rules" / "agents" / "functions"),
-        "gemini": (Path(".gemini") / "skills", Path(".gemini") / "agents", Path(".gemini") / "agents" / "modules", Path(".gemini") / "agents" / "functions"),
-        "continue": (Path(".continue") / "prompts", Path(".continue") / "prompts" / "agents", Path(".continue") / "prompts" / "agents" / "modules", Path(".continue") / "prompts" / "agents" / "functions"),
-        "openai": (Path("tools") / "output" / "openai" / "skills", Path("tools") / "output" / "openai" / "agents", Path("tools") / "output" / "openai" / "agents" / "modules", Path("tools") / "output" / "openai" / "agents" / "functions"),
-        "aider": (Path(".aider") / "skills", Path(".aider") / "agents", Path(".aider") / "agents" / "modules", Path(".aider") / "agents" / "functions"),
+        "claude": (Path(".claude") / "skills", Path(".claude") / "agents", Path(".claude") / "agents" / "modules", Path(".claude") / "agents" / "functions", Path(".claude") / "agents" / "instructions", Path(".claude") / "hooks", Path(".claude") / "prompts"),
+        "copilot": (Path(".github") / "instructions", Path(".github") / "agents", Path(".github") / "agents" / "modules", Path(".github") / "agents" / "functions", Path(".github") / "agents" / "instructions", Path(".github") / "hooks", Path(".github") / "prompts"),
+        "cursor": (Path(".cursor") / "rules", Path(".cursor") / "rules" / "agents", Path(".cursor") / "rules" / "agents" / "modules", Path(".cursor") / "rules" / "agents" / "functions", Path(".cursor") / "rules" / "agents" / "instructions", Path(".cursor") / "hooks", Path(".cursor") / "prompts"),
+        "windsurf": (Path(".windsurf") / "rules", Path(".windsurf") / "rules" / "agents", Path(".windsurf") / "rules" / "agents" / "modules", Path(".windsurf") / "rules" / "agents" / "functions", Path(".windsurf") / "rules" / "agents" / "instructions", Path(".windsurf") / "hooks", Path(".windsurf") / "prompts"),
+        "gemini": (Path(".gemini") / "skills", Path(".gemini") / "agents", Path(".gemini") / "agents" / "modules", Path(".gemini") / "agents" / "functions", Path(".gemini") / "agents" / "instructions", Path(".gemini") / "hooks", Path(".gemini") / "prompts"),
+        "continue": (Path(".continue") / "prompts", Path(".continue") / "prompts" / "agents", Path(".continue") / "prompts" / "agents" / "modules", Path(".continue") / "prompts" / "agents" / "functions", Path(".continue") / "prompts" / "agents" / "instructions", Path(".continue") / "hooks", Path(".continue") / "prompt-library"),
+        "openai": (Path("tools") / "output" / "openai" / "skills", Path("tools") / "output" / "openai" / "agents", Path("tools") / "output" / "openai" / "agents" / "modules", Path("tools") / "output" / "openai" / "agents" / "functions", Path("tools") / "output" / "openai" / "agents" / "instructions", Path("tools") / "output" / "openai" / "hooks", Path("tools") / "output" / "openai" / "prompts"),
+        "aider": (Path(".aider") / "skills", Path(".aider") / "agents", Path(".aider") / "agents" / "modules", Path(".aider") / "agents" / "functions", Path(".aider") / "agents" / "instructions", Path(".aider") / "hooks", Path(".aider") / "prompts"),
     }
 
     # Determine which folders to create based on platforms
@@ -1538,14 +1951,20 @@ def copy_to_target_project(
     agent_dirs = set()
     module_dirs = set()
     function_dirs = set()
+    instruction_dirs = set()
+    hook_dirs = set()
+    prompt_dirs = set()
 
     for platform in platforms:
         if platform in platform_dirs:
-            skill_dir, agent_dir, module_dir, function_dir = platform_dirs[platform]
+            skill_dir, agent_dir, module_dir, function_dir, instruction_dir, hook_dir, prompt_dir = platform_dirs[platform]
             skill_dirs.add(skill_dir)
             agent_dirs.add(agent_dir)
             module_dirs.add(module_dir)
             function_dirs.add(function_dir)
+            instruction_dirs.add(instruction_dir)
+            hook_dirs.add(hook_dir)
+            prompt_dirs.add(prompt_dir)
 
     # Create skill directories and copy files
     for skill in skills:
@@ -1582,6 +2001,36 @@ def copy_to_target_project(
             target_file = target_function_dir / function.path.name
             shutil.copy2(function.path, target_file)
             print(f"  Copied function: {function_dir}/{function.path.name}")
+
+    # Create instruction directories and copy files
+    for instruction in instructions:
+        for instruction_dir in instruction_dirs:
+            target_instruction_dir = target_project / instruction_dir
+            target_instruction_dir.mkdir(parents=True, exist_ok=True)
+            target_file = target_instruction_dir / instruction.path.name
+            shutil.copy2(instruction.path, target_file)
+            print(f"  Copied instruction: {instruction_dir}/{instruction.path.name}")
+
+    # Create hook directories and copy files
+    for hook in hooks:
+        for hook_dir in hook_dirs:
+            target_hook_dir = target_project / hook_dir
+            target_hook_dir.mkdir(parents=True, exist_ok=True)
+            target_file = target_hook_dir / hook.path.name
+            shutil.copy2(hook.path, target_file)
+            # Make shell scripts executable
+            if hook.is_executable:
+                target_file.chmod(0o755)
+            print(f"  Copied hook: {hook_dir}/{hook.path.name}")
+
+    # Create prompt directories and copy files, preserving category subdirectory
+    for prompt in prompts:
+        for prompt_dir in prompt_dirs:
+            target_prompt_dir = target_project / prompt_dir / prompt.category
+            target_prompt_dir.mkdir(parents=True, exist_ok=True)
+            target_file = target_prompt_dir / prompt.path.name
+            shutil.copy2(prompt.path, target_file)
+            print(f"  Copied prompt: {prompt_dir}/{prompt.category}/{prompt.path.name}")
 
     print(f"\n✓ Files copied to: {target_project}")
 
@@ -1654,6 +2103,17 @@ def main() -> None:
         except (FileNotFoundError, OSError):
             # Silently skip if functions not found
             pass
+        print("\nInstructions:\n")
+        try:
+            all_agents = orchestrator.discover_agents()
+            for i in orchestrator.discover_referenced_instructions(all_agents):
+                print(f"  {i.slug:<45} {i.name}")
+        except (FileNotFoundError, OSError):
+            # Silently skip if instructions not found
+            pass
+        print("\nPrompts:\n")
+        for p in orchestrator.discover_prompts():
+            print(f"  {p.category}/{p.slug:<35} {p.name}")
         return
 
     try:
@@ -1663,24 +2123,32 @@ def main() -> None:
             all_agents = orchestrator.discover_agents()
             all_modules = orchestrator.discover_modules()
             all_functions = orchestrator.discover_functions()
+            all_instructions = orchestrator.discover_referenced_instructions(all_agents)
+            all_hooks = orchestrator.discover_hooks()
+            all_prompts = orchestrator.discover_prompts()
             skills = orchestrator.filter_skills(all_skills, args.skills)
             agents = orchestrator.filter_agents(all_agents, args.agents)
             modules = orchestrator.filter_modules(all_modules, args.modules)
             functions = orchestrator.filter_functions(all_functions, args.functions)
+            instructions = orchestrator.filter_instructions(all_instructions, args.instructions)
+            hooks = orchestrator.filter_hooks(all_hooks, args.hooks)
+            prompts = orchestrator.filter_prompts(all_prompts, args.prompts)
 
-            print(f"\nCopying {len(skills)} skill(s), {len(agents)} agent(s), {len(modules)} module(s), {len(functions)} function(s) to {args.target_project}\n")
-            copy_to_target_project(skills, agents, modules, functions, args.target_project, args.target)
+            print(f"\nCopying {len(skills)} skill(s), {len(agents)} agent(s), {len(modules)} module(s), {len(functions)} function(s), {len(instructions)} instruction(s), {len(hooks)} hook(s), {len(prompts)} prompt(s) to {args.target_project}\n")
+            copy_to_target_project(skills, agents, modules, functions, instructions, hooks, args.target_project, args.target, prompts=prompts)
             return
 
         # Otherwise, use the normal export flow
         results = orchestrator.run(
-            targets         = args.target,
-            skill_filter    = args.skills,
-            agent_filter    = args.agents,
-            module_filter   = args.modules,
-            function_filter = args.functions,
-            hook_filter     = args.hooks,
-            dry_run         = args.dry_run,
+            targets             = args.target,
+            skill_filter        = args.skills,
+            agent_filter        = args.agents,
+            module_filter       = args.modules,
+            function_filter     = args.functions,
+            instruction_filter  = args.instructions,
+            hook_filter         = args.hooks,
+            dry_run             = args.dry_run,
+            prompt_filter       = args.prompts,
         )
 
         # Generate platform-specific config files with hook registrations
