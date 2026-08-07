@@ -1,8 +1,8 @@
 # 🛠️ Skills Directory (v2.1 — Consolidated)
 
-> Reusable, tech-specific implementation modules used by agents. 26 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 31 skills, zero orphans.
 
-## Quick Navigation (26 Skills)
+## Quick Navigation (31 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -32,6 +32,11 @@
 | 24 | [Multi-Review HTML](multi_review_html_skill.md) | Batch PR review HTML with sidebar tabs + summary dashboard | Language-agnostic | Quality Agent |
 | 25 | [JIRA Incremental Spec Generator](jira_incremental_spec_generator_skill.md) | Read JIRA incrementally, generate comprehensive application spec (book format) | Language-agnostic | Orchestrator, Architect |
 | 26 | [Spec-Driven Development](spec_driven_development_skill.md) | Requirements → design → tasks gate before implementation | Language-agnostic | Orchestrator, Architect, Implementer, Quality |
+| 27 | [Debugging](debugging_skill.md) | Reproduce → isolate → hypothesize → fix → regression-test loop | Language-agnostic | Quality Agent, Implementer |
+| 28 | [Refactoring](refactoring_skill.md) | Safe, reversible structural change without behavior change | Language-agnostic | Implementer, Architect |
+| 29 | [Security Audit](security_audit_skill.md) | OWASP Top 10 checklist, severity grading, fix discipline | Language-agnostic | Quality Agent |
+| 30 | [MCP Server & Tool Design](mcp_server_skill.md) | Tool minimization, least-privilege scoping, schema clarity | Language-agnostic | Architect, Implementer |
+| 31 | [Agent Skill Design](agent_skill_design_skill.md) | Meta-guidance for authoring new skills in this repo | Language-agnostic | All agents |
 
 ---
 
