@@ -32,14 +32,19 @@ awesome-prompts/
 │   ├── java_project_intake.md        ← Java/Spring Boot Q&A intake template (33 questions)
 │   └── python_project_intake.md      ← Python Q&A intake template with OOP patterns
 │
-├── prompts/                          ← Categorised prompt templates
+├── prompts/                          ← Categorised prompt templates (11 categories, see prompts/README.md)
 │   ├── email/                        ← Email writing & review prompts
 │   ├── code-review/                  ← Code review agent prompts
 │   ├── testing/                      ← Test generation prompts
 │   ├── codebase-analysis/            ← Codebase mapping, tracing, auditing
 │   ├── project-management/           ← User stories, workflow mapping, Jira reader
 │   ├── incident-management/          ← Production issue investigation
-│   └── reporting/                    ← HTML report generation
+│   ├── reporting/                    ← HTML report generation
+│   ├── implementation-guides/        ← Full-stack, step-by-step build guides
+│   ├── spec-driven-development/      ← Requirements drafting for the RULE 11 gate
+│   ├── devops-sre/                   ← Incident runbooks, release/platform engineering
+│   ├── meta-prompt-engineering/      ← Prompt self-critique and authoring guidance
+│   └── technical-writing/            ← Plain-language technical documentation rewriting
 │
 ├── agents/                           ← Role-based agent definitions (5 agents, v3.0) + modules/functions
 │   ├── orchestrator_agent.md         ← Strategy & Orchestration (plan, build, context, pr, review, tradeoff, risk)
@@ -55,7 +60,7 @@ awesome-prompts/
 │
 ├── hooks/                            ← Hook scripts for platform automation
 │
-├── skills/                           ← Reusable implementation skills (22 skills)
+├── skills/                           ← Reusable implementation skills (31 skills, see skills/README.md)
 │   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
 │   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
 │   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
@@ -154,7 +159,7 @@ orchestrator:pr (open GitHub PR)
 - ✅ **Fewer agents** (5 vs 13) = lower token cost
 - ✅ **Linear pipeline** = explicit handoffs with full context
 - ✅ **implementer:full** = no state transfer loss between build/test/doc
-- ✅ **22 reusable skills** = no duplication across agents
+- ✅ **31 reusable skills** = no duplication across agents
 - ✅ **28 callable functions** = fine-grained control via `agent:function` syntax
 - ✅ Clear separation: agent = orchestration + dispatch, skill = implementation
 
@@ -166,7 +171,7 @@ Skills in `skills/` are reusable coding standard modules referenced by agents. T
 
 | Tool | Purpose |
 |------|---------|
-| `tools/exporter.py` | Export agents & skills to 8 platforms (Claude, Copilot, Cursor, Windsurf, VS Code, Gemini, Continue, OpenAI, Aider) |
+| `tools/exporter.py` | Export skills, agents, hooks & prompts to 8 platforms (Claude, Copilot, Cursor, Windsurf, VS Code, Gemini, Continue, OpenAI, Aider). See `--prompts` filter and `--list`. |
 | `tools/requirement_parser.py` | Parse requirements from free text, JIRA, files, or auto-detect from project |
 | `tools/context_builder.py` | Scan projects, generate architecture.md, tech-stack.md, context.json, design.html |
 | `tools/generate_design_html.py` | Create interactive HTML visualization (4 tabs: architecture, tech stack, file tree, API endpoints) |

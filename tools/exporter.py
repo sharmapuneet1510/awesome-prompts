@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-exporter.py — Unified skill, agent, & instruction exporter for AI assistant platforms.
+exporter.py — Unified skill, agent, instruction, & prompt exporter for AI assistant platforms.
 
-Reads skills from skills/, agents from agents/, and auto-discovers instructions
-referenced by agents, then writes one file per item to platform-native directories.
+Reads skills from skills/, agents from agents/, prompts from prompts/**/, and
+auto-discovers instructions referenced by agents, then writes one file per
+item to platform-native directories.
 
 Usage:
     python tools/exporter.py                          # all → all platforms
@@ -12,6 +13,7 @@ Usage:
     python tools/exporter.py --agents developer       # filter agents by role
     python tools/exporter.py --instructions master    # filter instructions (auto-referenced by default)
     python tools/exporter.py --hooks promptshield     # filter hooks
+    python tools/exporter.py --prompts devops-sre     # filter prompts by category/slug
     python tools/exporter.py --list                   # list all items
     python tools/exporter.py --dry-run                # preview without writing
     python tools/exporter.py --clean                  # remove all exported files
