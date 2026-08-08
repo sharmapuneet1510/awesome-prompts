@@ -7,7 +7,7 @@
 | Tool | Purpose | Usage | Output |
 |------|---------|-------|--------|
 | **[Interactive Exporter](interactive_exporter.py)** | **Guided agent/skill selection → Export to 8 platforms** | **`python interactive_exporter.py`** | **User-friendly setup wizard** |
-| [Exporter](exporter.py) | Batch export to 8 platforms (CLI mode) | `python exporter.py --target claude copilot` | Platform-specific agent & skill files |
+| [Exporter](exporter.py) | Batch export to 8 platforms (CLI mode) | `python exporter.py --target claude copilot` | Platform-specific agent, skill & prompt files |
 | [Context Builder](context_builder.py) | Generate architecture docs | `python context_builder.py` | architecture.md, tech-stack.md, context.json |
 | [Report Generator](code_review_generator.py) | Create HTML reports | `ReviewReportGenerator().generate()` | Interactive HTML reviews |
 | [Comment Formatter](code_review_reporter.py) | Format MR comments | `MRCommentFormatter.format_comment()` | Markdown comments |
@@ -120,7 +120,10 @@ python tools/exporter.py --target claude copilot cursor
 # Export specific items
 python tools/exporter.py --skills java,spring --agents developer
 
-# List available
+# Export specific prompt categories
+python tools/exporter.py --prompts devops-sre,spec-driven-development
+
+# List available (skills, agents, modules, functions, instructions, prompts)
 python tools/exporter.py --list
 
 # Dry run (preview)
@@ -259,7 +262,7 @@ The exporter automatically tracks exported files and removes old versions when n
 
 **How it works:**
 1. Each platform maintains a `.{platform}-export-manifest.json` file
-2. Manifest tracks all currently exported skills, agents, and hooks
+2. Manifest tracks all currently exported skills, agents, hooks, and prompts
 3. On each export, exporter compares new exports with old manifest
 4. Old files NOT in new export are automatically removed
 5. New manifest is saved for next export cycle
@@ -274,7 +277,10 @@ The exporter automatically tracks exported files and removes old versions when n
   "agents": [
     "/Users/me/my-project/.claude/agents/orchestrator_agent.md"
   ],
-  "hooks": []
+  "hooks": [],
+  "prompts": [
+    "/Users/me/my-project/.claude/prompts/devops-sre/IncidentRunbook.md"
+  ]
 }
 ```
 
@@ -288,15 +294,16 @@ The exporter automatically tracks exported files and removes old versions when n
 ```bash
 $ python tools/exporter.py --target claude
 
-[claude    ] Wrote 24 skill(s), 5 agent(s), 0 hook(s), removed 3 old file(s)
+[claude    ] Wrote 31 skill(s), 5 agent(s), 4 hook(s), 18 prompt(s), removed 3 old file(s)
 
 ────────────────────────────────────────────────────
 EXPORT SUMMARY
 ────────────────────────────────────────────────────
   Platforms : 1
-  Skills    : 24 file(s)
+  Skills    : 31 file(s)
   Agents    : 5 file(s)
-  Hooks     : 0 file(s)
+  Hooks     : 4 file(s)
+  Prompts   : 18 file(s)
   Removed   : 3 old file(s)
 ────────────────────────────────────────────────────
 ```

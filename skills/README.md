@@ -166,7 +166,7 @@ Generate complete code
 
 ## 🔗 Links
 
-- **[Agents Directory](../agents/README.md)** — Agent definitions (13 total)
+- **[Agents Directory](../agents/README.md)** — Agent definitions (5 total)
 - **[Tools Documentation](../tools/README.md)** — Utility scripts
 - **[Master Rules](../instructions/master_instruction_set.md)** — Non-negotiable standards
 - **[Main README](../README.md)** — Project overview

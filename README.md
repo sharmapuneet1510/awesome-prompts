@@ -31,7 +31,7 @@
 
 ## 🚀 Quick Overview
 
-**Awesome Prompts v3.1** is a comprehensive, **production-ready system** of **5 role-based AI agents** and **24 reusable skills** that transform requirements into enterprise-grade code with:
+**Awesome Prompts v3.1** is a comprehensive, **production-ready system** of **5 role-based AI agents** and **31 reusable skills** that transform requirements into enterprise-grade code with:
 
 | Feature | Details |
 |---------|---------|
@@ -52,7 +52,7 @@
 - ✅ **Reduced from 13 → 5 agents** (role-based, no duplication)
 - ✅ **31 callable functions** across all agents
 - ✅ **No context loss** — implementer:full runs code + tests + docs in one pass
-- ✅ **24 reusable skills** (from code generation to security audits)
+- ✅ **31 reusable skills** (from code generation to security audits)
 
 ### Repository Organization (June 2026)
 - ✅ **Fully consolidated structure** — all definitions at root level
@@ -187,7 +187,7 @@ awesome-prompts/                       Reorganized June 2026 for clarity & scala
 │   │   └── functions/                 ← ideate, solve
 │   └── README.md                      ← Agent dispatch syntax + 31 callable functions
 │
-├── 💡 skills/                         ← 24 reusable implementation modules
+├── 💡 skills/                         ← 31 reusable implementation modules
 │   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc
 │   ├── database_skill.md              ← SQL schema + migrations
 │   ├── backend_skill.md               ← REST API generation
@@ -212,7 +212,20 @@ awesome-prompts/                       Reorganized June 2026 for clarity & scala
 │   ├── code_formatting_skill.md       ← Style standards
 │   ├── mssql_advanced_skill.md        ← T-SQL patterns
 │   ├── spring_advanced_skill.md       ← Spring Framework
+│   ├── spec_driven_development_skill.md ← Requirements → design → tasks gate (RULE 11)
+│   ├── debugging_skill.md             ← Reproduce → isolate → hypothesize → fix loop
+│   ├── refactoring_skill.md           ← Safe, reversible structural change
+│   ├── security_audit_skill.md        ← OWASP Top 10 checklist + severity grading
+│   ├── mcp_server_skill.md            ← MCP/tool design: minimization, least-privilege
+│   ├── agent_skill_design_skill.md    ← Meta-guidance for authoring new skills
 │   └── README.md                      ← Skills reference guide
+│
+├── 📋 prompts/                        ← 11 categorised copy-paste prompt templates
+│   ├── email/, code-review/, testing/, codebase-analysis/,
+│   ├── project-management/, incident-management/, reporting/,
+│   ├── implementation-guides/, spec-driven-development/,
+│   ├── devops-sre/, meta-prompt-engineering/, technical-writing/
+│   └── README.md                      ← Prompt catalog + usage guide
 │
 ├── 📖 instructions/                   ← Universal rules & intake templates
 │   ├── master_instruction_set.md      ← Non-negotiable rules for all agents
@@ -843,7 +856,10 @@ python tools/exporter.py
 # Export specific
 python tools/exporter.py --target copilot claude --skills java,spring --agents developer
 
-# List available
+# Export specific prompt categories
+python tools/exporter.py --prompts devops-sre,spec-driven-development
+
+# List available (skills, agents, modules, functions, instructions, prompts)
 python tools/exporter.py --list
 
 # Dry run (preview)
@@ -948,7 +964,7 @@ path = gen.generate(review_data, "PROJ-123")
 
 ### Current Status: ✅ File-Based Configuration
 
-The exporter tool (`tools/exporter.py`) exports agents and skills to **file-based, version-controlled configurations** — aligned with industry best practices (DeployHQ, GitHub, Cursor, Windsurf).
+The exporter tool (`tools/exporter.py`) exports agents, skills, hooks, and prompts to **file-based, version-controlled configurations** — aligned with industry best practices (DeployHQ, GitHub, Cursor, Windsurf).
 
 **Supported Platforms:**
 - ✅ Claude Code (`.claude/`)
@@ -1117,7 +1133,8 @@ Auto-generated platform masters:
 | **Specialist Modes** | [SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md) | 9 specialized agent roles |
 | **Function Examples** | [FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md) | Real-world examples for all functions |
 | **Exporter Analysis** | [docs/EXPORTER_ANALYSIS.md](docs/EXPORTER_ANALYSIS.md) | DeployHQ best practices analysis + roadmap |
-| **Skill Catalog** | [skills/](skills/) | 24 reusable skills with documentation |
+| **Skill Catalog** | [skills/](skills/) | 31 reusable skills with documentation |
+| **Prompt Catalog** | [prompts/](prompts/) | 11 categories, 18 copy-paste prompt templates |
 | **Project Context** | [docs/context/](docs/context/) | Sample architecture.md, tech-stack.md, design.html |
 | **Design Specs** | [docs/superpowers/specs/](docs/superpowers/specs/) | Issue specs (Issue #9, #10, #11) |
 | **Implementation Plans** | [docs/superpowers/plans/](docs/superpowers/plans/) | Task-by-task implementation guides |
