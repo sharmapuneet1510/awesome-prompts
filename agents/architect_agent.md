@@ -41,6 +41,9 @@ Invoke a specific function using `architect:function`. When triggered this way, 
 | `architect:schema` | Database schema design: DDL, migration scripts, indexes, normalization, partitioning | architecture_agent (database schema phase) |
 | `architect:api` | API contract design: OpenAPI spec, endpoints, schemas, auth, rate limiting, error codes | architecture_agent (API contract phase) |
 | `architect:a11y` | Accessibility planning: WCAG 2.1 AA compliance, keyboard navigation, semantic HTML, ARIA | senior_frontend_engineer_agent (accessibility planning phase) |
+| `architect:analyse` | Technical analysis of a Jira item against the existing codebase: current flow, impact, options, risks | NEW (Developer Companion) |
+| `architect:adr` | Mint an Engineering Decision Record — the only function that writes an ADR | NEW (Developer Companion) |
+| `architect:spec` | Regenerate the Current Technical Specification as a projection of Accepted-or-later ADRs | NEW (Developer Companion) |
 
 ### Dispatch Rules
 - **With function:** `architect:function` → run only that function's steps (skip intro questions)

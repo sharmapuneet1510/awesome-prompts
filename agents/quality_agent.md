@@ -44,6 +44,8 @@ and run only the steps for that function.
 | `quality:report` | Comprehensive quality report (synthesizes review + audit + security + perf + debug into single executive report) | NEW |
 | `quality:batch-review` | Batch PR review: run quality:review for each entry in JSON file, produce single HTML with sidebar tabs + summary | NEW (v3.0) |
 | `quality:diagnose` | Conversational problem solver: describe issue → ask clarifying questions → investigate code/DB/config → propose solutions | NEW (v3.0) |
+| `quality:observe` | Four-way conformance comparison (Requirement↔Code, ADR↔Code, Spec↔Code, Tests↔AC). Observations only — never edits, never scores | NEW (Review Companion) |
+| `quality:qa` | Maintain the five reusable quality suites: sanity, regression, integration, performance, security | NEW (QA Companion) |
 
 ### Dispatch Rules
 - **With function:** `quality:function [args]` → run only that function's steps (skip intro questions)

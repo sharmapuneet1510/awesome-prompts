@@ -1,8 +1,8 @@
 # 🛠️ Skills Directory (v2.1 — Consolidated)
 
-> Reusable, tech-specific implementation modules used by agents. 31 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 35 skills, zero orphans.
 
-## Quick Navigation (31 Skills)
+## Quick Navigation (35 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -37,6 +37,10 @@
 | 29 | [Security Audit](security_audit_skill.md) | OWASP Top 10 checklist, severity grading, fix discipline | Language-agnostic | Quality Agent |
 | 30 | [MCP Server & Tool Design](mcp_server_skill.md) | Tool minimization, least-privilege scoping, schema clarity | Language-agnostic | Architect, Implementer |
 | 31 | [Agent Skill Design](agent_skill_design_skill.md) | Meta-guidance for authoring new skills in this repo | Language-agnostic | All agents |
+| 32 | [ADR](adr_skill.md) | Engineering Decision Records: 13-field template, 7-state lifecycle, 10 decision types, supersede chain | Language-agnostic | Architect |
+| 33 | [Project Context](project_context_skill.md) | 14-node shared knowledge tree + ownership matrix (who writes what, when) | Language-agnostic | All agents |
+| 34 | [Current Technical Specification](current_tech_spec_skill.md) | Latest-approved-design-only spec, projected from Accepted ADRs + Final Implementation Record | Language-agnostic | Architect |
+| 35 | [Traceability](traceability_skill.md) | 8-hop chain (requirement → release) + 18 validation checks | Language-agnostic | Business Analyst, Quality |
 
 ---
 
@@ -72,6 +76,16 @@
 
 ### Quality Agent Skills (Batch Review)
 - `multi_review_html_skill` — Batch PR review HTML with sidebar tabs, summary dashboard, export options
+
+### Spec-Driven Platform Skills (Governance & Knowledge)
+These four form one system and are read together. `adr_skill` is the root —
+everything else reads from it.
+
+- `adr_skill` — Engineering Decision Records; the only source of recorded decisions
+- `current_tech_spec_skill` — Current Technical Specification, projected from Accepted ADRs
+- `project_context_skill` — the 14-node shared knowledge tree and its ownership matrix
+- `traceability_skill` — the 8-hop chain and its 18 validation checks
+- `spec_driven_development_skill` — the requirements → design → tasks gate they build on
 
 ---
 

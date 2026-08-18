@@ -31,6 +31,10 @@ Invoke a specific function using `ba:function`. When triggered this way, skip al
 | `ba:parse` | Parse JIRA export (JSON or CSV) and normalize fields, extract metadata |
 | `ba:report` | Generate interactive HTML backlog report with stats, filters, sorting, export options |
 | `ba:create` | Parse plain-text requirements file → structured JIRA issues with BDD ACs + HTML requirement cards |
+| `ba:discover` | Requirement discovery from an unstructured business discussion → goals, actors, flows, rules |
+| `ba:clarify` | Resolve ambiguity in discovered requirements, one question at a time |
+| `ba:brd` | Generate the Business Requirements Document + populate Business Context and MVP scope |
+| `ba:trace` | Validate the eight-hop traceability chain (requirement → release) and report every break |
 
 ### Dispatch Rules
 - **With function:** `ba:function` → run only that function's steps (skip file prompt in STEP 0)

@@ -50,7 +50,7 @@
 
 ### Architecture
 - ✅ **Reduced from 13 → 5 agents** (role-based, no duplication)
-- ✅ **31 callable functions** across all agents
+- ✅ **40 callable functions** across all agents
 - ✅ **No context loss** — implementer:full runs code + tests + docs in one pass
 - ✅ **31 reusable skills** (from code generation to security audits)
 
@@ -92,7 +92,7 @@ ba:report file=jira-export.json                    # Parse JIRA → HTML backlog
 ba:create path=./requirements.txt                  # Parse text → JIRA + BDD HTML cards
 ```
 
-**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 31 functions.**
+**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 40 functions.**
 
 ---
 
@@ -155,7 +155,7 @@ Invoke agents as specialized roles suited to your task:
 
 ## 📖 Comprehensive Function Examples (v3.1)
 
-**[FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md)** contains real-world examples for all 28 functions:
+**[FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md)** contains real-world examples for 28 of the 40 functions:
 
 - **Orchestrator** (7 functions) — plan, build, context, review, tradeoff, risk, pr
 - **Architect** (6 functions) — design, refactor, frontend, schema, api, a11y  
@@ -185,7 +185,7 @@ awesome-prompts/                       Reorganized June 2026 for clarity & scala
 │   ├── orchestrator/                  ← Orchestrator modules & functions
 │   │   ├── modules/                   ← design_solver, expert_panel_generator, ideation_engine
 │   │   └── functions/                 ← ideate, solve
-│   └── README.md                      ← Agent dispatch syntax + 31 callable functions
+│   └── README.md                      ← Agent dispatch syntax + 40 callable functions
 │
 ├── 💡 skills/                         ← 31 reusable implementation modules
 │   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc
@@ -329,7 +329,7 @@ awesome-prompts/                       Reorganized June 2026 for clarity & scala
 ├── 📝 Core Files
 │   ├── README.md (you are here!)
 │   ├── CLAUDE.md                      ← Project instructions for Claude Code
-│   ├── AGENTS_FUNCTIONS.md            ← Complete function reference (31 functions)
+│   ├── AGENTS_FUNCTIONS.md            ← Complete function reference (40 functions)
 │   ├── .gitignore                     ← Git ignore rules (8 organized sections)
 │   └── LICENSE
 ```
@@ -1128,7 +1128,7 @@ Auto-generated platform masters:
 
 | Resource | Link | Purpose |
 |----------|------|---------|
-| **All Agent Functions** | [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) | Complete reference for 28 functions with MCP-style tables |
+| **All Agent Functions** | [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) | Complete reference for 28 of the 40 functions with MCP-style tables |
 | **Agent Directory** | [agents/README.md](agents/README.md) | Agent definitions + dispatch syntax |
 | **Specialist Modes** | [SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md) | 9 specialized agent roles |
 | **Function Examples** | [FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md) | Real-world examples for all functions |

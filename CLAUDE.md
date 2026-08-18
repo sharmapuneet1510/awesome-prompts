@@ -11,11 +11,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. **Surgical Changes** — Touch only what you must, clean up only your mess
 4. **Goal-Driven Execution** — Define success criteria, loop until verified
 
-See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES + RULES 0-11 sections) for details.
+See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES + RULES 0-12 sections) for details.
 
 **New in v2.0:** RULE 10 adds five token-efficient practices: Surgical Modification, Diff-Only Outputs, Graph-Style Context Curation, Token & Memory Efficiency, and Execution Workflow (master_instruction_set.md lines 510-595).
 
 **New in v2.1:** RULE 11 adds the Spec-Driven Gate — no feature code without an approved requirements → design → tasks chain. See `skills/spec_driven_development_skill.md`.
+
+**New in v2.2:** RULE 11a adds the ADR Gate — a change to a contract, data shape, dependency, or failure mode needs an Accepted ADR before the code is written. RULE 12 adds Epistemic Labelling — every substantive claim is a FACT, INFERENCE, PROPOSAL, or DECISION, and only a human-approved DECISION may change the Current Technical Specification. See `skills/adr_skill.md` and `skills/current_tech_spec_skill.md`.
 
 ---
 
@@ -60,7 +62,7 @@ awesome-prompts/
 │
 ├── hooks/                            ← Hook scripts for platform automation
 │
-├── skills/                           ← Reusable implementation skills (31 skills, see skills/README.md)
+├── skills/                           ← Reusable implementation skills (35 skills, see skills/README.md)
 │   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
 │   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
 │   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
@@ -83,6 +85,11 @@ awesome-prompts/
 │   ├── logger_skill.md               ← SLF4J + Logback + structured logging
 │   ├── lombok_skill.md               ← Lombok annotations + boilerplate reduction
 │   ├── jira_html_report_skill.md     ← Parse JIRA + generate HTML backlog
+│   ├── spec_driven_development_skill.md ← requirements → design → tasks gate (RULE 11)
+│   ├── adr_skill.md                  ← ADR record, 7-state lifecycle, 10 decision types, supersede chain
+│   ├── project_context_skill.md      ← 14-node Project Context tree + ownership matrix
+│   ├── current_tech_spec_skill.md    ← Current Technical Specification (ADR projection) + Final Impl Record
+│   ├── traceability_skill.md         ← 8-hop chain + 18 validation checks
 │   └── README.md                     ← Skills directory (consolidated v2.0)
 │
 ├── parser/                           ← Python field derivation analysis tool
@@ -110,19 +117,30 @@ awesome-prompts/
 
 Agents are organized by responsibility using a **lean, role-based architecture**. See `agents/README.md` and `AGENTS_FUNCTIONS.md` for detailed descriptions and function dispatch.
 
-**Total: 5 agents (down from 13) + 28 callable functions — zero role overlap**
+**Total: 5 agents (down from 13) + 40 callable functions — zero role overlap**
 
 | # | Role | Agent | Functions | Purpose | Tech-Agnostic |
 |---|------|-------|-----------|---------|---------------|
 | 1 | **Strategy & Orchestration** | Orchestrator | plan, build, context, pr, review, tradeoff, risk | Full-stack generation + technical leadership + requirements parsing | ✅ Yes |
-| 2 | **Architecture & Design** | Architect | design, refactor, frontend, schema, api, a11y | System topology, greenfield/brownfield design, API contracts, DB schema, UI architecture, accessibility | ✅ Yes |
+| 2 | **Architecture & Design** | Architect | design, refactor, frontend, schema, api, a11y, **analyse, adr, spec** | System topology, greenfield/brownfield design, API contracts, DB schema, UI architecture, accessibility + technical analysis, ADRs, Current Technical Specification | ✅ Yes |
 | 3 | **Implementation & Execution** | Implementer | build, test, doc, pipeline, docker, iac, full | Code generation, testing, documentation, CI/CD, containerization, infrastructure (key: `full` runs build+test+doc with no context loss) | ✅ Yes |
-| 4 | **QA, Security & Performance** | Quality | review, audit, security, perf, debug, report | PR validation, codebase audit, OWASP security scan, performance optimization, RCA, unified quality synthesis | ✅ Yes |
-| 5 | **Utility — Backlog** | Business Analyst | report, parse | JIRA parsing + HTML backlog visualization | ✅ Yes |
+| 4 | **QA, Security & Performance** | Quality | review, audit, security, perf, debug, report, batch-review, diagnose, **observe, qa** | PR validation, codebase audit, OWASP security scan, performance optimization, RCA, quality synthesis + conformance observation and the five reusable suites | ✅ Yes |
+| 5 | **Utility — Backlog** | Business Analyst | report, parse, create, **discover, clarify, brd, trace** | JIRA parsing + HTML backlog + requirement discovery, clarification, BRD, traceability validation | ✅ Yes |
+
+**Companion mapping (v3.2).** The five AI companions from
+`requirements-18082026.md` map onto these agents rather than adding new ones:
+
+| Companion | Agent functions |
+|---|---|
+| BA Companion | `ba:discover` → `ba:clarify` → `ba:brd` → `ba:create` |
+| Developer Companion | `architect:analyse` → `architect:adr` → `architect:spec` |
+| Coding Companion | `implementer:full` (gated on approved spec + ADR) |
+| Review Companion | `quality:observe` — observations only, never edits |
+| QA Companion | `quality:qa` — sanity, regression, integration, performance, security |
 
 ### Skill-Based Architecture
 
-Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (22 total):
+Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (35 total):
 
 ```
     (specify: requirements.md → plan: design.md → tasks: tasks.md, each Approved — RULE 11)
@@ -159,8 +177,8 @@ orchestrator:pr (open GitHub PR)
 - ✅ **Fewer agents** (5 vs 13) = lower token cost
 - ✅ **Linear pipeline** = explicit handoffs with full context
 - ✅ **implementer:full** = no state transfer loss between build/test/doc
-- ✅ **31 reusable skills** = no duplication across agents
-- ✅ **28 callable functions** = fine-grained control via `agent:function` syntax
+- ✅ **35 reusable skills** = no duplication across agents
+- ✅ **40 callable functions** = fine-grained control via `agent:function` syntax
 - ✅ Clear separation: agent = orchestration + dispatch, skill = implementation
 
 ## Skills
@@ -286,6 +304,39 @@ autonomous_dev_agent (14 steps)
          ↓
 Output: Complete system with code, tests, docs, PR ready for review
 ```
+
+### Workflow 4: Companion Pipeline (Business Discussion → Deployment)
+
+The long-form pipeline, for work that starts from a conversation rather than a
+written requirement. Every decision along the way becomes an ADR.
+
+```
+User: "We need to stop double-charging customers on checkout retries"
+         ↓
+ba:discover    → goals, actors, flows, rules; ambiguities → open-questions.md
+ba:clarify     → one question at a time until nothing material is unknown
+ba:brd         → docs/brd.md + business-context.md + mvp-scope.md
+ba:create      → Jira issues with BDD acceptance criteria
+         ↓
+architect:analyse jira=PROJ-123
+               → current flow (FACT, cited), options, risks, decisions required
+architect:adr  → ADR-0012 at Proposed → human approves → Accepted
+architect:spec → Current Technical Specification v7, regenerated from ADRs
+         ↓
+orchestrator:plan → implementer:full   (refuses without approved tasks.md + ADR)
+orchestrator:pr
+         ↓
+quality:observe → 4-way gaps: Requirement↔Code, ADR↔Code, Spec↔Code, Tests↔AC
+quality:qa      → regression + integration scenarios added to the suites
+ba:trace        → 18 checks; chain intact from requirement to release
+         ↓
+Output: code + tests + ADR + regenerated spec + updated Project Context,
+        every line traceable to the decision that caused it
+```
+
+**Artifacts land in the downstream project**, not in this repo:
+`docs/adr/`, `docs/project-context/`, `docs/current-technical-specification.md`,
+`docs/implementation-records/`.
 
 ## Specialist Agent Modes
 

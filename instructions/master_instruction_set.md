@@ -1,10 +1,11 @@
 ---
 name: Master Instruction Set
-version: 2.1
+version: 2.2
 description: >
   Universal rules that ALL coding agents must follow. Covers version checking,
   project intake, OOP principles, documentation standards, simplicity rules,
-  and mandatory test generation.
+  mandatory test generation, the spec-driven and ADR gates, and epistemic
+  labelling of every claim an agent makes.
 applies_to: [java, python, react, mssql, all-agents]
 ---
 
@@ -612,12 +613,77 @@ the user has explicitly approved — never on its own inference.**
 - See `skills/spec_driven_development_skill.md` for artifact templates and
   the approval-checkpoint workflow.
 
+### 11a — ADR Gate
+
+**A change that alters a contract, a data shape, a dependency, or a failure
+mode additionally requires an ADR at status Accepted before the code is
+written.**
+
+- `architect:adr` is the only function that mints an ADR. `quality:observe`
+  may propose one; it may not write one.
+- Proposed → Accepted is a human-only transition. An agent writes the status
+  into the file only after the user explicitly approves.
+- `implementer:build`/`implementer:full` refuses to implement a
+  decision-bearing change with no Accepted ADR citing its Parent Jira.
+- Accepting an ADR triggers `architect:spec` to regenerate the Current
+  Technical Specification. Nothing else may edit that document.
+- See `skills/adr_skill.md`, `skills/current_tech_spec_skill.md`, and
+  `skills/traceability_skill.md`.
+
 **When to apply:** Every feature request that reaches `orchestrator:plan`,
-`architect:design`, or `implementer:build`/`implementer:full`.
+`architect:design`, `architect:adr`, or `implementer:build`/`implementer:full`.
+
+---
+
+## RULE 12 — Label What You Know
+
+**Every substantive claim carries one of four labels: FACT, INFERENCE,
+PROPOSAL, or DECISION. Only a DECISION may change the Current Technical
+Specification.**
+
+The failure this prevents is the most common one in AI-assisted engineering:
+a plausible guess gets written down, read back as established truth, and
+becomes the foundation for the next three decisions. Labelling makes the
+difference visible at the point of reading.
+
+| Label | Means | Obligation |
+|---|---|---|
+| **FACT** | Verified from code, docs, tool output, or a cited source | Must cite. `file.py:42`, a test result, a ticket. An uncited FACT is an INFERENCE wearing a disguise. |
+| **INFERENCE** | Reasoned from facts; probably right; could be wrong | State what it rests on, so a reader can check the weak link |
+| **PROPOSAL** | A recommendation awaiting a human | Never self-approve. Never implement. |
+| **DECISION** | Approved by a human | Only ever recorded, never originated, by an agent |
+
+### Scope
+
+Applies to: technical analysis, ADRs, review findings, audit reports,
+traceability reports, architecture proposals, and the Project Context.
+
+Does **not** apply to: conversational replies, code comments, commit messages,
+or docstrings. Labelling everything makes labelling worthless.
+
+### Examples
+
+```
+FACT: OrderService.submit() has no idempotency key (src/order/service.py:88).
+INFERENCE: retries during the payment timeout window likely double-charge —
+  based on the retry policy in config/http.yaml and the missing key above.
+PROPOSAL: add a client-supplied Idempotency-Key header, deduped in Redis.
+DECISION: approved 2026-08-18 — see ADR-0012.
+```
+
+### Transitions
+
+The only legal upgrades are INFERENCE → FACT (once verified, with a citation)
+and PROPOSAL → DECISION (once a human approves). An agent performing the
+second one on its own is the single most serious violation in this
+instruction set.
+
+**When to apply:** Every analysis, ADR, review, audit, and specification
+an agent produces.
 
 ---
 
 ## Attribution & Integration
 
-These 11 rules + 4 Foundational Principles together form the **Master Instruction Set v2.1**.
+These 12 rules + 4 Foundational Principles together form the **Master Instruction Set v2.2**.
 All agents follow these rules without exception. Principles are woven into agent DNA, not enforced as checklists.
