@@ -117,11 +117,15 @@ awesome-prompts/
 
 Agents are organized by responsibility using a **lean, role-based architecture**. See `agents/README.md` and `AGENTS_FUNCTIONS.md` for detailed descriptions and function dispatch.
 
-**Total: 5 agents (down from 13) + 40 callable functions — zero role overlap**
+> **Which command at which stage?** See **[SDLC_PLAYBOOK.md](SDLC_PLAYBOOK.md)** —
+> the complete 16-stage lifecycle with the commands available at each stage, the
+> gate that must pass before the next one starts, and the artifacts produced.
+
+**Total: 5 agents (down from 13) + 42 callable functions — zero role overlap**
 
 | # | Role | Agent | Functions | Purpose | Tech-Agnostic |
 |---|------|-------|-----------|---------|---------------|
-| 1 | **Strategy & Orchestration** | Orchestrator | plan, build, context, pr, review, tradeoff, risk | Full-stack generation + technical leadership + requirements parsing | ✅ Yes |
+| 1 | **Strategy & Orchestration** | Orchestrator | plan, build, context, pr, review, tradeoff, risk, ideate, solve | Full-stack generation + technical leadership + requirements parsing + ideation | ✅ Yes |
 | 2 | **Architecture & Design** | Architect | design, refactor, frontend, schema, api, a11y, **analyse, adr, spec** | System topology, greenfield/brownfield design, API contracts, DB schema, UI architecture, accessibility + technical analysis, ADRs, Current Technical Specification | ✅ Yes |
 | 3 | **Implementation & Execution** | Implementer | build, test, doc, pipeline, docker, iac, full | Code generation, testing, documentation, CI/CD, containerization, infrastructure (key: `full` runs build+test+doc with no context loss) | ✅ Yes |
 | 4 | **QA, Security & Performance** | Quality | review, audit, security, perf, debug, report, batch-review, diagnose, **observe, qa** | PR validation, codebase audit, OWASP security scan, performance optimization, RCA, quality synthesis + conformance observation and the five reusable suites | ✅ Yes |
@@ -178,7 +182,7 @@ orchestrator:pr (open GitHub PR)
 - ✅ **Linear pipeline** = explicit handoffs with full context
 - ✅ **implementer:full** = no state transfer loss between build/test/doc
 - ✅ **35 reusable skills** = no duplication across agents
-- ✅ **40 callable functions** = fine-grained control via `agent:function` syntax
+- ✅ **42 callable functions** = fine-grained control via `agent:function` syntax
 - ✅ Clear separation: agent = orchestration + dispatch, skill = implementation
 
 ## Skills

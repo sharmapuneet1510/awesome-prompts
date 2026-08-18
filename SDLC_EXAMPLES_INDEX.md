@@ -134,6 +134,27 @@ Complete real-world examples showing how each agent works across the full Softwa
 
 ## 📋 By SDLC Phase
 
+> **This index maps examples to phases. For the authoritative stage-by-stage
+> command reference — all 16 stages, every command, every gate — see
+> [SDLC_PLAYBOOK.md](SDLC_PLAYBOOK.md).** The six phases below are a coarse
+> grouping of the playbook's stages, kept because the example files are
+> organised this way.
+
+### Phase −1: Discovery & Decision (companion functions)
+```
+ba:discover                 → Requirements from a business discussion
+ba:clarify                  → Resolve ambiguity, one question at a time
+ba:brd                      → BRD + Business Context + MVP scope
+architect:analyse           → Technical analysis against the codebase
+architect:adr               → Mint an Engineering Decision Record  ← GATE (RULE 11a)
+architect:spec              → Regenerate the Current Technical Specification
+```
+**Files:** no worked examples yet — see
+[SDLC_PLAYBOOK.md](SDLC_PLAYBOOK.md) stages 1–5 and the function files under
+`agents/business_analyst/functions/` and `agents/architect/functions/`.
+
+---
+
 ### Phase 0: Requirements → Planning
 ```
 orchestrator:plan           → Clarify requirements
@@ -183,11 +204,15 @@ implementer:iac             → Kubernetes manifests
 
 ### Phase 4: Code Review & Validation
 ```
+quality:observe             → Conformance gaps (Req↔Code, ADR↔Code, Spec↔Code, Tests↔AC)
 quality:review              → PR validation
 quality:audit               → Architecture audit
 quality:security            → Security audit
 quality:perf                → Performance audit
+quality:qa                  → The five reusable suites
+ba:trace                    → 8-hop traceability chain, 18 checks
 ```
+Run `quality:observe` **before** `quality:review` — conformance before opinion.
 **Files:**
 - [QUALITY_SDLC_EXAMPLES.md](QUALITY_SDLC_EXAMPLES.md) — All quality phases
 
@@ -242,8 +267,23 @@ orchestrator:context → quality:audit → architect:refactor → [phased migrat
 ### Workflow 4: Production Incident Response
 ```
 quality:diagnose → quality:debug → implementer:build → quality:review → [deploy]
+                 → quality:qa suite=regression   ← close the loop
 ```
 **See:** [QUALITY_SDLC_EXAMPLES.md](QUALITY_SDLC_EXAMPLES.md) — Bug debugging scenario
+
+An incident that produces no regression scenario will happen again.
+
+---
+
+### Workflow 5: Full Companion Cycle (business discussion → release)
+```
+ba:discover → ba:clarify → ba:brd → ba:create
+            → architect:analyse → architect:adr → architect:spec
+            → orchestrator:plan → architect:design → [tasks]
+            → implementer:full
+            → quality:observe → quality:qa → orchestrator:pr → ba:trace
+```
+**See:** [SDLC_PLAYBOOK.md](SDLC_PLAYBOOK.md) — stages 1–13 with gates and artifacts
 
 ---
 
@@ -290,7 +330,8 @@ quality:diagnose → quality:debug → implementer:build → quality:review → 
 
 ## 🔗 Related Documentation
 
-- **[FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md)** — Detailed examples for all 30 functions
+- **[SDLC_PLAYBOOK.md](SDLC_PLAYBOOK.md)** — **The complete 16-stage lifecycle: which command at which stage, and the gate for each**
+- **[FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md)** — Detailed examples for 28 of the 42 functions
 - **[FUNCTION_QUICK_REFERENCE.md](FUNCTION_QUICK_REFERENCE.md)** — One-page cheat sheets
 - **[agents/README.md](agents/README.md)** — Agent descriptions
 - **[skills/README.md](skills/README.md)** — Reusable implementation skills
@@ -334,4 +375,4 @@ Use these examples to understand how agents support different maturity levels:
 
 ---
 
-**Last Updated:** June 8, 2026 | **Version:** 1.0
+**Last Updated:** August 18, 2026 | **Version:** 1.1

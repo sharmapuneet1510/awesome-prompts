@@ -1,6 +1,6 @@
 # 🤖 AI Agents Directory (v3.0 — 4-Role Architecture)
 
-> Lean, role-based AI agents with function dispatch. **5 agents, 35 skills, 40 callable functions.**  
+> Lean, role-based AI agents with function dispatch. **5 agents, 35 skills, 42 callable functions.**  
 > **New in v3.0:** Consolidated 13 specialized agents into 4 primary roles + 1 utility agent. Linear execution pipeline prevents context loss.
 
 ## 🎯 Foundational Principles (Guide All Agents)
@@ -22,11 +22,17 @@ See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES section) f
 
 | # | Agent | Role | Functions | Purpose | Version | Status |
 |---|-------|------|-----------|---------|---------|--------|
-| 1 | [Orchestrator](orchestrator_agent.md) | Strategy & Orchestration | plan, build, context, pr, review, tradeoff, risk | Full-stack generation & technical leadership | v3.0 | ✅ Ready |
+| 1 | [Orchestrator](orchestrator_agent.md) | Strategy & Orchestration | plan, build, context, pr, review, tradeoff, risk, ideate, solve | Full-stack generation, technical leadership, ideation & design solving | v3.2 | ✅ Ready |
 | 2 | [Architect](architect_agent.md) | Architecture & Design + Developer Companion | design, refactor, frontend, schema, api, a11y, **analyse, adr, spec** | System topology, API contracts, DB schema, UI architecture, technical analysis, ADRs, Current Technical Specification | v3.2 | ✅ Ready |
 | 3 | [Implementer](implementer_agent.md) | Implementation & Execution + Coding Companion | build, test, doc, pipeline, docker, iac, full | Code generation, testing, documentation, deployment (gated on approved spec + ADR) | v3.2 | ✅ Ready |
 | 4 | [Quality](quality_agent.md) | QA, Security & Performance + Review/QA Companions | review, audit, security, perf, debug, report, batch-review, diagnose, **observe, qa** | PR validation, security audit, optimization, debugging, conformance observation, 5 reusable suites | v3.2 | ✅ Ready |
 | 5 | [Business Analyst](business_analyst_agent.md) | Backlog + BA Companion | report, parse, create, **discover, clarify, brd, trace** | JIRA parsing, backlog visualization, requirement discovery, BRD, traceability | v1.2 | ✅ Ready |
+
+---
+
+> **Which command at which stage?** See **[SDLC_PLAYBOOK.md](../SDLC_PLAYBOOK.md)** —
+> all 16 lifecycle stages, the commands available at each, the exit gate for
+> each, and short paths for trivial changes, bug fixes, and greenfield work.
 
 ---
 
@@ -137,14 +143,14 @@ Companion functions (v3.2):
   quality:qa suite=regression          → Maintain the 5 reusable quality suites
 ```
 
-**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 40 callable functions with detailed inputs, outputs, and examples.**
+**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 42 callable functions with detailed inputs, outputs, and examples.**
 ---
 
 ## 📖 Complete Examples Guide
 
-**See [FUNCTION_EXAMPLES.md](../FUNCTION_EXAMPLES.md) for real-world usage examples of 28 of the 40 functions:**
+**See [FUNCTION_EXAMPLES.md](../FUNCTION_EXAMPLES.md) for real-world usage examples of 28 of the 42 functions:**
 
-- **Orchestrator** (7 functions) — plan, build, context, review, tradeoff, risk, pr
+- **Orchestrator** (9 functions) — plan, build, context, review, tradeoff, risk, pr, ideate, solve
 - **Architect** (9 functions) — design, refactor, frontend, schema, api, a11y, analyse, adr, spec
 - **Implementer** (7 functions) — build, test, doc, pipeline, docker, iac, full
 - **Quality** (10 functions) — review, audit, security, perf, debug, report, batch-review, diagnose, observe, qa

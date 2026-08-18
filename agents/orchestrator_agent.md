@@ -36,6 +36,8 @@ Invoke a specific function using `orchestrator:function`. When triggered this wa
 | `orchestrator:review` | Architecture review + design validation + gap analysis | Technical Lead PHASE 1 |
 | `orchestrator:tradeoff` | Complexity vs. simplicity analysis + 3-option comparison | Technical Lead PHASE 3 |
 | `orchestrator:risk` | Risk assessment + failure modes + mitigation strategies | Technical Lead PHASE 4 |
+| `orchestrator:ideate` | Transform a vague idea into a validated project plan (uses ideation_engine, expert_panel_generator) | [orchestrator/functions/ideate.md](orchestrator/functions/ideate.md) |
+| `orchestrator:solve` | Solve a design bottleneck with multi-dimensional options (uses design_solver, expert_panel_generator) | [orchestrator/functions/solve.md](orchestrator/functions/solve.md) |
 
 ### Dispatch Rules
 - **With function:** `orchestrator:function` → run only that function's steps (skip intro questions)

@@ -50,7 +50,7 @@
 
 ### Architecture
 - ✅ **Reduced from 13 → 5 agents** (role-based, no duplication)
-- ✅ **40 callable functions** across all agents
+- ✅ **42 callable functions** across all agents
 - ✅ **No context loss** — implementer:full runs code + tests + docs in one pass
 - ✅ **31 reusable skills** (from code generation to security audits)
 
@@ -92,7 +92,7 @@ ba:report file=jira-export.json                    # Parse JIRA → HTML backlog
 ba:create path=./requirements.txt                  # Parse text → JIRA + BDD HTML cards
 ```
 
-**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 40 functions.**
+**See [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) for complete reference of all 42 functions.**
 
 ---
 
@@ -155,9 +155,9 @@ Invoke agents as specialized roles suited to your task:
 
 ## 📖 Comprehensive Function Examples (v3.1)
 
-**[FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md)** contains real-world examples for 28 of the 40 functions:
+**[FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md)** contains real-world examples for 28 of the 42 functions:
 
-- **Orchestrator** (7 functions) — plan, build, context, review, tradeoff, risk, pr
+- **Orchestrator** (9 functions) — plan, build, context, review, tradeoff, risk, pr, ideate, solve
 - **Architect** (6 functions) — design, refactor, frontend, schema, api, a11y  
 - **Implementer** (7 functions) — build, test, doc, pipeline, docker, iac, full
 - **Quality** (8 functions) — review, audit, security, perf, debug, report, batch-review, diagnose
@@ -185,7 +185,7 @@ awesome-prompts/                       Reorganized June 2026 for clarity & scala
 │   ├── orchestrator/                  ← Orchestrator modules & functions
 │   │   ├── modules/                   ← design_solver, expert_panel_generator, ideation_engine
 │   │   └── functions/                 ← ideate, solve
-│   └── README.md                      ← Agent dispatch syntax + 40 callable functions
+│   └── README.md                      ← Agent dispatch syntax + 42 callable functions
 │
 ├── 💡 skills/                         ← 31 reusable implementation modules
 │   ├── code_documentation_skill.md    ← JSDoc/docstrings/Javadoc
@@ -329,7 +329,8 @@ awesome-prompts/                       Reorganized June 2026 for clarity & scala
 ├── 📝 Core Files
 │   ├── README.md (you are here!)
 │   ├── CLAUDE.md                      ← Project instructions for Claude Code
-│   ├── AGENTS_FUNCTIONS.md            ← Complete function reference (40 functions)
+│   ├── AGENTS_FUNCTIONS.md            ← Complete function reference (42 functions)
+│   ├── SDLC_PLAYBOOK.md               ← 16-stage lifecycle: which command at which stage + gates
 │   ├── .gitignore                     ← Git ignore rules (8 organized sections)
 │   └── LICENSE
 ```
@@ -1128,12 +1129,14 @@ Auto-generated platform masters:
 
 | Resource | Link | Purpose |
 |----------|------|---------|
-| **All Agent Functions** | [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) | Complete reference for 28 of the 40 functions with MCP-style tables |
+| **SDLC Playbook** | [SDLC_PLAYBOOK.md](SDLC_PLAYBOOK.md) | **Which command at which stage** — all 16 lifecycle stages, gates, artifacts, short paths |
+| **SDLC Examples** | [SDLC_EXAMPLES_INDEX.md](SDLC_EXAMPLES_INDEX.md) | Worked examples per agent and phase |
+| **All Agent Functions** | [AGENTS_FUNCTIONS.md](AGENTS_FUNCTIONS.md) | Complete reference for 28 of the 42 functions with MCP-style tables |
 | **Agent Directory** | [agents/README.md](agents/README.md) | Agent definitions + dispatch syntax |
 | **Specialist Modes** | [SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md) | 9 specialized agent roles |
 | **Function Examples** | [FUNCTION_EXAMPLES.md](FUNCTION_EXAMPLES.md) | Real-world examples for all functions |
 | **Exporter Analysis** | [docs/EXPORTER_ANALYSIS.md](docs/EXPORTER_ANALYSIS.md) | DeployHQ best practices analysis + roadmap |
-| **Skill Catalog** | [skills/](skills/) | 31 reusable skills with documentation |
+| **Skill Catalog** | [skills/](skills/) | 35 reusable skills with documentation |
 | **Prompt Catalog** | [prompts/](prompts/) | 11 categories, 18 copy-paste prompt templates |
 | **Project Context** | [docs/context/](docs/context/) | Sample architecture.md, tech-stack.md, design.html |
 | **Design Specs** | [docs/superpowers/specs/](docs/superpowers/specs/) | Issue specs (Issue #9, #10, #11) |
