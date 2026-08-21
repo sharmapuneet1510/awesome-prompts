@@ -20,39 +20,39 @@ The orchestrator agent handles **strategic planning and execution coordination**
 
 ### Planning & Execution
 
-- **[orchestrator:plan](./functions/plan.md)** — Parse requirements, break into tasks
+- **[orchestrator:plan](../orchestrator_agent.md)** — Parse requirements, break into tasks
   - Input: Requirements document (free text, JIRA, GitHub, etc.)
   - Output: requirements.md, task-breakdown.json, execution-order.txt
   - Use when: "I have clear requirements and need to break them into tasks"
 
-- **[orchestrator:build](./functions/build.md)** — Full-stack generation (end-to-end)
+- **[orchestrator:build](../orchestrator_agent.md)** — Full-stack generation (end-to-end)
   - Input: Requirements
   - Output: Complete system (architecture → code → tests → docs)
   - Use when: "Build everything from requirements in one go"
 
-- **[orchestrator:context](./functions/context.md)** — Build project context (architecture, tech stack)
+- **[orchestrator:context](../orchestrator_agent.md)** — Build project context (architecture, tech stack)
   - Input: Existing codebase
   - Output: architecture.md, tech-stack.md, context.json, design.html visualization
   - Use when: "I need to understand project structure and technology stack"
 
-- **[orchestrator:pr](./functions/pr.md)** — Package deliverables, create GitHub PR
+- **[orchestrator:pr](../orchestrator_agent.md)** — Package deliverables, create GitHub PR
   - Input: Generated code + tests + docs
   - Output: GitHub PR with comprehensive description
   - Use when: "I have code ready to propose as a pull request"
 
 ### Review & Risk Analysis
 
-- **[orchestrator:review](./functions/review.md)** — Strategic architecture review with challenges
+- **[orchestrator:review](../orchestrator_agent.md)** — Strategic architecture review with challenges
   - Input: Architecture design
   - Output: Review report with challenge questions and 5-year assessment
   - Use when: "I want expert-level feedback on system design"
 
-- **[orchestrator:tradeoff](./functions/tradeoff.md)** — Generate 3-option complexity analysis
+- **[orchestrator:tradeoff](../orchestrator_agent.md)** — Generate 3-option complexity analysis
   - Input: Problem statement + constraints
   - Output: 3 approaches with trade-off analysis and ranked recommendation
   - Use when: "I need to compare architectural approaches"
 
-- **[orchestrator:risk](./functions/risk.md)** — Risk assessment with mitigation strategies
+- **[orchestrator:risk](../orchestrator_agent.md)** — Risk assessment with mitigation strategies
   - Input: Project plan + constraints
   - Output: Risk assessment covering operational, data, scaling, team, integration risks
   - Use when: "I need to identify and mitigate risks in my project"

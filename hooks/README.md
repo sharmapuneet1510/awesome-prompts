@@ -229,5 +229,5 @@ if __name__ == "__main__":
 
 - **[Exporter Tool](../tools/README.md)** — Main exporter documentation
 - **[Tools Directory](../tools/)** — All utilities
-- **[Setup Guide](../SETUP_GUIDE.md)** — Installation instructions
+- **[Setup Guide](../docs/00-getting-started/installation.md)** — Installation instructions
 - **[Main README](../README.md)** — Project overview

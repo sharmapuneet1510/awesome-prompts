@@ -729,6 +729,6 @@ include_swimlanes: true     # Show team ownership
 - [[code_documentation_skill]] — Generate code docs from spec
 - [[test_skill]] — Generate tests from acceptance criteria
 - [[architect:design]] — Design from functional requirements
-- [[SPECIALIST_AGENT_MODES.md]] — Specialist modes for different workflows
-- [[FUNCTION_EXAMPLES.md]] — Real-world examples of agent usage
+- `docs/02-reference/agents.md` — Specialist modes for different workflows
+- `docs/04-examples/` — Real-world examples of agent usage
 

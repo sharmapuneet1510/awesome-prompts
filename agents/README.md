@@ -30,7 +30,7 @@ See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES section) f
 
 ---
 
-> **Which command at which stage?** See **[SDLC_PLAYBOOK.md](../SDLC_PLAYBOOK.md)** —
+> **Which command at which stage?** See **[the SDLC playbook](../docs/01-workflows/sdlc-playbook.md)** —
 > all 16 lifecycle stages, the commands available at each, the exit gate for
 > each, and short paths for trivial changes, bug fixes, and greenfield work.
 
@@ -143,12 +143,12 @@ Companion functions (v3.2):
   quality:qa suite=regression          → Maintain the 5 reusable quality suites
 ```
 
-**See [AGENTS_FUNCTIONS.md](../AGENTS_FUNCTIONS.md) for all 42 callable functions with detailed inputs, outputs, and examples.**
+**See [the function reference](../docs/02-reference/functions.md) for all 42 callable functions with detailed inputs, outputs, and examples.**
 ---
 
 ## 📖 Complete Examples Guide
 
-**See [FUNCTION_EXAMPLES.md](../FUNCTION_EXAMPLES.md) for real-world usage examples of 28 of the 42 functions:**
+**See [the examples](../docs/04-examples/README.md) for real-world usage examples of 28 of the 42 functions:**
 
 - **Orchestrator** (9 functions) — plan, build, context, review, tradeoff, risk, pr, ideate, solve
 - **Architect** (9 functions) — design, refactor, frontend, schema, api, a11y, analyse, adr, spec
@@ -158,7 +158,7 @@ Companion functions (v3.2):
 
 The nine companion functions (analyse, adr, spec, observe, qa, discover,
 clarify, brd, trace) are documented in their own function files under
-`agents/<agent>/functions/`; FUNCTION_EXAMPLES.md predates them.
+`agents/<agent>/functions/`; the example library predates them.
 
 Each function includes:
 ✓ Real-world examples | ✓ Parameters explained | ✓ Expected outputs | ✓ When to use
@@ -225,161 +225,31 @@ Output (Production-Ready)
 
 ---
 
-## 🔍 Implementation Agent (v3.0)
+## Agent Details
 
-**File:** [`implementation_agent.md`](implementation_agent.md)
+Each agent's full definition, including its dispatch table and per-function
+behaviour, lives in its own file:
 
-| Aspect | Details |
-|--------|---------|
-| **Purpose** | Full-lifecycle feature builder |
-| **Input** | Requirement (free text / JIRA / file) |
-| **Steps** | 7-step process (parse → plan → code → test → doc → PR) |
-| **Output** | Complete code + tests + docs + GitHub PR |
-| **Tech** | Java, Python, React, TypeScript, Node.js, SQL |
+| Agent | Definition | Functions |
+|---|---|---|
+| Orchestrator | [orchestrator_agent.md](orchestrator_agent.md) | [orchestrator/functions/](orchestrator/functions/) |
+| Architect | [architect_agent.md](architect_agent.md) | [architect/functions/](architect/functions/) |
+| Implementer | [implementer_agent.md](implementer_agent.md) | [implementer/functions/](implementer/functions/) |
+| Quality | [quality_agent.md](quality_agent.md) | [quality/functions/](quality/functions/) |
+| Business Analyst | [business_analyst_agent.md](business_analyst_agent.md) | [business_analyst/functions/](business_analyst/functions/) |
 
-**When to use:** Building features, adding endpoints, implementing logic
+For a narrative description of what each agent owns and why the roles are split
+this way, see [../docs/02-reference/agents.md](../docs/02-reference/agents.md).
 
----
-
-## 🔍 Code Review Agent (v3.0)
-
-**File:** [`code_review_agent.md`](code_review_agent.md)
-
-| Aspect | Details |
-|--------|---------|
-| **Purpose** | Requirement-driven code validation |
-| **Input** | PR/MR + JIRA requirement |
-| **Analysis** | 6-phase (requirement → quality → testing → docs → scoring) |
-| **Output** | Interactive HTML report + MR comment |
-| **Grade** | A-F with weighted scorecard |
-
-**Features:**
-- 🎯 Requirement validation (AC coverage %)
-- 📊 Weighted scorecard (Req 40% + Quality 30% + Testing 20% + Docs 10%)
-- 📈 Interactive HTML reports
-- 💬 MR comment summaries
-
-**When to use:** Reviewing PRs, validating requirements, rating code quality
+> **Removed 2026-08-21.** This section previously documented eight agents —
+> `implementation_agent`, `code_review_agent`, `architecture_agent`,
+> `test_case_generator_agent`, `documentation_agent`, `integration_agent`,
+> `autonomous_dev_agent`, and a separate systems architect — all of which were
+> consolidated into the five above in v4.0.0 (June 2026). The sections had
+> outlived the files they described. See
+> [../CHANGELOG.md](../CHANGELOG.md) for the 13 → 5 mapping.
 
 ---
-
-## 🏗️ Systems Architect Agent (v2.0) ⭐ MERGED
-
-**File:** [`architecture_agent.md`](architecture_agent.md)
-
-| Aspect | Details |
-|--------|---------|
-| **Purpose** | Design new systems (greenfield) OR refactor existing ones (brownfield) |
-| **Greenfield** | API contracts, database schema, caching, deployment topology, code stubs |
-| **Brownfield** | Current state assessment, problem diagnosis, phased migration plan, rollback strategies |
-| **Output** | System topology diagrams, API contracts, DB schemas, phased roadmap, migration guides |
-
-**Merged from:**
-- ✅ `backend_systems_architect_agent` (new system design)
-- ✅ `architecture_refactorer_agent` (existing system refactoring)
-
-**When to use:** Designing new systems OR refactoring existing monoliths/legacy code
-
----
-
-## 🧪 Test Case Generator (v1.0)
-
-**File:** [`test_case_generator_agent.md`](test_case_generator_agent.md)
-
-**Purpose:** Generate tests with 100% coverage + business validation
-
-**Process:**
-1. Fetch JIRA acceptance criteria
-2. Analyze code context
-3. Generate unit + integration tests
-4. Validate all ACs covered
-5. Run test suite (100% coverage)
-
-**Output:** Complete test suite with JIRA validation
-
-**When to use:** Need complete test coverage, JIRA-driven testing
-
----
-
-## 📚 Documentation Engineer Agent (v2.0) ⭐ MERGED
-
-**File:** [`documentation_agent.md`](documentation_agent.md)
-
-**Purpose:** Comprehensive documentation across all levels
-
-**Covers:**
-- Code-level docs (Javadoc, docstrings, JSDoc)
-- Architecture docs (context.json, architecture.md, tech-stack.md)
-- API specifications (OpenAPI/Swagger)
-- README + quick-start guides
-- Interactive HTML documentation site
-
-**Merged from:**
-- ✅ `writer_agent` (code-level + API docs)
-- ✅ `technical_documentation_agent` (architecture + HTML site)
-
-**When to use:** Need any documentation (code docs, architecture, API, README, HTML site)
-
----
-
-## 📊 Business Analyst Agent (v1.0) ⭐ NEW
-
-**File:** [`business_analyst_agent.md`](business_analyst_agent.md)
-
-| Aspect | Details |
-|--------|---------|
-| **Purpose** | Parse JIRA exports, generate interactive backlog reports |
-| **Input** | Local JIRA JSON or CSV export |
-| **Output** | Single-file HTML report (self-contained, no CDN) |
-| **Features** | Filtering (status, priority, assignee, sprint), sorting, stats header, row expansion |
-
-**When to use:** Need to visualize JIRA backlog, generate backlog reports, share with stakeholders
-
----
-
-## ⚙️ Integration Agent (v1.0)
-
-**File:** [`integration_agent.md`](integration_agent.md)
-
-**Purpose:** CI/CD pipelines and deployment automation
-
-**Generates:**
-- GitHub Actions workflows
-- Docker configuration
-- Infrastructure as Code (Terraform)
-- Monitoring & alerts
-- Cloud deployment configs
-
-**Supports:** AWS, GCP, Azure, Kubernetes
-
-**When to use:** Need CI/CD setup, Docker, deployment automation
-
----
-
-## 🚀 Autonomous Dev Agent (v1.0)
-
-**File:** [`autonomous/autonomous_dev_agent.md`](autonomous/autonomous_dev_agent.md)
-
-**Purpose:** Full-stack project orchestrator
-
-**Scope:** Complete system generation (DB + API + UI + tests)
-
-**Process:** 14-step orchestration
-1. Parse requirement
-2. Create database schema
-3. Generate backend API
-4. Create frontend UI
-5. Write tests (100% coverage)
-6. Generate documentation
-7. Create GitHub PR
-8. Ready for production
-
-**When to use:** Building complete systems, MVPs, starting new projects
-
-[📖 Full Guide](../AUTONOMOUS_DEVELOPER_README.md)
-
----
-
 
 ## 🔗 Common Workflows
 
@@ -439,7 +309,7 @@ Output (Production-Ready)
 - **[Tools Documentation](../tools/README.md)** — Utility scripts
 - **[Master Rules](../instructions/master_instruction_set.md)** — Non-negotiable standards
 - **[Main README](../README.md)** — Project overview
-- **[Autonomous Dev Guide](../AUTONOMOUS_DEVELOPER_README.md)** — Full-stack generation
+- **[Workflows](../docs/01-workflows/README.md)** — 14 use cases, each a complete path
 
 ---
 

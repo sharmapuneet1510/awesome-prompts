@@ -115,11 +115,13 @@ awesome-prompts/
 
 ## Agents by Role (v3.0 — 4-Role Architecture)
 
-Agents are organized by responsibility using a **lean, role-based architecture**. See `agents/README.md` and `AGENTS_FUNCTIONS.md` for detailed descriptions and function dispatch.
+Agents are organized by responsibility using a **lean, role-based architecture**. See `agents/README.md` and [docs/02-reference/functions.md](docs/02-reference/functions.md) for detailed descriptions and function dispatch.
 
-> **Which command at which stage?** See **[SDLC_PLAYBOOK.md](SDLC_PLAYBOOK.md)** —
+> **Which command at which stage?** See **[docs/01-workflows/sdlc-playbook.md](docs/01-workflows/sdlc-playbook.md)** —
 > the complete 16-stage lifecycle with the commands available at each stage, the
 > gate that must pass before the next one starts, and the artifacts produced.
+>
+> **Which workflow for which task?** See **[docs/01-workflows/README.md](docs/01-workflows/README.md)** — 14 use cases, each a complete path.
 
 **Total: 5 agents (down from 13) + 42 callable functions — zero role overlap**
 
@@ -344,7 +346,7 @@ Output: code + tests + ADR + regenerated spec + updated Project Context,
 
 ## Specialist Agent Modes
 
-Nine specialized agent modes for common engineering roles have been integrated into your system. See [SPECIALIST_AGENT_MODES.md](SPECIALIST_AGENT_MODES.md) for quick reference:
+Nine specialized agent modes for common engineering roles have been integrated into your system. See [docs/02-reference/agents.md](docs/02-reference/agents.md#specialist-modes) for quick reference:
 
 | Specialist Role | Agent:Function | Use When |
 |---|---|---|
