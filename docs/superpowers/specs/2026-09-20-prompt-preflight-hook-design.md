@@ -56,7 +56,7 @@ Each requirement is testable; the traceability matrix is in *Testing*.
 | **R6** | **Fail open.** Any error, timeout, or unavailability lets the prompt proceed untouched. |
 | **R7** | **Hook I/O contract.** Exit code is always 0. Stdout is exactly one JSON object or empty. Diagnostics go only to the log. |
 | **R8** | **Privacy.** The model host must be loopback unless `allow_remote` is set. The log never contains prompt text unless `log_prompts` is set. No telemetry. |
-| **R9** | **Config** keys and defaults are as in *Design §8*. A corrupt or missing file yields defaults. |
+| **R9** | **Config** keys and defaults are as in *Design §8*. A corrupt file, or an invalid value in one, yields the default for it; a *missing* `config.json` means the hook is bypassed (R14). |
 | **R10** | **Setup safety.** Backup before edit; merge, never replace; atomic write; idempotent; refuse a non-JSON settings file; `--dry-run` writes nothing; scope is user or project-local, never the committed `.claude/settings.json`; a self-test runs before finishing. |
 | **R11** | **Reversibility.** `--remove` deletes exactly Preflight's own entry and folder. `PROMPT_PREFLIGHT=off` and `"enabled": false` disable it instantly. |
 | **R12** | **Acceptance thresholds** from the bake-off (*Model selection*) are met by the shipped default, or the default is heuristics-only. |
@@ -170,11 +170,11 @@ Installed layout: `<scope>/prompt-preflight/` containing `hook.py` and the other
 ```json
 { "hooks": { "UserPromptSubmit": [
   { "hooks": [ { "type": "command",
-                 "command": "python3 /abs/path/prompt-preflight/hook.py",
+                 "command": "python3 '/abs/path/prompt-preflight/hook.py' || true",
                  "timeout": 5 } ] } ] } }
 ```
 
-The entry is identified by its command path, which makes install idempotent and removal exact. The 5 s timeout is deliberately below the 30 s default so a stuck hook cannot stall the session.
+The entry is identified by its command path, which makes install idempotent and removal exact. The path is shell-quoted (`shlex.quote`) because Claude Code runs the command through a shell on every prompt, so a folder name holding `$(...)` or a backtick must stay data (A8). The trailing `|| true` matters: if the install folder is ever deleted by hand, `python3` exits with code 2 for the missing script, and exit code 2 rejects the user's prompt; the guard makes a leftover entry harmless (A8). The 5 s timeout is deliberately below the 30 s default so a stuck hook cannot stall the session.
 
 ### 6. Safety and failure modes (R6, R7, R8)
 
@@ -202,12 +202,13 @@ The entry is identified by its command path, which makes install idempotent and 
 | `mode` | `"advise"` | `"advise"` or `"block"` (`google` verdict only) |
 | `model` | set by setup | Ollama model name |
 | `ollama_host` | `"127.0.0.1:11434"` | the only host source the hook reads (the `OLLAMA_HOST` environment variable is not read at run time, so ambient env cannot redirect prompts); setup seeds it from that variable if set; must be loopback unless `allow_remote` |
-| `budget_ms` | `2500` | model time limit (PROPOSAL; set by the bake-off) |
-| `min_confidence` | `0.7` | below this, the refinement is not injected |
+| `budget_ms` | `2500` | model time limit; the hook caps it at 4000 ms so a call always fits inside the 5 s hook timeout (A9) |
+| `min_confidence` | `0.7` | below this, a model verdict of any kind is ignored (A4) |
 | `notify` | `{google, clarify, refine: true}` | silence any verdict individually |
 | `skip_over_chars` | `2000` | longer prompts are left untouched (both tiers) |
 | `min_words` | `3` | shorter prompts are left untouched (both tiers) |
 | `bypass_marker` | `"[raw]"` | a prompt containing it is untouched |
+| `installed_version` | stamped by setup | bookkeeping so `--update` knows what is installed; not a setting |
 | `keep_alive` | `"10m"` | passed to Ollama |
 | `cooldown_s` | `300` | model-tier pause after a failure |
 | `override_window_s` | `300` | block-mode resend window |
@@ -285,9 +286,9 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 
 | # | Item | Resolution |
 |---|---|---|
-| O1 | Whether a hook added mid-session takes effect — the docs do not say (**unverified**) | Test in the real end-to-end run; the wizard says "restart" meanwhile |
-| O2 | Whether a non-blocking `systemMessage` is clearly visible in the interactive UI — the docs say "shown to the user" (**unverified visually**) | Test in the real end-to-end run |
-| O3 | Minimum Ollama version for structured outputs; the installed client is 0.9.1 | The wizard reads `/api/version`; confirm the minimum in Task 1 |
+| O1 | Whether a hook added mid-session takes effect — the docs do not say (**still unverified**: it needs an interactive session) | Run the two-terminal check in the plan's Gate C; the wizard says "restart" meanwhile |
+| O2 | Whether a non-blocking `systemMessage` is clearly visible in the interactive UI — the docs say "shown to the user" (**FACT, 2026-09-21, Claude Code 2.1.278, `claude -p`:** it is emitted as a `system`/`informational` event at level `notice`, "UserPromptSubmit says: Prompt Preflight: quick lookup — try Google: …", and the prompt still goes through. **How the interactive terminal renders it is still unverified.**) | Look at it once in an interactive session |
+| O3 | Minimum Ollama version for structured outputs; the installed client is 0.9.1 | Ollama 0.9.1 honoured the JSON-schema `format` in the bake-off (every reply parsed). The wizard checks only that the server answers `/api/version`; no minimum version is enforced |
 | O4 | Model names, sizes, and latency | Task 1 |
 | O5 | Interaction with other `UserPromptSubmit` hooks — not verified | Preflight depends on none |
 | O6 | Vendored `token_optimizer` can go stale | `--update` re-vendors; version stamped in `config.json` |
@@ -314,7 +315,7 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 ## Governance and Scope
 
 - **RULE 11.** This spec and the plan that follows are this repo's own design records, in `docs/superpowers/`, following the precedent of the existing specs and plans. The spec was approved by the user on 2026-09-20; the plan needs its own approval.
-- **RULE 11a.** D1–D8 above; D3–D8 were accepted on the user's explicit approval of the spec (2026-09-20).
+- **RULE 11a.** D1–D10 above; D3–D8 were accepted on the user's explicit approval of the spec (2026-09-20), and D9–D10 follow from the amendments A1–A6 the user approved. Amendments A7–A9 are **controller rulings made during implementation, awaiting the user's confirmation** (each has evidence below); a veto means reverting the named change.
 - **Branching.** Work happens on `feat/prompt-preflight`, branched from `origin/main` after pull request #14 (README redesign, MIT license, MCP builder skill) was merged.
 - **Out of scope, tracked separately:** the inert `promptshield-check.sh` and its incorrect settings schema; the exporter's `--target-project` ignoring `--dry-run`; the README layout tree, now on `main`, listing `token_optimizer/` and `parser/` at the repo root when neither is there (`token_optimizer` lives in `tools/`).
 
@@ -332,6 +333,9 @@ Made while planning, from evidence gathered on 2026-09-20. They refine the desig
 | A4 | `min_confidence` applies to every model verdict, not only to refinements. | The costly error is a wrong `google`, so the threshold should guard it too. |
 | A5 | "Clearly beats tier 1" means at least +10 percentage points of accuracy on the eval set. | The spec left "clearly" undefined. Tier 1 alone scores 31.7% (19 of 60) with a 0% false-`google` rate. |
 | A6 | An unconfigured install is a complete bypass (new requirement R14): with no `config.json` beside it, the launcher exits before importing anything and writes nothing. Nothing installs the feature by default. | The user's requirement, 2026-09-20. Before this, a missing config fell back to defaults and the hook stayed active, and the launcher imported all its modules before checking anything. |
+| A7 | In `mode: "block"`, only the **first prompt of a session** is ever blocked; later prompts, and prompts with no session id, get the same suggestion as a note. *(controller ruling, awaiting the user's confirmation)* | **FACT:** tier 1 answers `google` for ordinary second prompts such as "what is the current status", "what is the latest design" and "what is the overview of the new feature" (reproduced against the shipped code by the final review), and the 60-prompt eval set has no such prompt, so the measured false-`google` rate of 0% does not see this class. A block on such a prompt traps the user for one resend. Gating `google` itself was rejected: a mid-session "what is the capital of France" is a legitimate lookup. |
+| A8 | The settings command is `python3 <shell-quoted path> || true`, and the wizard's self-test runs before the settings file is written. *(controller ruling, awaiting the user's confirmation)* | **FACT:** `python3` exits 2 for a missing script and exit 2 rejects the prompt, so a hand-deleted install folder would block every prompt without the guard (verified with Claude Code 2.1.278: with the guard the prompt was answered). The final review reproduced a command injection through an install path containing `$(...)`: it ran during the self-test and was saved into a file Claude Code runs on every prompt. |
+| A9 | The hook caps the model call at 4000 ms whatever `budget_ms` says. *(controller ruling, awaiting the user's confirmation)* | **FACT:** with `budget_ms` = 8000 and a server that never answered, the hook was killed at the 5 s timeout with no cooldown recorded, so every later prompt stalled 5 s. |
 
 ---
 
