@@ -55,7 +55,7 @@ Code review of the first executed tasks found real defects in this plan's origin
 
 - **Task 1: the loopback gate (`config.host_only` / `is_loopback`).** The draft accepted `http://localhost:11434@evil.com` (userinfo). The first fix (strip up to the last `@`) opened a worse hole: `http://evil.com?@localhost` passed the gate while Python's HTTP client would connect to `evil.com`. The shipped grammar is strict and fail-closed: it refuses `@ ? # \ %`, whitespace, bad or out-of-range ports, non-http(s) schemes, and bracketed or bare colon forms that are not valid IPv6. A differential test compares the gate with `urllib.parse.urlsplit` and `urllib.request.Request` over about 50,000 generated strings, and proves it can fail by running against a deliberately broken gate.
 - **Task 1: `state.State`.** `notice_due` and `remember_block` raised on valid-JSON but malformed state files (a list where a dict belonged, `null`/string block values). Both are hardened, with tests.
-- **Task 3: `ollama_client`.** The draft built its connection address from the raw configured string, which let the gate and the HTTP client disagree about the host. It now builds the URL only from the validated host name and port (`chat_url`), brackets IPv6, honours `https`, still validates the grammar when `allow_remote` is set, and treats `http.client` errors as `ModelUnavailable`.
+- **Task 3: `ollama_client`.** The draft built its connection address from the raw configured string, which let the gate and the HTTP client disagree about the host. It now builds the URL only from the validated host name and port (`chat_url`), brackets IPv6, honours `https`, still validates the grammar when `allow_remote` is set, and treats `http.client` errors as `ModelUnavailable`. Review then found three more defects in the draft, all fixed: redirects were followed, `urllib`'s timeout applied per socket operation (so a server trickling one byte at a time could outlast the budget) and the reply was read without a size limit, and `RecursionError` from a deeply nested reply escaped `classify`. The client now refuses redirects, caps the reply at 64 KiB, catches `RecursionError`, and requires host names to start and end with a letter or digit. A second review round showed that a per-read deadline is still not a hard bound: `http.client` reads the status line, headers, chunk sizes and trailers with a blocking `readline`, so a server trickling those bytes held the call for over ten seconds against a half-second budget. `classify` therefore runs the whole exchange on a daemon worker thread and abandons it at the budget, which bounds every phase (tests trickle each of the four framing parts, and a subprocess test proves an abandoned worker does not delay process exit).
 - **Task 2: heuristics, verdict logic, output.** Review found five guardrail defects in the draft. Tier 1 said `google` for task and environment prompts ("can you implement rate limiting on the api", "show me the latest logs from staging"): it now requires positive evidence (a lookup-question form), recognises request lead-ins and more request verbs, and knows more environment nouns. The `min_confidence` gate accepted NaN, infinity, out-of-range values and `True`. `decide` raised on malformed model replies (`missing=None`, `missing="abc"`). `sanitize` let newlines, C1 controls, bidi overrides and zero-width characters through to Claude; it now always returns a single clean line. One guardrail test was vacuous and now uses a standalone prompt.
 - Test counts grew as a result (Task 1 from 43 to 111, Task 2 from 67 to 144); every cumulative count in this plan already reflects that.
 
@@ -78,7 +78,7 @@ Code review of the first executed tasks found real defects in this plan's origin
 | `tools/prompt_preflight/setup.py` | the opt-in wizard | 6 |
 | `tools/interactive_exporter.py` | one opt-in question (modify) | 7 |
 | `docs/03-guides/prompt-preflight.md` | user guide | 8 |
-| `tests/prompt_preflight/` | 14 test modules, 436 tests | all |
+| `tests/prompt_preflight/` | 14 test modules, 453 tests | all |
 
 ---
 
@@ -1929,12 +1929,12 @@ git commit -m "feat(prompt-preflight): add heuristics, verdict logic, and hook o
 - Produces:
   - `ollama_client.VERDICTS`, `SCHEMA`, `SYSTEM_PROMPT`
   - `ollama_client.open_no_proxy(request, timeout: float)` — an opener that ignores proxy environment variables
-  - `ollama_client.build_request(cfg, prompt: str) -> dict`, `parse_reply(body) -> dict` (raises `ModelUnavailable`), `classify(prompt: str, cfg, opener=open_no_proxy) -> dict`
-  - test helper `FakeOllama(mode='ok'|'bad_json'|'off_schema'|'slow'|'http_500', reply=None, delay=0.0)` — a context manager with `.host` and `.requests`
+  - `ollama_client.build_request(cfg, prompt: str) -> dict`, `parse_reply(body) -> dict` (raises `ModelUnavailable`), `classify(prompt: str, cfg, opener=open_no_proxy) -> dict` (never raises anything but `ModelUnavailable`, and gives up at `budget_ms` even against a server that trickles bytes)
+  - test helper `FakeOllama(mode='ok'|'bad_json'|'off_schema'|'slow'|'http_500'|'redirect'|'trickle'|'huge'|'deep'|'non_utf8'|'content_not_string', reply=None, delay=0.0, redirect_to=None)` — a context manager with `.host` and `.requests` (GET and POST are both recorded)
 
 - [ ] **Step 1: Client: tests first**
 
-`fake_ollama.py` is a stdlib stand-in for Ollama's `/api/chat`, so CI never needs a real model. It uses a threading server with a fast shutdown poll; the default 0.5 s poll added half a second to every test.
+`fake_ollama.py` is a stdlib stand-in for Ollama's `/api/chat`, so CI never needs a real model. It uses a threading server with a fast shutdown poll; the default 0.5 s poll added half a second to every test. Its hostile modes (redirect, trickle, huge, deep, non-UTF-8) exist so the client's limits are tested against a real socket.
 
 **`tests/prompt_preflight/fake_ollama.py`**
 
@@ -1949,12 +1949,18 @@ GOOD = {"verdict": "google", "confidence": 0.9, "google_query": "python reverse 
 
 
 class FakeOllama:
-    """mode: ok | bad_json | off_schema | slow | http_500. `reply` is the verdict dict for 'ok'."""
+    """A local server that misbehaves on request.
 
-    def __init__(self, mode="ok", reply=None, delay=0.0):
+    mode: ok | bad_json | off_schema | slow | http_500 | redirect | trickle | huge | deep | non_utf8 | content_not_string
+    `reply` is the verdict dict for 'ok'. `delay` is in seconds: 'slow' waits that long before answering and
+    'trickle' waits that long between the single bytes it sends. `redirect_to` is the Location for 'redirect'.
+    """
+
+    def __init__(self, mode="ok", reply=None, delay=0.0, redirect_to=""):
         self.mode = mode
         self.reply = reply if reply is not None else dict(GOOD)
         self.delay = delay
+        self.redirect_to = redirect_to
         self.requests = []
         outer = self
 
@@ -1962,30 +1968,68 @@ class FakeOllama:
             def log_message(self, *args):
                 pass
 
+            def _send(self, status, body, content_type="application/json"):
+                self.send_response(status)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def _stream_headers(self, length):
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(length))
+                self.end_headers()
+
+            def do_GET(self):
+                outer.requests.append({"path": self.path, "body": None, "method": "GET"})
+                self._send(404, b"")
+
             def do_POST(self):
                 length = int(self.headers.get("Content-Length", 0))
                 outer.requests.append({"path": self.path, "body": json.loads(self.rfile.read(length) or b"{}")})
-                if outer.mode == "slow":
+                try:
+                    self._answer()
+                except OSError:
+                    pass  # the client gave up first: a timeout, the size cap, or a refused redirect
+
+            def _answer(self):
+                mode = outer.mode
+                if mode == "slow":
                     time.sleep(outer.delay)
-                if outer.mode == "http_500":
-                    self.send_response(500)
+                if mode == "http_500":
+                    return self._send(500, b"")
+                if mode == "redirect":
+                    self.send_response(302)
+                    self.send_header("Location", outer.redirect_to)
+                    self.send_header("Content-Length", "0")
                     self.end_headers()
                     return
-                if outer.mode == "bad_json":
+                if mode == "trickle":
+                    self._stream_headers(100000)
+                    for _ in range(60):
+                        self.wfile.write(b" ")
+                        self.wfile.flush()
+                        time.sleep(outer.delay)
+                    return
+                if mode == "huge":
+                    self._stream_headers(5000000)
+                    for _ in range(5000):
+                        self.wfile.write(b"x" * 1000)
+                    return
+                if mode == "deep":
+                    return self._send(200, b"[" * 50000)
+                if mode == "non_utf8":
+                    return self._send(200, b"\xff\xfe\xfa")
+                if mode == "bad_json":
                     content = "this is not json"
-                elif outer.mode == "off_schema":
+                elif mode == "off_schema":
                     content = json.dumps({"verdict": "shout", "confidence": 5})
+                elif mode == "content_not_string":
+                    content = 5
                 else:
                     content = json.dumps(outer.reply)
-                payload = json.dumps({"message": {"role": "assistant", "content": content}}).encode()
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(payload)))
-                self.end_headers()
-                try:
-                    self.wfile.write(payload)
-                except OSError:
-                    pass
+                self._send(200, json.dumps({"message": {"role": "assistant", "content": content}}).encode())
 
         # Threading server: a sleeping 'slow' handler must not block shutdown. Fast poll: the
         # default 0.5 s shutdown poll would add half a second to every test.
@@ -2011,7 +2055,12 @@ import copy
 import http.client
 import json
 import socket
+import subprocess
+import sys
+import threading
+import time
 import urllib.request
+from pathlib import Path
 
 import pytest
 
@@ -2022,6 +2071,8 @@ from prompt_preflight.ollama_client import SCHEMA, build_request, classify, pars
 from .fake_ollama import GOOD, FakeOllama
 
 COVERS = ["R3", "R6", "R8"]
+
+TOOLS = Path(__file__).resolve().parents[2] / "tools"
 
 
 def cfg(host, **over):
@@ -2093,14 +2144,18 @@ def test_allow_remote_lifts_the_loopback_restriction():
     seen = []
 
     class Response:
+        def __init__(self):
+            self._data = json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+
         def __enter__(self):
             return self
 
         def __exit__(self, *exc):
             return False
 
-        def read(self):
-            return json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+        def read(self, size=-1):
+            data, self._data = self._data, b""
+            return data
 
     def opener(request, timeout):
         seen.append(request.full_url)
@@ -2156,14 +2211,18 @@ def test_build_request_does_not_leak_the_prompt_into_the_system_message():
 
 
 class _Ok:
+    def __init__(self):
+        self._data = json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+
     def __enter__(self):
         return self
 
     def __exit__(self, *exc):
         return False
 
-    def read(self):
-        return json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+    def read(self, size=-1):
+        data, self._data = self._data, b""
+        return data
 
 
 def requested_url(host, **over):
@@ -2228,6 +2287,142 @@ def test_http_client_errors_become_model_unavailable(error):
 
     with pytest.raises(ModelUnavailable):
         classify("anything at all here", cfg("127.0.0.1:11434"), opener=broken)
+
+
+# ---------- a hostile or broken server must never hang, exhaust memory, or crash the hook --------
+
+
+def timed_failure(server, match=None, **over):
+    """Run classify against `server`, which must fail; return how long it took."""
+    started = time.monotonic()
+    with pytest.raises(ModelUnavailable, match=match):
+        classify("anything at all here", cfg(server.host, **over))
+    return time.monotonic() - started
+
+
+def test_a_redirect_is_a_failure_and_is_never_followed():
+    with FakeOllama() as target:
+        with FakeOllama(mode="redirect", redirect_to="http://%s/api/chat" % target.host) as server:
+            timed_failure(server)
+    assert target.requests == []  # the client never connected to the host it was redirected to
+
+
+def test_a_server_that_trickles_bytes_cannot_outlast_the_budget():
+    with FakeOllama(mode="trickle", delay=0.1) as server:
+        elapsed = timed_failure(server, match="too slow", budget_ms=500)
+    assert elapsed < 2.0
+
+
+class RawServer:
+    """A server that speaks raw bytes, for framing the HTTP library would otherwise hide.
+
+    `script(conn, pause)` runs once per connection; `pause(seconds)` returns True once the test is over.
+    """
+
+    def __init__(self, script):
+        self.script = script
+        self.over = threading.Event()
+        self.listener = socket.socket()
+        self.listener.bind(("127.0.0.1", 0))
+        self.listener.listen(1)
+        self.host = "127.0.0.1:%d" % self.listener.getsockname()[1]
+
+    def _serve(self):
+        try:
+            conn, _ = self.listener.accept()
+            with conn:
+                conn.settimeout(5)
+                conn.recv(65536)  # the request
+                self.script(conn, self.over.wait)
+        except OSError:
+            pass  # the client gave up and hung up, which is the point
+
+    def __enter__(self):
+        threading.Thread(target=self._serve, daemon=True).start()
+        return self
+
+    def __exit__(self, *exc):
+        self.over.set()
+        self.listener.close()
+
+
+def trickle(conn, pause, prefix, filler=b"a", count=100, delay=0.1):
+    conn.sendall(prefix)
+    for _ in range(count):
+        if pause(delay):
+            return
+        conn.sendall(filler)
+
+
+CHUNKED = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n\r\n"
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        pytest.param(CHUNKED + b"1;", id="chunk-size-line"),
+        pytest.param(CHUNKED + b"0\r\nX-Trailer: ", id="trailer"),
+        pytest.param(b"HTTP/1.1 200 OK\r\nX-Slow: ", id="header-line"),
+        pytest.param(b"HTTP/1.1 ", id="status-line"),
+    ],
+)
+def test_a_server_that_trickles_framing_bytes_cannot_outlast_the_budget(prefix):
+    # http.client reads these parts with a blocking readline, so no per-read deadline can see them.
+    with RawServer(lambda conn, pause: trickle(conn, pause, prefix)) as server:
+        elapsed = timed_failure(server, match="too slow", budget_ms=500)
+    assert elapsed < 2.0
+
+
+def test_an_abandoned_exchange_does_not_keep_the_process_alive():
+    # The hook is a short-lived process: a worker still waiting on a trickling server must not delay its exit.
+    with RawServer(lambda conn, pause: trickle(conn, pause, CHUNKED + b"1;")) as server:
+        program = (
+            "import sys\n"
+            "sys.path.insert(0, %r)\n"
+            "from prompt_preflight.config import DEFAULTS\n"
+            "from prompt_preflight.errors import ModelUnavailable\n"
+            "from prompt_preflight.ollama_client import classify\n"
+            "cfg = dict(DEFAULTS, model='tiny:1b', ollama_host=%r, budget_ms=500)\n"
+            "try:\n"
+            "    classify('anything at all here', cfg)\n"
+            "except ModelUnavailable:\n"
+            "    pass\n"
+        ) % (str(TOOLS), server.host)
+        started = time.monotonic()
+        subprocess.run([sys.executable, "-c", program], check=True, timeout=30)
+        elapsed = time.monotonic() - started
+    assert elapsed < 3.0
+
+
+def test_an_oversized_reply_is_refused_without_reading_it_all():
+    with FakeOllama(mode="huge") as server:
+        elapsed = timed_failure(server, match="too large", budget_ms=5000)
+    assert elapsed < 4.0
+
+
+def test_deeply_nested_json_is_a_failure_not_a_crash():
+    with FakeOllama(mode="deep") as server:
+        timed_failure(server, budget_ms=5000)
+
+
+@pytest.mark.parametrize("mode", ["non_utf8", "content_not_string"])
+def test_undecodable_or_mistyped_replies_are_failures(mode):
+    with FakeOllama(mode=mode) as server:
+        timed_failure(server)
+
+
+def test_parse_reply_survives_nesting_inside_the_content_string():
+    with pytest.raises(ModelUnavailable):
+        parse_reply({"message": {"content": "[" * 50000}})
+
+
+@pytest.mark.parametrize("host", ["a[b:11434", "a]b:11434", "a_b!:11434", "-:11434", "a" * 300 + ":11434"])
+def test_allow_remote_still_refuses_names_with_odd_characters(host):
+    def never(*args, **kwargs):
+        raise AssertionError("network must not be touched")
+
+    with pytest.raises(ModelUnavailable, match="invalid host"):
+        classify("anything at all here", cfg(host, allow_remote=True), opener=never)
 ````
 
 Run: `python3 -m pytest tests/prompt_preflight/test_ollama_client.py -q`
@@ -2236,7 +2431,7 @@ Expected: **FAIL** — `No module named 'prompt_preflight.ollama_client'`
 
 - [ ] **Step 2: Client: implementation**
 
-`urllib` honors `http_proxy` by default, which could route a "localhost" request through a proxy and send the prompt off the machine. `open_no_proxy` prevents that, and `test_environment_proxies_are_never_used` proves it (it clears urllib's cached global opener first, or it would pass even with the bug).
+`urllib` honors `http_proxy` by default, which could route a "localhost" request through a proxy and send the prompt off the machine. `open_no_proxy` prevents that, and `test_environment_proxies_are_never_used` proves it (it clears urllib's cached global opener first, or it would pass even with the bug). Three more limits keep a misbehaving local server from hurting the user: redirects are never followed (the target would be a host the gate never validated); the whole exchange runs on a daemon worker thread that `classify` abandons at the budget (urllib's timeout covers one socket operation, and `http.client` reads several parts of a response with a blocking `readline`, so nothing short of abandoning the call is a hard bound), with the reply also capped at 64 KiB; and `RecursionError` from deeply nested JSON is caught so the hook fails open instead of crashing.
 
 **`tools/prompt_preflight/ollama_client.py`**
 
@@ -2248,9 +2443,12 @@ routed through an HTTP proxy, or the prompt would leave the machine.
 """
 import http.client
 import json
+import re
+import threading
+import time
 import urllib.error
 import urllib.request
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List
 
 from .config import host_only, is_loopback
 from .errors import ModelUnavailable
@@ -2286,11 +2484,21 @@ SYSTEM_PROMPT = (
     "confidence: a number from 0 to 1."
 )
 
+MAX_REPLY_BYTES = 65536
+_HOSTNAME = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9._-]{0,251}[A-Za-z0-9])?")
+
 Opener = Callable[..., Any]
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Refuse every redirect: following one would connect to a host the gate never validated."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None  # urllib then raises HTTPError for the 3xx, which classify turns into ModelUnavailable
+
+
 def open_no_proxy(request: urllib.request.Request, timeout: float) -> Any:
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
     return opener.open(request, timeout=timeout)
 
 
@@ -2314,7 +2522,7 @@ def parse_reply(body: Any) -> Dict[str, Any]:
         data = json.loads(body["message"]["content"])
         verdict = data["verdict"]
         confidence = data["confidence"]
-    except (KeyError, TypeError, ValueError):
+    except (KeyError, TypeError, ValueError, RecursionError):
         raise ModelUnavailable("unreadable reply") from None
     if verdict not in VERDICTS:
         raise ModelUnavailable("unknown verdict")
@@ -2340,6 +2548,8 @@ def chat_url(host: str, allow_remote: bool) -> str:
     name = host_only(host)
     if not name:
         raise ModelUnavailable("invalid host")
+    if ":" not in name and not _HOSTNAME.fullmatch(name):
+        raise ModelUnavailable("invalid host")  # host_only accepts any name; the URL parser must never see odd ones
     if not allow_remote and not is_loopback(host):
         raise ModelUnavailable("non-loopback host refused")
     text = host.strip()
@@ -2360,31 +2570,78 @@ def chat_url(host: str, allow_remote: bool) -> str:
     return "%s://%s/api/chat" % (scheme, netloc)
 
 
-def classify(prompt: str, cfg: Dict[str, Any], opener: Opener = open_no_proxy) -> Dict[str, Any]:
-    """Ask the local model for a verdict. Raises ModelUnavailable on any problem."""
-    if not cfg["model"]:
-        raise ModelUnavailable("no model configured")
-    url = chat_url(cfg["ollama_host"], cfg["allow_remote"])
+def _read_limited(response: Any, deadline: float) -> bytes:
+    """Read the whole reply in small chunks, giving up at `deadline` or past MAX_REPLY_BYTES.
+
+    urllib's timeout applies to each socket operation, so on its own a server that sends one byte at a
+    time could keep the hook waiting far beyond the budget. The deadline is checked between chunks.
+    """
+    chunks: List[bytes] = []
+    total = 0
+    while True:
+        if time.monotonic() > deadline:
+            raise ModelUnavailable("reply too slow")
+        # read1 returns what one socket read delivers; read(n) would block until n bytes had arrived
+        chunk = response.read1(4096) if hasattr(response, "read1") else response.read(4096)
+        if not chunk:
+            return b"".join(chunks)
+        total += len(chunk)
+        if total > MAX_REPLY_BYTES:
+            raise ModelUnavailable("reply too large")
+        chunks.append(chunk)
+
+
+def _exchange(url: str, cfg: Dict[str, Any], prompt: str, opener: Opener, budget: float, deadline: float) -> Any:
     request = urllib.request.Request(
         url,
         data=json.dumps(build_request(cfg, prompt)).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
-    try:
-        with opener(request, timeout=cfg["budget_ms"] / 1000.0) as response:
-            body = json.loads(response.read().decode("utf-8"))
-    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as exc:
-        raise ModelUnavailable(str(exc)) from exc
-    return parse_reply(body)
+    with opener(request, timeout=budget) as response:
+        return json.loads(_read_limited(response, deadline).decode("utf-8"))
+
+
+def classify(prompt: str, cfg: Dict[str, Any], opener: Opener = open_no_proxy) -> Dict[str, Any]:
+    """Ask the local model for a verdict. Raises ModelUnavailable on any problem.
+
+    The exchange runs on a worker thread that the caller abandons at the budget. urllib's timeout only
+    covers each single socket operation, and http.client reads the status line, headers, chunk sizes and
+    trailers with a blocking readline, so a server that trickles bytes could otherwise hold the caller
+    far beyond the budget. An abandoned worker is a daemon thread and stops on its own.
+    """
+    if not cfg["model"]:
+        raise ModelUnavailable("no model configured")
+    url = chat_url(cfg["ollama_host"], cfg["allow_remote"])
+    budget = cfg["budget_ms"] / 1000.0
+    deadline = time.monotonic() + budget
+    outcome: List[Any] = []
+
+    def work() -> None:
+        try:
+            outcome.append((True, _exchange(url, cfg, prompt, opener, budget, deadline)))
+        except BaseException as exc:  # handed to the caller, which decides what it means
+            outcome.append((False, exc))
+
+    worker = threading.Thread(target=work, daemon=True)
+    worker.start()
+    worker.join(max(0.0, deadline - time.monotonic()))
+    if not outcome:
+        raise ModelUnavailable("reply too slow")
+    ok, value = outcome[0]
+    if not ok:
+        if isinstance(value, (urllib.error.URLError, OSError, ValueError, RecursionError, http.client.HTTPException)):
+            raise ModelUnavailable(str(value)) from value
+        raise value
+    return parse_reply(value)
 ````
 
 Run: `python3 -m pytest tests/prompt_preflight/test_ollama_client.py -q`
 
-Expected: **PASS** — `40 passed`
+Expected: **PASS** — `57 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `295 passed`
+Expected: **PASS** — `312 passed`
 
 ```bash
 git add tools/prompt_preflight/ollama_client.py tests/prompt_preflight/fake_ollama.py tests/prompt_preflight/test_ollama_client.py
@@ -2960,7 +3217,7 @@ Expected: **PASS** — `21 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `316 passed`
+Expected: **PASS** — `333 passed`
 
 ```bash
 git add tools/prompt_preflight/eval/__init__.py tools/prompt_preflight/eval/prompts.jsonl tools/prompt_preflight/eval/run_eval.py tests/prompt_preflight/test_eval.py
@@ -3508,7 +3765,7 @@ Expected: **PASS** — `37 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `353 passed`
+Expected: **PASS** — `370 passed`
 
 ```bash
 git add tools/prompt_preflight/hook.py tools/prompt_preflight/launcher.py tests/prompt_preflight/conftest.py tests/prompt_preflight/test_hook.py
@@ -4642,7 +4899,7 @@ Expected: **PASS** — `34 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `409 passed`
+Expected: **PASS** — `426 passed`
 
 ```bash
 git add tools/prompt_preflight/setup.py tests/prompt_preflight/test_setup.py
@@ -4882,7 +5139,7 @@ Expected: **PASS** — `3 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `427 passed`
+Expected: **PASS** — `444 passed`
 
 ```bash
 git add tools/interactive_exporter.py tests/prompt_preflight/test_exporter_offer.py tests/prompt_preflight/test_optional.py
@@ -5215,7 +5472,7 @@ Baseline recorded on 2026-09-20 before any of this work, on a clean checkout: **
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `436 passed`
+Expected: **PASS** — `453 passed`
 
 Run: `python3 -m pytest tests/test_token_optimizer.py -q`
 
@@ -5223,7 +5480,7 @@ Expected: **PASS** — `35 passed`
 
 Run: `python3 -m pytest tests -q --continue-on-collection-errors`
 
-Expected: **PASS** — `669 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 436 = 669, and **no new failure**.
+Expected: **PASS** — `686 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 453 = 686, and **no new failure**.
 
 - [ ] **Step 5: GATE C — the real end-to-end check (asks first)**
 
