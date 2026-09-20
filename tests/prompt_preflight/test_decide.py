@@ -5,6 +5,7 @@ import pytest
 from prompt_preflight.config import DEFAULTS
 from prompt_preflight.decide import PASS, decide, search_query, should_skip
 from prompt_preflight.errors import ModelUnavailable
+from prompt_preflight.heuristics import context_signals
 
 COVERS = ["R2", "R3", "R4", "R5", "R6"]
 
@@ -121,3 +122,50 @@ def test_model_receives_the_original_prompt():
 def test_search_query_is_tidy_and_capped():
     assert search_query("  What   is\nthe capital of France?? ") == "What is the capital of France"
     assert len(search_query("x" * 500)) == 120
+
+
+# Fix 2: google_query validation and fallback
+@pytest.mark.parametrize("query", [7, ["a"], None, "", "   "])
+def test_malformed_google_query_falls_back_to_search_query(query):
+    result = decide("how do I reverse a list in python", cfg(), True, model(verdict="google", google_query=query))
+    assert result.verdict == "google"
+    assert result.google_query == search_query("how do I reverse a list in python")
+
+
+# Fix 2: missing must be a list; anything else is PASS
+@pytest.mark.parametrize("missing", [None, 5, "abc", {}, [], [""], [7]])
+def test_malformed_missing_field_passes(missing):
+    reply = model(verdict="clarify", missing=missing)
+    assert decide(REAL_WORK, cfg(), True, reply) == PASS
+
+
+# Fix 3: confidence validation - must be finite, real number, 0.0-1.0, not bool, not string
+@pytest.mark.parametrize("confidence", [float("nan"), float("inf"), float("-inf"), 2.5, -0.1, True, "0.95", None])
+def test_invalid_confidence_passes_for_google(confidence):
+    reply = model(verdict="google", confidence=confidence, google_query="x")
+    assert decide("how do I reverse a list in python", cfg(), True, reply) == PASS
+
+
+@pytest.mark.parametrize("confidence", [float("nan"), float("inf"), float("-inf"), 2.5, -0.1, True, "0.95", None])
+def test_invalid_confidence_passes_for_clarify(confidence):
+    reply = model(verdict="clarify", confidence=confidence, missing=["what"])
+    assert decide(REAL_WORK, cfg(), True, reply) == PASS
+
+
+@pytest.mark.parametrize("confidence", [float("nan"), float("inf"), float("-inf"), 2.5, -0.1, True, "0.95", None])
+def test_invalid_confidence_passes_for_refine(confidence):
+    reply = model(verdict="refine", confidence=confidence, refined_request="do x")
+    assert decide(REAL_WORK, cfg(), True, reply) == PASS
+
+
+# Fix 5: min_confidence gate must apply to google on standalone prompts
+def test_min_confidence_gate_on_standalone_google():
+    # Use a standalone prompt with no signals so google is not downgraded
+    standalone = "how do I reverse a list in python"
+    assert context_signals(standalone) == [], "Precondition: prompt must have no signals"
+    # High confidence google should be accepted
+    result = decide(standalone, cfg(), True, model(verdict="google", google_query="reverse list", confidence=0.9))
+    assert result.verdict == "google"
+    # Low confidence google should be rejected (pass)
+    result = decide(standalone, cfg(), True, model(verdict="google", google_query="reverse list", confidence=0.5))
+    assert result == PASS

@@ -1,5 +1,6 @@
 """Turn a Decision into the hook's JSON output. Everything injected is capped and sanitized."""
 import re
+import unicodedata
 from typing import Any, Dict, Optional
 
 from .decide import Decision
@@ -9,13 +10,38 @@ MAX_REFINED = 400
 MAX_QUERY = 120
 MAX_GAP = 80
 
-_CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 _EVENT = "UserPromptSubmit"
 
 
 def sanitize(text: Any, limit: int) -> str:
-    """Drop control characters, collapse blanks, and cap the length (ending in an ellipsis)."""
-    cleaned = re.sub(r"[ \t]+", " ", _CONTROL.sub("", str(text))).strip()
+    """Drop control characters, convert all whitespace to spaces, and cap length (ending in ellipsis).
+
+    Result is always a single line. Treats tab, newline, CR, VT, FF, NEL and all Zs/Zl/Zp
+    characters as single spaces. Drops all Cc, Cf, Cs, Co, Cn characters. Collapses runs of
+    spaces to one and strips.
+    """
+    text_str = str(text)
+    result = []
+    for char in text_str:
+        # Convert to space: tab, newline, CR, VT, FF, NEL and line/paragraph separators
+        if char in "\t\n\r\x0b\x0c\x85":
+            result.append(" ")
+            continue
+
+        cat = unicodedata.category(char)
+        # Also convert line/paragraph separators to space
+        if cat in ("Zs", "Zl", "Zp"):
+            result.append(" ")
+        # Drop: Cc (control), Cf (format), Cs (surrogate), Co (private), Cn (not assigned)
+        elif cat in ("Cc", "Cf", "Cs", "Co", "Cn"):
+            continue
+        else:
+            result.append(char)
+
+    # Collapse runs of spaces and strip
+    cleaned = re.sub(r" +", " ", "".join(result)).strip()
+
+    # Cap with ellipsis
     if len(cleaned) <= limit:
         return cleaned
     return cleaned[: limit - 1].rstrip() + "…"

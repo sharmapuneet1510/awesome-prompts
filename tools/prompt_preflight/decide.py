@@ -1,4 +1,5 @@
 """Verdict logic. Pure: the model is passed in as a callable, and this module does no I/O."""
+import math
 import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
@@ -69,26 +70,49 @@ def decide(
 def _apply_guardrails(raw: Dict[str, Any], prompt: str, cfg: Dict[str, Any], first_prompt: bool) -> Decision:
     try:
         verdict = raw.get("verdict")
-        confidence = float(raw.get("confidence", 0.0))
+        confidence = raw.get("confidence", 0.0)
+
+        # Validate confidence: must be a real number (not bool, not string), finite, and in [0.0, 1.0]
+        if isinstance(confidence, bool) or isinstance(confidence, str):
+            return PASS
+        try:
+            confidence = float(confidence)
+        except (TypeError, ValueError):
+            return PASS
+        if not math.isfinite(confidence) or confidence < 0.0 or confidence > 1.0:
+            return PASS
+
+        if confidence < cfg["min_confidence"]:
+            return PASS
+
+        if verdict == "google":
+            if context_signals(prompt):
+                return PASS
+            # Validate google_query: must be a non-empty string after strip
+            query = raw.get("google_query")
+            if not isinstance(query, str) or not query.strip():
+                query = search_query(prompt)
+            return Decision("google", 2, confidence, google_query=search_query(query), reasons=["model"])
+
+        if verdict in ("clarify", "refine") and not first_prompt:
+            return PASS
+
+        if verdict == "clarify":
+            # Validate missing: must be a list
+            missing_raw = raw.get("missing", [])
+            if not isinstance(missing_raw, list):
+                return PASS
+            missing = [m for m in missing_raw if isinstance(m, str) and m.strip()][:MAX_MISSING]
+            if not missing:
+                return PASS
+            return Decision("clarify", 2, confidence, missing=missing, reasons=["model"])
+
+        if verdict == "refine":
+            refined = raw.get("refined_request", "")
+            if not isinstance(refined, str) or not refined.strip():
+                return PASS
+            return Decision("refine", 2, confidence, refined=refined.strip(), reasons=["model"])
+
+        return PASS
     except (AttributeError, TypeError, ValueError):
         return PASS
-    if confidence < cfg["min_confidence"]:
-        return PASS
-    if verdict == "google":
-        if context_signals(prompt):
-            return PASS
-        query = raw.get("google_query") or search_query(prompt)
-        return Decision("google", 2, confidence, google_query=search_query(query), reasons=["model"])
-    if verdict in ("clarify", "refine") and not first_prompt:
-        return PASS
-    if verdict == "clarify":
-        missing = [m for m in raw.get("missing", []) if isinstance(m, str) and m.strip()][:MAX_MISSING]
-        if not missing:
-            return PASS
-        return Decision("clarify", 2, confidence, missing=missing, reasons=["model"])
-    if verdict == "refine":
-        refined = raw.get("refined_request", "")
-        if not isinstance(refined, str) or not refined.strip():
-            return PASS
-        return Decision("refine", 2, confidence, refined=refined.strip(), reasons=["model"])
-    return PASS

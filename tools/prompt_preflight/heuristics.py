@@ -10,6 +10,10 @@ from typing import List, Optional
 from token_optimizer import QueryAnalyzer
 from token_optimizer.models import Recommendation
 
+_LEAD_IN = r"(?:(?:please|kindly|just)\s+)?(?:(?:can|could|would|will)\s+you\s+(?:please\s+)?|(?:i|we)\s+(?:need|want|would\s+like|have|got)\s+to\s+|(?:i|we|you)\s+should\s+|let'?s\s+|help\s+me\s+(?:to\s+)?)?"
+_TASK_VERBS = r"(?:implement|add|write|create|build|refactor|fix|update|migrate|document|generate|remove|rename|delete|deploy|set\s+up|make|optimi[sz]e|improve|clean|show|tell|give|list|find|fetch|get|check|review|summari[sz]e|run|open|read)"
+_LOOKUP_QUESTION = re.compile(r"^\s*(?:what|what's|who|whom|whose|when|where|which|why|how|is|are|was|were|does|do|did|convert|define|explain|difference|meaning)\b", re.I)
+
 _SIGNALS = (
     ("code_fence", re.compile(r"```")),
     (
@@ -38,8 +42,7 @@ _SIGNALS = (
     (
         "task_verb",  # an instruction to do work, never a search query
         re.compile(
-            r"^\s*(?:please\s+)?(?:implement|add|write|create|build|refactor|fix|update|migrate|document|"
-            r"generate|remove|rename|delete|deploy|set up|make|optimi[sz]e|improve|clean)\b",
+            r"^\s*" + _LEAD_IN + _TASK_VERBS + r"\b",
             re.I,
         ),
     ),
@@ -47,7 +50,7 @@ _SIGNALS = (
         "code_noun",
         re.compile(
             r"\b(?:repo|repository|branch|commit|codebase|function|method|class|endpoint|"
-            r"module|pull request|PR|build|deploy(?:ment)?|tests?|bug|error)\b",
+            r"module|pull request|PR|build|deploy(?:ment)?|tests?|bug|error|files?|logs?|servers?|tickets?|packages?|jobs?|releases?|diffs?|schemas?|configs?|configuration|projects?|services?|apps?|application|staging|production|prod|pipelines?|deployments?)\b",
             re.I,
         ),
     ),
@@ -77,5 +80,7 @@ def tier1(prompt: str) -> Tier1:
         return Tier1(None, signals)
     result = _analyzer.analyze(prompt)
     if result.feedback.recommendation == Recommendation.WEB_SEARCH:
-        return Tier1("google", [])
+        # Only return google if the prompt is written as a lookup question
+        if _LOOKUP_QUESTION.search(prompt):
+            return Tier1("google", [])
     return Tier1(None, [])
