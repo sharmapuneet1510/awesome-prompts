@@ -59,7 +59,7 @@ Code review of the first executed tasks found real defects in this plan's origin
 - **Task 2: heuristics, verdict logic, output.** Review found five guardrail defects in the draft. Tier 1 said `google` for task and environment prompts ("can you implement rate limiting on the api", "show me the latest logs from staging"): it now requires positive evidence (a lookup-question form), recognises request lead-ins and more request verbs, and knows more environment nouns. The `min_confidence` gate accepted NaN, infinity, out-of-range values and `True`. `decide` raised on malformed model replies (`missing=None`, `missing="abc"`). `sanitize` let newlines, C1 controls, bidi overrides and zero-width characters through to Claude; it now always returns a single clean line. One guardrail test was vacuous and now uses a standalone prompt.
 - **Task 4: the bake-off was run.** Apple M2, 24 GB, Ollama 0.9.1: `qwen2.5:1.5b` 48.3% (p95 wall 1470 ms), `llama3.2:1b` 31.7%, `llama3.2:3b` 43.3%, and the 8B `llama3:latest` reference 50.0% (p95 6150 ms), against a bar of 80%. No candidate qualified, so `defaults.py` keeps `RECOMMENDED_MODEL = None` and heuristics-only is the default. The steps below that set the defaults are therefore the "heuristics-only" branch.
 - **Task 5: the hook entry point.** Review found two ways the draft broke its fail-open promise. In `block` mode with a state file that cannot be written (a read-only install directory), the identical prompt was blocked on every send, because the override could never be recorded; `State.remember_block` now reports whether it saved, and an unsaved block is downgraded to the advisory message. And a `budget_ms` above the 5 s hook timeout made every prompt stall until Claude Code killed the hook, with no cooldown; the model call is now capped at 4000 ms inside the hook. Two smaller fixes came with them: the error log records only the exception type and location (an exception message can hold the prompt), and `override_window_s` may not be 0 (which made every block permanent).
-- **Task 6: the settings command and the file writer** (found in a pre-implementation read of the draft, before any code was written). The draft's settings entry was `python3 "<install>/hook.py"`. If the install folder is deleted by hand, that exits with code 2, which rejects every prompt for a `UserPromptSubmit` hook; the entry now ends in `|| true`, and the self-test runs that exact command so a missing `python3` is caught at install time. `write_settings` also replaced a symlinked settings file with a regular one, changed the file's permissions, and could overwrite the first backup when two writes fell in the same second; it now writes through the link, keeps the mode, and picks a fresh backup name. The spec's outline shows the command without the guard; the guard is a hardening in the spirit of R6 and is recorded as a spec touch-up.
+- **Task 6: the settings command and the file writer** (found in a pre-implementation read of the draft, before any code was written). The draft's settings entry was `python3 "<install>/hook.py"`. If the install folder is deleted by hand, that exits with code 2, which rejects every prompt for a `UserPromptSubmit` hook; the entry now ends in `|| true`, and the self-test runs that exact command so a missing `python3` is caught at install time. `write_settings` also replaced a symlinked settings file with a regular one, changed the file's permissions, and could overwrite the first backup when two writes fell in the same second; it now writes through the link, keeps the mode, and picks a fresh backup name. The spec's outline shows the command without the guard; the guard is a hardening in the spirit of R6 and is recorded as a spec touch-up. Code review of the implemented wizard then found four more defects in the draft, all fixed: a relative `--project` or `--home` produced a relative hook command, so the hook silently never ran (the paths are now made absolute); reinstalling over a config that switches advice off made the self-test fail and tell the user to remove the install (the self-test now reads the kept config); `--update` and reinstall replaced an unparsable `config.json` with defaults while printing "config kept", and `--update` re-created a deleted one, switching a bypassed install back on (an unparsable config is now copied aside on install and left untouched on update, and an update never creates a config); and the wizard's tests reached a real Ollama on `127.0.0.1:11434` through the self-test (an autouse fixture now stubs it; the self-test tests opt back in with a no-model install). Smaller fixes came with these: `--yes` alone never picks a model, a model named while Ollama is missing means heuristics-only, `--remove` handles a symlinked install folder and reports its backup, `main` reports a full disk instead of a traceback, and a user's hook in a folder named like `my-prompt-preflight` is no longer mistaken for Preflight's.
 - Test counts grew as a result (Task 1 from 43 to 111, Task 2 from 67 to 144); every cumulative count in this plan already reflects that.
 
 ## File Structure
@@ -81,7 +81,7 @@ Code review of the first executed tasks found real defects in this plan's origin
 | `tools/prompt_preflight/setup.py` | the opt-in wizard | 6 |
 | `tools/interactive_exporter.py` | one opt-in question (modify) | 7 |
 | `docs/03-guides/prompt-preflight.md` | user guide | 8 |
-| `tests/prompt_preflight/` | 14 test modules, 468 tests | all |
+| `tests/prompt_preflight/` | 14 test modules, 480 tests | all |
 
 ---
 
@@ -3995,6 +3995,14 @@ def test_adding_or_removing_never_shares_structure_with_the_input():
     assert with_hook == snapshot
 
 
+def test_a_users_own_hook_in_a_similarly_named_folder_is_not_mistaken_for_ours():
+    mine = {"type": "command", "command": 'python3 "/home/u/tools/my-prompt-preflight/hook.py"'}
+    settings = {"hooks": {"UserPromptSubmit": [{"hooks": [dict(mine)]}]}}
+    assert sm.has_hook(settings) is False
+    assert sm.remove_hook(settings) == settings
+    assert [h for g in sm.add_hook(settings, CMD)["hooks"]["UserPromptSubmit"] for h in g["hooks"]].count(mine) == 1
+
+
 def test_a_symlinked_settings_file_is_written_through_not_replaced(tmp_path):
     real = tmp_path / "dotfiles" / "settings.json"
     real.parent.mkdir()
@@ -4067,6 +4075,7 @@ import datetime
 import difflib
 import json
 import os
+import re
 import shutil
 import tempfile
 from typing import Any, Dict, List, Optional
@@ -4081,8 +4090,13 @@ class SettingsError(Exception):
     """The settings file cannot be edited safely."""
 
 
+_MARKER = re.compile(r"(?:^|[/\s\"'])" + re.escape(MARKER))
+
+
 def _ours(handler: Any) -> bool:
-    return isinstance(handler, dict) and MARKER in str(handler.get("command", "")).replace("\\", "/")
+    """True for Preflight's own entry. The marker must begin a path component, so a user's
+    `.../my-prompt-preflight/hook.py` is not mistaken for it."""
+    return isinstance(handler, dict) and _MARKER.search(str(handler.get("command", "")).replace("\\", "/")) is not None
 
 
 def _strip(groups: List[Any]) -> List[Any]:
@@ -4202,7 +4216,7 @@ def diff_text(before: Settings, after: Settings, name: str = "settings") -> str:
 
 Run: `python3 -m pytest tests/prompt_preflight/test_settings_merge.py -q`
 
-Expected: **PASS** — `27 passed`
+Expected: **PASS** — `28 passed`
 
 ```bash
 git add tools/prompt_preflight/settings_merge.py tests/prompt_preflight/test_settings_merge.py
@@ -4218,6 +4232,7 @@ These tests pin every guarantee in the spec's setup table: declining writes noth
 ````python
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -4339,6 +4354,19 @@ def test_dry_run_writes_nothing_and_shows_the_diff(env, tmp_path):
     assert "download the model tiny:1b" in io.text
 
 
+@pytest.fixture(autouse=True)
+def no_model_traffic(request, monkeypatch):
+    """The real self-test runs the installed hook, which calls a real local Ollama when a model is configured.
+    Tests must never reach one, so the self-test is stubbed unless a test asks for `real_self_test`."""
+    if "real_self_test" not in request.fixturenames:
+        monkeypatch.setattr(setup, "_self_test", lambda install_dir, io: True)
+
+
+@pytest.fixture
+def real_self_test():
+    return None
+
+
 # ---------- install ---------------------------------------------------------------------------
 
 
@@ -4355,10 +4383,14 @@ def test_install_local_writes_the_layout_and_one_hook_entry(env):
 
 def test_copy_files_ships_only_what_the_hook_needs(tmp_path):
     source_cache = setup.TOOLS_DIR / "prompt_preflight" / "__pycache__"
+    junk = source_cache / "junk.pyc"
     source_cache.mkdir(exist_ok=True)  # make sure the source tree really has bytecode to leave out
-    (source_cache / "junk.pyc").write_bytes(b"x")
+    junk.write_bytes(b"x")
     target = tmp_path / "out"
-    setup.copy_files(target)
+    try:
+        setup.copy_files(target)
+    finally:
+        junk.unlink()
     names = {p.relative_to(target).as_posix() for p in target.rglob("*")}
     assert {"hook.py", "prompt_preflight/decide.py", "prompt_preflight/hook.py", "token_optimizer/analyzer.py", ".gitignore"} <= names
     assert not [n for n in names if "__pycache__" in n or n.endswith(".pyc")]
@@ -4429,6 +4461,85 @@ def test_installing_twice_keeps_one_entry_and_the_users_config_edits(env):
     assert (kept["mode"], kept["min_confidence"]) == ("block", 0.95)
 
 
+@pytest.mark.parametrize("scope", ["local", "user"])
+def test_relative_project_and_home_paths_still_produce_an_absolute_hook_command(env, monkeypatch, scope):
+    monkeypatch.chdir(env[0].parent)  # so "proj" and "home" are relative to here
+    setup.main(["--project", "proj", "--home", "home", "--yes", "--scope", scope, "--no-model"], io=ScriptedIO(), ollama=FakeAdmin())
+    [entry] = entries(local_settings(env) if scope == "local" else user_settings(env))
+    path = re.search(r'"(.+)"', entry["command"]).group(1)
+    assert os.path.isabs(path) and os.path.exists(path)
+
+
+def test_yes_alone_never_chooses_a_model_from_the_menu(env):
+    admin, io = FakeAdmin(), ScriptedIO()
+    setup.main(flags(env, "--yes", "--scope", "local"), io=io, ollama=admin)
+    assert config_of(env)["model"] == "" and admin.pulled == [] and admin.started == 0
+    assert not any("model" in question.lower() for question in io.asked)
+
+
+def test_a_named_model_without_ollama_installed_means_heuristics_only_everywhere(env):
+    admin = FakeAdmin(installed=False)
+    io = ScriptedIO()
+    setup.main(flags(env, "--yes", "--scope", "local", "--model", "tiny:1b"), io=io, ollama=admin)
+    assert config_of(env)["model"] == "" and admin.pulled == [] and "heuristics-only" in io.text
+
+
+def test_an_unparsable_config_is_copied_aside_on_install_not_silently_replaced(env):
+    args = flags(env, "--yes", "--scope", "local", "--no-model")
+    setup.main(args, io=ScriptedIO(), ollama=FakeAdmin())
+    config = env[1] / ".claude" / "prompt-preflight" / "config.json"
+    config.write_text('{"mode": "block",}', encoding="utf-8")  # a trailing comma
+    io = ScriptedIO()
+    setup.main(args, io=io, ollama=FakeAdmin())
+    [saved] = list(config.parent.glob("config.json.bak-*"))
+    assert saved.read_text(encoding="utf-8") == '{"mode": "block",}' and str(saved) in io.text
+    assert json.loads(config.read_text())["mode"] == "advise"
+
+
+def test_update_never_rewrites_an_unparsable_config_and_never_creates_one(env):
+    args = flags(env, "--yes", "--scope", "local", "--no-model")
+    setup.main(args, io=ScriptedIO(), ollama=FakeAdmin())
+    config = env[1] / ".claude" / "prompt-preflight" / "config.json"
+    config.write_text('{"mode": "block",}', encoding="utf-8")
+    io = ScriptedIO()
+    setup.main(flags(env, "--update", "--scope", "local"), io=io, ollama=FakeAdmin())
+    assert config.read_text(encoding="utf-8") == '{"mode": "block",}' and "config kept" not in io.text and "not valid JSON" in io.text
+    config.unlink()
+    io = ScriptedIO()
+    setup.main(flags(env, "--update", "--scope", "local"), io=io, ollama=FakeAdmin())
+    assert not config.exists() and "switched off" in io.text  # an update must not turn a bypassed install back on
+
+
+def test_a_failure_while_copying_stops_cleanly_and_leaves_the_settings_alone(env, monkeypatch):
+    def full_disk(install_dir):
+        raise OSError("No space left on device")
+
+    monkeypatch.setattr(setup, "copy_files", full_disk)
+    io = ScriptedIO()
+    assert setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=io, ollama=FakeAdmin()) == 1
+    assert "Stopped: No space left on device" in io.text and not local_settings(env).exists()
+
+
+def test_remove_says_where_the_settings_backup_went(env):
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    io = ScriptedIO()
+    setup.main(flags(env, "--remove", "--yes", "--scope", "local"), io=io, ollama=FakeAdmin())
+    assert "Backed up your settings to" in io.text
+
+
+def test_remove_deletes_a_symlinked_install_folder_link_not_its_target(env, tmp_path):
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    install = env[1] / ".claude" / "prompt-preflight"
+    moved = tmp_path / "elsewhere"
+    install.rename(moved)
+    try:
+        install.symlink_to(moved, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks are not available here")
+    assert setup.main(flags(env, "--remove", "--yes", "--scope", "local"), io=ScriptedIO(), ollama=FakeAdmin()) == 0
+    assert not install.exists() and not install.is_symlink() and moved.exists()
+
+
 def test_the_installed_hook_really_answers_as_claude_code_would_call_it(env):
     setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
     hook = env[1] / ".claude" / "prompt-preflight" / "hook.py"
@@ -4450,14 +4561,26 @@ def test_a_settings_entry_whose_files_are_gone_can_never_block_a_prompt(env):
 
 
 @pytest.mark.skipif(os.name == "nt", reason="PATH lookup semantics differ")
-def test_the_self_test_runs_the_exact_command_written_to_settings(env, tmp_path, monkeypatch):
+def test_the_self_test_runs_the_exact_command_written_to_settings(env, tmp_path, monkeypatch, real_self_test):
     setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
     root = env[1] / ".claude" / "prompt-preflight"
     monkeypatch.setenv("PATH", str(tmp_path / "no-python-here"))  # `python3` cannot be found, as in a broken setup
     assert setup._self_test(root, ScriptedIO()) is False
 
 
-def test_the_self_test_reports_and_leaves_no_state_behind(env):
+def test_a_kept_config_that_switches_advice_off_does_not_fail_the_self_test(env, real_self_test):
+    args = flags(env, "--yes", "--scope", "local", "--no-model")
+    setup.main(args, io=ScriptedIO(), ollama=FakeAdmin())
+    config = env[1] / ".claude" / "prompt-preflight" / "config.json"
+    edited = json.loads(config.read_text())
+    edited["enabled"] = False  # the documented way to switch it off without uninstalling
+    config.write_text(json.dumps(edited), encoding="utf-8")
+    io = ScriptedIO()
+    assert setup.main(args, io=io, ollama=FakeAdmin()) == 0
+    assert "switched off in config.json" in io.text and "self-test failed" not in io.text
+
+
+def test_the_self_test_reports_and_leaves_no_state_behind(env, real_self_test):
     io = ScriptedIO()
     setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=io, ollama=FakeAdmin())
     root = env[1] / ".claude" / "prompt-preflight"
@@ -4664,7 +4787,7 @@ if __package__ in (None, ""):  # started as a script: make `prompt_preflight` im
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from prompt_preflight import __version__, defaults, settings_merge as sm  # noqa: E402
-from prompt_preflight.config import DEFAULTS, is_loopback  # noqa: E402
+from prompt_preflight.config import DEFAULTS, is_loopback, load_config  # noqa: E402
 from prompt_preflight.ollama_client import open_no_proxy  # noqa: E402
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -4789,20 +4912,44 @@ def copy_files(install_dir: Path) -> None:
     (install_dir / ".gitignore").write_text("*\n", encoding="utf-8")
 
 
-def write_config(install_dir: Path, model: Optional[str]) -> None:
-    """New install: write defaults. Existing config: keep the user's edits, update version and model."""
-    path = install_dir / "config.json"
+def _read_config(path: Path) -> Optional[Dict[str, Any]]:
+    """The parsed config object, or None if the file is missing or is not a JSON object."""
     try:
         cfg = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(cfg, dict):
-            raise ValueError
     except (OSError, ValueError):
-        cfg = build_config(model or "")
+        return None
+    return cfg if isinstance(cfg, dict) else None
+
+
+def write_config(install_dir: Path, model: str) -> Optional[Path]:
+    """Install: keep the user's edits to an existing config and set the model and version; otherwise write
+    defaults. A config that exists but cannot be parsed is copied aside first (returned), never just replaced."""
+    path = install_dir / "config.json"
+    cfg = _read_config(path)
+    saved: Optional[Path] = None
+    if cfg is None:
+        if path.exists():
+            saved = path.with_name("config.json.bak-%s" % time.strftime("%Y%m%d%H%M%S"))
+            shutil.copy2(path, saved)
+        cfg = build_config(model)
     else:
-        if model is not None:
-            cfg["model"] = model
+        cfg["model"] = model
     cfg["installed_version"] = __version__
     path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+    return saved
+
+
+def refresh_config(install_dir: Path) -> str:
+    """Update: stamp the version into an existing valid config and touch nothing else. Never creates one
+    (no config.json means the hook is bypassed, and an update must not switch it on). Returns
+    "kept", "missing" or "unreadable"."""
+    path = install_dir / "config.json"
+    cfg = _read_config(path)
+    if cfg is None:
+        return "unreadable" if path.exists() else "missing"
+    cfg["installed_version"] = __version__
+    path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+    return "kept"
 
 
 # ---------- model choice ---------------------------------------------------------------------
@@ -4820,12 +4967,14 @@ def _choose_model(args: argparse.Namespace, io: Any, ollama: Any) -> ModelPlan:
     if args.no_model:
         return ModelPlan()
     installed = ollama.installed()
-    running = installed and ollama.is_running()
-    start = False
     if not installed:
         io.say("Ollama is not installed (https://ollama.com/download, or `brew install ollama`).")
         io.say("Continuing in heuristics-only mode; re-run this setup after installing it.")
-        return ModelPlan(args.model or "")
+        return ModelPlan()
+    if args.yes and not args.model:
+        return ModelPlan()  # --yes answers the install questions; a model is only ever chosen on purpose
+    running = ollama.is_running()
+    start = False
     if not running and not args.yes:
         start = io.ask_yes_no("Ollama is installed but not running. Start it now?", False)
     have = {m["name"]: m["size"] for m in ollama.models()} if running else {}
@@ -4878,6 +5027,10 @@ def _self_test(install_dir: Path, io: Any) -> bool:
     command = command_for(install_dir)
     state, log = install_dir / "state.json", install_dir / "preflight.log"
     existed = (state.exists(), log.exists())
+    cfg = load_config(str(install_dir / "config.json"))
+    first = SELF_TEST_PROMPTS[0]
+    # A kept config can legitimately silence the lookup advice; that must not read as a broken install.
+    expects_advice = cfg["enabled"] and cfg["notify"]["google"] and len(first.split()) >= cfg["min_words"] and len(first) <= cfg["skip_over_chars"]
     env = {k: v for k, v in os.environ.items() if k != "PROMPT_PREFLIGHT"}
     passed = False
     io.say("")
@@ -4895,7 +5048,9 @@ def _self_test(install_dir: Path, io: Any) -> bool:
                     note = "INVALID OUTPUT"
             io.say('  "%s" -> %s' % (prompt, note))
             if index == 0:
-                passed = done.returncode == 0 and "Google" in text
+                passed = done.returncode == 0 and ("Google" in text or not expects_advice)
+                if not expects_advice:
+                    io.say("  (advice is switched off in config.json, so only the exit code is checked)")
     finally:
         for path, was_there in zip((state, log), existed):
             if not was_there and path.exists():
@@ -4949,10 +5104,12 @@ def _install(args: argparse.Namespace, io: Any, ollama: Any, home: str, project:
         model = ""
 
     copy_files(install_dir)
-    write_config(install_dir, model)
+    saved_config = write_config(install_dir, model)
     backup = sm.write_settings(str(settings_path), after)
     io.say("")
     io.say("Installed to %s" % install_dir)
+    if saved_config:
+        io.say("The existing config.json was not valid JSON; it was copied to %s and replaced with defaults." % saved_config)
     if backup:
         io.say("Backed up your settings to %s" % backup)
     if scope == "local":
@@ -4993,8 +5150,12 @@ def _remove(args: argparse.Namespace, io: Any, home: str, project: str) -> int:
         return 0
     for scope, install_dir, settings_path, settings in found:
         if sm.has_hook(settings):
-            sm.write_settings(str(settings_path), sm.remove_hook(settings))
-        if install_dir.exists():
+            backup = sm.write_settings(str(settings_path), sm.remove_hook(settings))
+            if backup:
+                io.say("Backed up your settings to %s" % backup)
+        if install_dir.is_symlink():
+            install_dir.unlink()  # rmtree refuses a symlink; remove the link, not what it points at
+        elif install_dir.exists():
             shutil.rmtree(install_dir)
     io.say("Removed. Restart Claude Code to unload the hook.")
     return 0
@@ -5011,8 +5172,13 @@ def _update(args: argparse.Namespace, io: Any, home: str, project: str) -> int:
             io.say("Would refresh the code in %s (config kept)." % install_dir)
             continue
         copy_files(install_dir)
-        write_config(install_dir, None)
-        io.say("Updated %s (config kept)." % install_dir)
+        outcome = refresh_config(install_dir)
+        if outcome == "kept":
+            io.say("Updated %s (config kept)." % install_dir)
+        elif outcome == "missing":
+            io.say("Updated the code in %s. It has no config.json, so the hook stays switched off." % install_dir)
+        else:
+            io.say("Updated the code in %s. config.json is not valid JSON, so it was left exactly as it is." % install_dir)
     return 0
 
 
@@ -5033,8 +5199,8 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[Sequence[str]] = None, io: Any = None, ollama: Any = None) -> int:
     args = parse_args(argv)
     io = io or ConsoleIO()
-    home = args.home or os.path.expanduser("~")
-    project = args.project or os.getcwd()
+    home = os.path.abspath(os.path.expanduser(args.home or "~"))  # the hook command must not depend on the cwd
+    project = os.path.abspath(args.project or os.getcwd())
     try:
         if args.remove:
             return _remove(args, io, home, project)
@@ -5044,6 +5210,9 @@ def main(argv: Optional[Sequence[str]] = None, io: Any = None, ollama: Any = Non
     except sm.SettingsError as exc:
         io.say("Stopped. Nothing was changed: %s" % exc)
         return 1
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        io.say("Stopped: %s. Fix that and run the setup again (it is safe to repeat), or run `--remove`." % exc)
+        return 1
 
 
 if __name__ == "__main__":
@@ -5052,11 +5221,11 @@ if __name__ == "__main__":
 
 Run: `python3 -m pytest tests/prompt_preflight/test_setup.py -q`
 
-Expected: **PASS** — `36 passed`
+Expected: **PASS** — `46 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `441 passed`
+Expected: **PASS** — `452 passed`
 
 ```bash
 git add tools/prompt_preflight/setup.py tests/prompt_preflight/test_setup.py
@@ -5296,7 +5465,7 @@ Expected: **PASS** — `3 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `459 passed`
+Expected: **PASS** — `470 passed`
 
 ```bash
 git add tools/interactive_exporter.py tests/prompt_preflight/test_exporter_offer.py tests/prompt_preflight/test_optional.py
@@ -5317,7 +5486,7 @@ git commit -m "feat: offer the Prompt Preflight at the end of interactive export
 - Consumes: everything above
 - Produces:
   - User guide, and a test that keeps its config table in sync with `config.DEFAULTS` and its quoted messages in sync with `output.py`
-  - A traceability test: every requirement R1–R13 in the spec is named by some test module's `COVERS`
+  - A traceability test: every requirement R1–R14 in the spec is named by some test module's `COVERS`
 
 - [ ] **Step 1: Docs: tests first**
 
@@ -5329,6 +5498,7 @@ import re
 from pathlib import Path
 
 from prompt_preflight.config import DEFAULTS
+from prompt_preflight.hook import MAX_MODEL_BUDGET_MS
 from prompt_preflight.decide import Decision
 from prompt_preflight.output import build_output
 
@@ -5355,6 +5525,10 @@ def test_every_relative_link_in_the_guide_resolves():
 def test_the_guide_documents_every_config_key():
     guide = GUIDE.read_text(encoding="utf-8")
     assert [key for key in DEFAULTS if "`%s`" % key not in guide] == []
+
+
+def test_the_guide_states_the_real_model_budget_cap():
+    assert "`%d`" % MAX_MODEL_BUDGET_MS in GUIDE.read_text(encoding="utf-8")
 
 
 def test_the_guide_covers_the_verdicts_and_the_ways_to_turn_it_off_or_undo_it():
@@ -5437,6 +5611,8 @@ The wizard asks before every step and does nothing you decline:
 5. shows the exact settings diff and asks to confirm;
 6. installs, then runs a self-test on three sample prompts.
 
+`--yes` answers the install questions for a scripted run: it never starts Ollama, never chooses a model on its own (name one with `--model`), and never edits a settings file that is not valid JSON.
+
 Restart Claude Code afterwards so it loads the hook.
 
 **What it changes:** one hook entry in the settings file you chose (a `.bak-<timestamp>` copy is made
@@ -5445,12 +5621,20 @@ overwritten), and a `prompt-preflight/` folder next to it.
 
 ## Models: heuristics-only or a small local model
 
+**Heuristics-only is the default, and no model is recommended.** We measured four local models on a
+60-prompt labelled set (Apple M2, 24 GB, 2026-09-21): the best, `qwen2.5:1.5b`, got 48% of prompts right
+against a bar of 80% (an 8B model got 50%, and was too slow), so none qualified as a default. The model
+tier is therefore **experimental**: it works, it is safe (it never said "try Google" about a prompt that
+needed your code), but on a small model it is not yet accurate enough to recommend. The full table is in
+the design spec, under "Bake-off results".
+
 - **Heuristics-only** needs nothing installed. It catches clear standalone lookups ("what is the capital
   of France") and never anything else.
-- **With a model** it also judges the cases heuristics cannot: basic how-to questions, vague requests,
+- **With a model** it also tries the cases heuristics cannot: basic how-to questions, vague requests,
   and requests worth sharpening. It needs [Ollama](https://ollama.com/download) running locally, with a
   model that supports structured (JSON-schema) output. The wizard lists the models you already have and
-  asks before downloading any.
+  asks before starting Ollama; it recommends nothing to download, and downloads a model only if you name
+  one with `--model` and confirm. Models are stored by Ollama on your machine, never in this repository.
 
 If the model is slow, missing, or returns something unusable, Preflight falls back to heuristics-only,
 pauses the model for `cooldown_s` seconds so you do not pay for repeated failures, and tells you **once a
@@ -5464,9 +5648,9 @@ day** that it is running heuristics-only.
 |---|---|---|
 | `enabled` | `true` | master switch (`PROMPT_PREFLIGHT=off` in the environment also disables it) |
 | `mode` | `"advise"` | `"advise"`, or `"block"` (applies to the `google` verdict only) |
-| `model` | set by setup | Ollama model name; empty means heuristics-only |
+| `model` | `""` (heuristics-only) | Ollama model name; setup fills it in only if you choose a model |
 | `ollama_host` | `"127.0.0.1:11434"` | must be loopback unless `allow_remote`; the `OLLAMA_HOST` variable is not read at run time |
-| `budget_ms` | `2500` | time limit for one model call |
+| `budget_ms` | `2500` | time limit for one model call; the hook caps it at `4000` so a call always fits inside Claude Code's 5-second hook timeout |
 | `min_confidence` | `0.7` | a model verdict below this is ignored |
 | `notify` | all `true` | silence one verdict: `google`, `clarify`, or `refine` |
 | `skip_over_chars` | `2000` | longer prompts are left untouched |
@@ -5474,12 +5658,14 @@ day** that it is running heuristics-only.
 | `bypass_marker` | `"[raw]"` | a prompt containing it is left untouched |
 | `keep_alive` | `"10m"` | how long Ollama keeps the model loaded |
 | `cooldown_s` | `300` | model pause after a failure |
-| `override_window_s` | `300` | in block mode, how long an identical resend is let through |
+| `override_window_s` | `300` | in block mode, how long an identical resend is let through (1 to 86400) |
 | `allow_remote` | `false` | allow a non-loopback model host (prompts then leave this machine) |
 | `log_prompts` | `false` | include prompt text in the log |
 
 **Block mode.** With `"mode": "block"` a `google` verdict stops the prompt and shows the suggestion;
-sending the identical prompt again within `override_window_s` goes through.
+sending the identical prompt again within `override_window_s` goes through. If Preflight cannot save its
+state (for example a read-only install folder) it never blocks: it shows the suggestion and lets the prompt
+through.
 
 ## Privacy and safety
 
@@ -5489,7 +5675,10 @@ sending the identical prompt again within `override_window_s` goes through.
 - The log (`preflight.log`, capped at 1 MB) records the verdict, tier, confidence and timing, never the prompt
   text unless you set `log_prompts`. There is no telemetry.
 - The hook always exits 0 and prints either one JSON object or nothing, so it cannot produce a Claude Code
-  "hook error" or inject stray text into your context.
+  "hook error" or inject stray text into your context. The settings entry ends in `|| true`, so even if you
+  delete the `prompt-preflight/` folder by hand, the leftover entry is harmless (Python would otherwise exit
+  with code 2 for the missing file, and Claude Code rejects a prompt when a hook exits 2). Run `--remove` to
+  tidy the settings file.
 - Text it hands to Claude is length-capped and stripped of control characters, and long prompts are never
   sent to the model.
 
@@ -5497,7 +5686,7 @@ sending the identical prompt again within `override_window_s` goes through.
 
 ```bash
 PROMPT_PREFLIGHT=off claude                          # off for one run
-python3 tools/prompt_preflight/setup.py --update     # refresh the installed code, keep your config
+python3 tools/prompt_preflight/setup.py --update     # refresh the installed code, keep your config (never creates or rewrites one)
 python3 tools/prompt_preflight/setup.py --remove     # remove the hook entry and the folder
 ```
 
@@ -5513,6 +5702,7 @@ before importing anything, and it writes no state and no log.
 | No advice ever appears | Restart Claude Code after setup; check `PROMPT_PREFLIGHT` is not `off`; look at the newest lines of `prompt-preflight/preflight.log` |
 | "running heuristics-only" notice | Ollama is not running, or the configured model is not downloaded; run `ollama list`, then `ollama pull <model>` |
 | Advice stopped after one failure | The model is cooling down for `cooldown_s` seconds; it resumes by itself |
+| The "running heuristics-only" notice or the same advice repeats on every prompt | The `prompt-preflight/` folder may be read-only, so Preflight cannot save its state; make it writable |
 | It said "try Google" about something that needs your code | Add a note to the prompt, use `[raw]`, or set `notify.google` to `false`, and tell us: it is a guardrail gap |
 
 ## Measuring it
@@ -5526,8 +5716,10 @@ python3 tools/prompt_preflight/eval/run_eval.py --baseline           # heuristic
 python3 tools/prompt_preflight/eval/run_eval.py --model <ollama-model>
 ```
 
-Measured on 2026-09-20: heuristics-only scored 31.7% accuracy with a 0% false-`google` rate. It is safe
-but limited, which is why the optional model exists.
+Measured on 2026-09-20 and 2026-09-21: heuristics-only scored 31.7% accuracy with a 0% false-`google`
+rate. It is safe but limited. The small models we tried scored 32% to 48% and none met the 80% bar, so the
+default stays heuristics-only; the design spec has the full table, and the runner lets you score any model
+or prompt change the same way.
 ````
 
 In `README.md`, replace:
@@ -5558,7 +5750,7 @@ with:
 
 Run: `python3 -m pytest tests/prompt_preflight/test_docs.py -q`
 
-Expected: **PASS** — `5 passed`
+Expected: **PASS** — `6 passed`
 
 - [ ] **Step 3: Traceability**
 
@@ -5629,7 +5821,7 @@ Baseline recorded on 2026-09-20 before any of this work, on a clean checkout: **
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `468 passed`
+Expected: **PASS** — `480 passed`
 
 Run: `python3 -m pytest tests/test_token_optimizer.py -q`
 
@@ -5637,7 +5829,7 @@ Expected: **PASS** — `35 passed`
 
 Run: `python3 -m pytest tests -q --continue-on-collection-errors`
 
-Expected: **PASS** — `701 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 468 = 701, and **no new failure**.
+Expected: **PASS** — `713 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 480 = 713, and **no new failure**.
 
 - [ ] **Step 5: GATE C — the real end-to-end check (asks first)**
 
@@ -5693,5 +5885,6 @@ git commit -m "docs: record Prompt Preflight end-to-end findings"
 | **R11** — Reversibility | `test_hook.py`, `test_settings_merge.py`, `test_setup.py` |
 | **R12** — Acceptance thresholds from the bake-off (*Model selection*) are met by | `test_eval.py` + the bake-off (Task 4) |
 | **R13** — Docs | `test_docs.py` |
+| **R14** — Bypass when unconfigured | `test_hook.py`, `test_optional.py` |
 
 Amendments: **A1** `test_decide.py`, `test_hook.py` (first-prompt rule) · **A2** `test_heuristics.py` · **A3** `test_decide.py`, `test_heuristics.py` · **A4** `test_decide.py` · **A5** `test_eval.py`.
