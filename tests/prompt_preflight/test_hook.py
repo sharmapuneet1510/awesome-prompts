@@ -103,10 +103,10 @@ def test_without_a_model_it_runs_heuristics_only_and_never_nags(tmp_path):
 
 def test_block_mode_blocks_once_then_lets_the_identical_prompt_through(tmp_path):
     configure(tmp_path, mode="block")
-    first = call(tmp_path, "what is the capital of France")
+    first = call(tmp_path, "what is the capital of France", session="s1")
     assert first["decision"] == "block"
-    assert call(tmp_path, "what is the capital of France") is None
-    assert call(tmp_path, "what is the capital of France")["decision"] == "block"  # override was single-use
+    assert call(tmp_path, "what is the capital of France", session="s1") is None  # the resend goes through
+    assert call(tmp_path, "what is the capital of France", session="s2")["decision"] == "block"  # override was single-use
 
 
 def test_block_mode_never_traps_the_user_when_state_cannot_be_saved(tmp_path, monkeypatch):
@@ -117,12 +117,21 @@ def test_block_mode_never_traps_the_user_when_state_cannot_be_saved(tmp_path, mo
         assert "decision" not in out and "Google" in out["systemMessage"]  # advised, never blocked
 
 
+def test_block_mode_only_ever_blocks_the_first_prompt_of_a_session(tmp_path):
+    configure(tmp_path, mode="block")
+    first = call(tmp_path, "what is the capital of France", session="A")
+    later = call(tmp_path, "what is the current status", session="A")
+    assert first["decision"] == "block"
+    assert "decision" not in later and "Google" in later["systemMessage"]  # advised, never blocked, mid-session
+    assert "decision" not in call(tmp_path, "what is the current status", session="")  # no session id: never blocked
+
+
 def test_block_override_expires(tmp_path):
     configure(tmp_path, mode="block", override_window_s=60)
     clock = Clock()
-    assert call(tmp_path, "what is the capital of France", clock=clock)["decision"] == "block"
+    assert call(tmp_path, "what is the capital of France", session="s1", clock=clock)["decision"] == "block"
     clock.now += 61
-    assert call(tmp_path, "what is the capital of France", clock=clock)["decision"] == "block"
+    assert call(tmp_path, "what is the capital of France", session="s2", clock=clock)["decision"] == "block"  # too late to override
 
 
 @pytest.mark.parametrize("configured,sent", [(8000, 4000), (30000, 4000), (1500, 1500)])

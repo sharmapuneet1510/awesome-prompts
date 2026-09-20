@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -146,7 +147,7 @@ def test_install_local_writes_the_layout_and_one_hook_entry(env):
     config = json.loads((root / "config.json").read_text())
     assert config["model"] == "" and config["installed_version"]
     [entry] = entries(local_settings(env))
-    assert entry == {"type": "command", "command": 'python3 "%s" || true' % (root / "hook.py"), "timeout": 5}
+    assert entry == {"type": "command", "command": "python3 %s || true" % shlex.quote(str(root / "hook.py")), "timeout": 5}
 
 
 def test_copy_files_ships_only_what_the_hook_needs(tmp_path):
@@ -163,6 +164,7 @@ def test_copy_files_ships_only_what_the_hook_needs(tmp_path):
     assert {"hook.py", "prompt_preflight/decide.py", "prompt_preflight/hook.py", "token_optimizer/analyzer.py", ".gitignore"} <= names
     assert not [n for n in names if "__pycache__" in n or n.endswith(".pyc")]
     assert "prompt_preflight/eval" not in names and "prompt_preflight/setup.py" not in names
+    assert "prompt_preflight/launcher.py" not in names  # it is installed once, as hook.py
     assert "token_optimizer/README.md" not in names and "token_optimizer/setup.py" not in names
 
 
@@ -234,8 +236,61 @@ def test_relative_project_and_home_paths_still_produce_an_absolute_hook_command(
     monkeypatch.chdir(env[0].parent)  # so "proj" and "home" are relative to here
     setup.main(["--project", "proj", "--home", "home", "--yes", "--scope", scope, "--no-model"], io=ScriptedIO(), ollama=FakeAdmin())
     [entry] = entries(local_settings(env) if scope == "local" else user_settings(env))
-    path = re.search(r'"(.+)"', entry["command"]).group(1)
+    path = shlex.split(entry["command"])[1]
     assert os.path.isabs(path) and os.path.exists(path)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX shell quoting")
+@pytest.mark.parametrize("folder", ["has space", "dollar$HOME", "sub$(touch INJECTED)", "back`touch INJECTED`tick", 'quo"te', "sing'le", "semi;colon", "amp&&touch INJECTED", "new\nline"])
+def test_the_hook_command_treats_any_install_path_as_data_never_as_shell(tmp_path, folder):
+    install = tmp_path / folder / ".claude" / "prompt-preflight"
+    install.mkdir(parents=True)
+    (install / "hook.py").write_text("import sys\nprint(sys.argv[0])\n", encoding="utf-8")
+    done = subprocess.run(setup.command_for(install), shell=True, capture_output=True, text=True, cwd=str(tmp_path))
+    assert done.stdout.strip() == str(install / "hook.py") and done.returncode == 0
+    assert not list(tmp_path.rglob("INJECTED"))  # nothing in the folder name was executed
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX shell quoting")
+def test_a_hostile_project_path_is_never_executed_by_the_wizard_itself(env, tmp_path, monkeypatch, real_self_test):
+    monkeypatch.chdir(tmp_path)  # a `touch PWNED` in the path would run here
+    project = tmp_path / "proj$(touch PWNED)x"
+    project.mkdir()
+    setup.main(["--project", str(project), "--home", str(env[0]), "--yes", "--scope", "local", "--no-model"], io=ScriptedIO(), ollama=FakeAdmin())
+    assert not (tmp_path / "PWNED").exists()
+    [entry] = entries(project / ".claude" / "settings.local.json")
+    assert shlex.split(entry["command"])[1].endswith("prompt-preflight/hook.py")
+
+
+def test_a_failed_self_test_leaves_the_settings_file_untouched(env, monkeypatch):
+    monkeypatch.setattr(setup, "_self_test", lambda install_dir, io: False)
+    settings = local_settings(env)
+    settings.parent.mkdir(parents=True)
+    settings.write_text('{"keep": true}', encoding="utf-8")
+    io = ScriptedIO()
+    assert setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=io, ollama=FakeAdmin()) == 3
+    assert json.loads(settings.read_text(encoding="utf-8")) == {"keep": True}
+    assert not [p for p in settings.parent.iterdir() if ".bak-" in p.name]  # and no backup was needed
+    assert "nothing was added to your settings file" in io.text and "--remove" in io.text
+
+
+def test_the_config_is_written_atomically(tmp_path, monkeypatch):
+    install = tmp_path / "pf"
+    install.mkdir()
+    (install / "config.json").write_text('{"mode": "block"}', encoding="utf-8")
+
+    def disk_error(src, dst):
+        raise OSError("disk went away")
+
+    monkeypatch.setattr(setup.os, "replace", disk_error)  # the moment the new file would take the old one's place
+    with pytest.raises(OSError):
+        setup._write_json(install / "config.json", {"mode": "advise"})
+    assert json.loads((install / "config.json").read_text(encoding="utf-8")) == {"mode": "block"}
+    assert sorted(p.name for p in install.iterdir()) == ["config.json"]  # and no temp file is left behind
+    monkeypatch.undo()
+    with pytest.raises(TypeError):
+        setup._write_json(install / "config.json", {"bad": object()})
+    assert json.loads((install / "config.json").read_text(encoding="utf-8")) == {"mode": "block"}
 
 
 def test_yes_alone_never_chooses_a_model_from_the_menu(env):

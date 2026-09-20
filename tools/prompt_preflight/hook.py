@@ -95,8 +95,10 @@ def run(
     if out is not None and out.get("decision") == "block":
         if state.consume_override(prompt, cfg["override_window_s"]):
             out = None
-        elif not state.remember_block(prompt):
-            out = build_output(decision, dict(cfg, mode="advise"))  # without saved state the override cannot work: never trap the user
+        elif not first_prompt or not state.remember_block(prompt):
+            # Only a session's first prompt can be blocked: later prompts usually lean on the conversation, which tier 1
+            # cannot see. And without saved state the override cannot work. Either way, advise instead of trapping the user.
+            out = build_output(decision, dict(cfg, mode="advise"))
     if out is None and model_failed and state.notice_due("degraded"):
         out = degraded_notice()
 

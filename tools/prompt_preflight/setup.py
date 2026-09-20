@@ -10,9 +10,11 @@ import argparse
 import copy
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,7 +35,7 @@ SELF_TEST_PROMPTS = (
     "make the app work better please",
     "write a python function that parses iso dates from log lines",
 )
-COPY_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "eval", "README.md", "setup.py", "pyproject.toml")
+COPY_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "eval", "README.md", "setup.py", "launcher.py", "pyproject.toml")
 
 INTRO = """Prompt Preflight (optional)
   Checks each prompt before Claude sees it: tells you when a web search would do, and can add a
@@ -119,9 +121,16 @@ def paths_for(scope: str, home: str, project: str) -> Tuple[Path, Path]:
 
 
 def command_for(install_dir: Path) -> str:
-    """The settings entry. `|| true` matters: if the install folder is ever deleted by hand, python exits 2
-    for the missing script, and for a UserPromptSubmit hook exit 2 blocks every prompt."""
-    return 'python3 "%s" || true' % (install_dir / "hook.py")
+    """The settings entry. Claude Code runs it through a shell on every prompt, so the path is quoted for that
+    shell: a folder name holding `$(...)`, a backtick or a quote must stay data. `|| true` matters too: if the
+    install folder is ever deleted by hand, python exits 2 for the missing script, and for a UserPromptSubmit
+    hook exit 2 blocks every prompt."""
+    script = str(install_dir / "hook.py")
+    if os.name == "nt":
+        if any(char in script for char in '"%^&|<>\n'):
+            raise OSError("the install path contains a character that cannot be quoted safely for cmd.exe: %s" % script)
+        return 'python3 "%s" || true' % script
+    return "python3 %s || true" % shlex.quote(script)
 
 
 def build_config(model: str, env: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
@@ -156,6 +165,19 @@ def _read_config(path: Path) -> Optional[Dict[str, Any]]:
     return cfg if isinstance(cfg, dict) else None
 
 
+def _write_json(path: Path, cfg: Dict[str, Any]) -> None:
+    """Atomic: a crash or a bad value must never leave a truncated config (the hook would read it as defaults)."""
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".config-")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps(cfg, indent=2) + "\n")
+        os.replace(tmp, str(path))
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
 def write_config(install_dir: Path, model: str) -> Optional[Path]:
     """Install: keep the user's edits to an existing config and set the model and version; otherwise write
     defaults. A config that exists but cannot be parsed is copied aside first (returned), never just replaced."""
@@ -170,7 +192,7 @@ def write_config(install_dir: Path, model: str) -> Optional[Path]:
     else:
         cfg["model"] = model
     cfg["installed_version"] = __version__
-    path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+    _write_json(path, cfg)
     return saved
 
 
@@ -183,7 +205,7 @@ def refresh_config(install_dir: Path) -> str:
     if cfg is None:
         return "unreadable" if path.exists() else "missing"
     cfg["installed_version"] = __version__
-    path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+    _write_json(path, cfg)
     return "kept"
 
 
@@ -353,19 +375,21 @@ def _install(args: argparse.Namespace, io: Any, ollama: Any, home: str, project:
 
     copy_files(install_dir)
     saved_config = write_config(install_dir, model)
+    if saved_config:
+        io.say("The existing config.json was not a valid JSON object; it was copied to %s and replaced with defaults." % saved_config)
+    if not _self_test(install_dir, io):
+        # The settings file is written only after the hook has proved itself, so a failure leaves Claude Code untouched.
+        io.say("")
+        io.say("The self-test failed: the hook did not answer as expected, so nothing was added to your settings file.")
+        io.say("The copied files are in %s; run `--remove` to delete them." % install_dir)
+        return 3
     backup = sm.write_settings(str(settings_path), after)
     io.say("")
     io.say("Installed to %s" % install_dir)
-    if saved_config:
-        io.say("The existing config.json was not a valid JSON object; it was copied to %s and replaced with defaults." % saved_config)
     if backup:
         io.say("Backed up your settings to %s" % backup)
     if scope == "local":
         _warn_if_not_ignored(io, project, settings_path)
-    if not _self_test(install_dir, io):
-        io.say("")
-        io.say("The self-test failed: the hook did not answer as expected. Run `--remove` to undo the install.")
-        return 3
     io.say("")
     io.say("Done. Restart Claude Code so it loads the hook. Turn it off any time with PROMPT_PREFLIGHT=off.")
     return 0

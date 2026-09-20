@@ -64,7 +64,7 @@ def open_no_proxy(request: urllib.request.Request, timeout: float) -> Any:
     return opener.open(request, timeout=timeout)
 
 
-_DELIMITER = re.compile(r"</?\s*prompt\s*>", re.IGNORECASE)
+_DELIMITER = re.compile(r"<\s*/?\s*prompt\s*/?\s*>", re.IGNORECASE)
 
 
 def build_request(cfg: Dict[str, Any], prompt: str) -> Dict[str, Any]:

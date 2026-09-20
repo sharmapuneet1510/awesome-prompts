@@ -110,8 +110,9 @@ Setup also stamps an `installed_version` key into it; it is bookkeeping, not a s
 | `log_prompts` | `false` | include prompt text in the log |
 
 **Block mode.** With `"mode": "block"` a `google` verdict stops the prompt and shows the suggestion;
-sending the identical prompt again within `override_window_s` goes through, once: sending it a third time
-is blocked again. If Preflight cannot save its
+sending the identical prompt again within `override_window_s` goes through, once. Only the **first prompt of
+a session** is ever blocked, because a later prompt usually leans on the conversation, which Preflight cannot
+see: later prompts get the same suggestion as a note and always go through. If Preflight cannot save its
 state (for example a read-only install folder) it never blocks: it shows the suggestion and lets the prompt
 through.
 
@@ -139,7 +140,9 @@ python3 tools/prompt_preflight/setup.py --remove     # remove the hook entry and
 # for a project other than the current directory, add: --project <dir>   (and --scope user|local if you used one)
 ```
 
-Set `"enabled": false` in `config.json` to disable it without uninstalling. `--update` never creates a
+`setup.py` is not copied into the install folder, so `--update` and `--remove` need this repository checkout.
+If you no longer have it, delete the `prompt-preflight/` folder and the hook entry in the settings file by
+hand; a leftover entry is harmless. Set `"enabled": false` in `config.json` to disable it without uninstalling. `--update` never creates a
 `config.json` (an install without one stays switched off) and leaves one that is not valid JSON untouched.
 
 **Not configured means bypassed.** With no `config.json` in its folder the hook does nothing at all: it exits
