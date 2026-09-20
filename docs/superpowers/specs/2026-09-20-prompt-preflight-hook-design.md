@@ -1,4 +1,4 @@
-# Prompt Coach — Optional Local-Model Prompt Hook — Design Specification
+# Prompt Preflight — Optional Local-Model Prompt Hook — Design Specification
 
 **Date:** September 20, 2026
 **Status:** Approved by the user, 2026-09-20. Task 1's eval-set labels and model downloads still need separate approval (see *Model Selection*).
@@ -10,7 +10,7 @@ Claims in this document carry the RULE 12 labels: **FACT** (verified, sourced), 
 
 ## Executive Summary
 
-Add an **optional** Claude Code `UserPromptSubmit` hook, the *Prompt Coach*, that inspects each prompt before Claude processes it. It has two tiers: fast heuristics (the existing `tools/token_optimizer`), and — only if the user opts in — a small language model served locally by Ollama. It can:
+Add an **optional** Claude Code `UserPromptSubmit` hook, the *Prompt Preflight*, that inspects each prompt before Claude processes it. It has two tiers: fast heuristics (the existing `tools/token_optimizer`), and — only if the user opts in — a small language model served locally by Ollama. It can:
 
 1. tell the user a question is basic enough that a web search would do;
 2. give Claude a sharper restatement of the request, as advisory context;
@@ -58,7 +58,7 @@ Each requirement is testable; the traceability matrix is in *Testing*.
 | **R8** | **Privacy.** The model host must be loopback unless `allow_remote` is set. The log never contains prompt text unless `log_prompts` is set. No telemetry. |
 | **R9** | **Config** keys and defaults are as in *Design §8*. A corrupt or missing file yields defaults. |
 | **R10** | **Setup safety.** Backup before edit; merge, never replace; atomic write; idempotent; refuse a non-JSON settings file; `--dry-run` writes nothing; scope is user or project-local, never the committed `.claude/settings.json`; a self-test runs before finishing. |
-| **R11** | **Reversibility.** `--remove` deletes exactly the Coach's own entry and folder. `PROMPT_COACH=off` and `"enabled": false` disable it instantly. |
+| **R11** | **Reversibility.** `--remove` deletes exactly Preflight's own entry and folder. `PROMPT_PREFLIGHT=off` and `"enabled": false` disable it instantly. |
 | **R12** | **Acceptance thresholds** from the bake-off (*Model selection*) are met by the shipped default, or the default is heuristics-only. |
 | **R13** | **Docs.** A user guide, plus a README mention of the optional feature. |
 
@@ -75,7 +75,7 @@ Rewriting the user's prompt (not possible). Other assistants (only Claude Code h
 - Input is JSON on stdin; the prompt is in the field **`prompt`**.
 - `UserPromptSubmit` has **no matcher support**; `timeout` is in **seconds**; its default is 30 s.
 - Outputs on exit 0: `additionalContext` (Claude sees it), `systemMessage` ("Warning message shown to the user"), or top-level `decision: "block"` with `reason` (stops the turn and erases the prompt from context). **No field rewrites the prompt.** The page says so directly: "`UserPromptSubmit`: can't replace the prompt; it only injects `additionalContext` alongside it". `updatedInput` exists only for `PreToolUse`, `PermissionRequest`, and `PreModelSwitch`.
-- Plain-text stdout is injected into Claude's context. Exit code 2 blocks. Any other non-zero code does not block on its own; what happens then depends on stdout. Stdout that is not valid JSON, or fails schema validation, produces a non-blocking `<hook name> hook error` notice. This is why the Coach always exits 0 and emits only one valid JSON object or nothing (R7).
+- Plain-text stdout is injected into Claude's context. Exit code 2 blocks. Any other non-zero code does not block on its own; what happens then depends on stdout. Stdout that is not valid JSON, or fails schema validation, produces a non-blocking `<hook name> hook error` notice. This is why Preflight always exits 0 and emits only one valid JSON object or nothing (R7).
 - On timeout, the hook's output is discarded and the prompt proceeds.
 - A `matcher` field on an event that has no matcher support is silently ignored, so omitting it is safe.
 - `PreCommit` is not among the documented hook events (it does not appear on the page).
@@ -130,7 +130,7 @@ output: systemMessage (user) and/or additionalContext (Claude); never blocks unl
 
 ### 4. Components
 
-Source lives in `tools/prompt_coach/` (not `hooks/` — see D4). Tests live in `tests/prompt_coach/`.
+Source lives in `tools/prompt_preflight/` (not `hooks/` — see D4). Tests live in `tests/prompt_preflight/`.
 
 | Module | Purpose | Depends on |
 |---|---|---|
@@ -149,7 +149,7 @@ Source lives in `tools/prompt_coach/` (not `hooks/` — see D4). Tests live in `
 
 ### 5. Setup wizard (R1, R10, R11)
 
-Entry points: the end of `interactive_exporter.py` (one question, default No) and `python3 tools/prompt_coach/setup.py`. Flags for automation and tests: `--yes`, `--scope user|local`, `--model NAME`, `--no-model`, `--dry-run`, `--remove`, `--update`.
+Entry points: the end of `interactive_exporter.py` (one question, default No) and `python3 tools/prompt_preflight/setup.py`. Flags for automation and tests: `--yes`, `--scope user|local`, `--model NAME`, `--no-model`, `--dry-run`, `--remove`, `--update`.
 
 | # | Step | Asks | If declined |
 |---|---|---|---|
@@ -161,12 +161,12 @@ Entry points: the end of `interactive_exporter.py` (one question, default No) an
 | 6 | Self-test | runs 3 sample prompts through the installed hook as Claude Code would | — |
 | 7 | Restart note | says to restart Claude Code | — |
 
-Installed layout: `<scope>/prompt-coach/` containing `hook.py` and the other modules, a vendored `token_optimizer/`, and `config.json`. The settings entry, in the schema verified above (no `matcher`):
+Installed layout: `<scope>/prompt-preflight/` containing `hook.py` and the other modules, a vendored `token_optimizer/`, and `config.json`. The settings entry, in the schema verified above (no `matcher`):
 
 ```json
 { "hooks": { "UserPromptSubmit": [
   { "hooks": [ { "type": "command",
-                 "command": "python3 /abs/path/prompt-coach/hook.py",
+                 "command": "python3 /abs/path/prompt-preflight/hook.py",
                  "timeout": 5 } ] } ] } }
 ```
 
@@ -194,7 +194,7 @@ The entry is identified by its command path, which makes install idempotent and 
 
 | Key | Default | Meaning |
 |---|---|---|
-| `enabled` | `true` | master switch (`PROMPT_COACH=off` also works) |
+| `enabled` | `true` | master switch (`PROMPT_PREFLIGHT=off` also works) |
 | `mode` | `"advise"` | `"advise"` or `"block"` (`google` verdict only) |
 | `model` | set by setup | Ollama model name |
 | `ollama_host` | `"127.0.0.1:11434"` | the only host source the hook reads (the `OLLAMA_HOST` environment variable is not read at run time, so ambient env cannot redirect prompts); setup seeds it from that variable if set; must be loopback unless `allow_remote` |
@@ -230,7 +230,7 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 
 ## Model Selection — the bake-off (Task 1)
 
-- **Eval set.** About 60 labeled prompts across the four verdicts plus context-bound guardrail cases, in `tools/prompt_coach/eval/`. The labels are judgment calls and remain **PROPOSAL** until the user reviews them.
+- **Eval set.** About 60 labeled prompts across the four verdicts plus context-bound guardrail cases, in `tools/prompt_preflight/eval/`. The labels are judgment calls and remain **PROPOSAL** until the user reviews them.
 - **Candidates.** Two or three small instruct models from Ollama's library (names confirmed at run time), plus the already-pulled `llama3` 8B as an upper-bound reference. **Requires the user's approval** to start `ollama serve` and to download about 1–2 GB per model.
 - **Thresholds (DECISION — approved with the spec, 2026-09-20):**
 
@@ -254,7 +254,7 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 | D1 | Local Ollama server plus heuristics-first tiering | **DECISION** (user, chat 2026-09-20) |
 | D2 | Advise by default; blocking is opt-in and `google`-only | **DECISION** (user, chat 2026-09-20) |
 | D3 | Refinement is advisory `additionalContext`, since a prompt cannot be rewritten | **DECISION** (accepted, user, 2026-09-20) |
-| D4 | Installed only by the opt-in wizard; source in `tools/prompt_coach/`, not `hooks/` | **DECISION** (accepted, user, 2026-09-20) |
+| D4 | Installed only by the opt-in wizard; source in `tools/prompt_preflight/`, not `hooks/` | **DECISION** (accepted, user, 2026-09-20) |
 | D5 | Scope is user or project-local; never the committed settings file | **DECISION** (accepted, user, 2026-09-20) |
 | D6 | Fail open everywhere; always exit 0 | **DECISION** (accepted, user, 2026-09-20) |
 | D7 | Loopback only; no prompt text in logs by default | **DECISION** (accepted, user, 2026-09-20) |
@@ -282,7 +282,7 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 | O2 | Whether a non-blocking `systemMessage` is clearly visible in the interactive UI — the docs say "shown to the user" (**unverified visually**) | Test in the real end-to-end run |
 | O3 | Minimum Ollama version for structured outputs; the installed client is 0.9.1 | The wizard reads `/api/version`; confirm the minimum in Task 1 |
 | O4 | Model names, sizes, and latency | Task 1 |
-| O5 | Interaction with other `UserPromptSubmit` hooks — not verified | The Coach depends on none |
+| O5 | Interaction with other `UserPromptSubmit` hooks — not verified | Preflight depends on none |
 | O6 | Vendored `token_optimizer` can go stale | `--update` re-vendors; version stamped in `config.json` |
 | Risk | A small model's false `google` verdict | Advise default, false-`google` ≤ 5% gate, guardrails |
 | Risk | A small model's refinement misleads Claude | Advisory label, `min_confidence`, 600-char cap, original prompt stays authoritative |
@@ -308,7 +308,7 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 
 - **RULE 11.** This spec and the plan that follows are this repo's own design records, in `docs/superpowers/`, following the precedent of the existing specs and plans. The spec was approved by the user on 2026-09-20; the plan needs its own approval.
 - **RULE 11a.** D1–D8 above; D3–D8 were accepted on the user's explicit approval of the spec (2026-09-20).
-- **Branching.** Work happens on `feat/prompt-coach`, branched from `origin/main` after pull request #14 (README redesign, MIT license, MCP builder skill) was merged.
+- **Branching.** Work happens on `feat/prompt-preflight`, branched from `origin/main` after pull request #14 (README redesign, MIT license, MCP builder skill) was merged.
 - **Out of scope, tracked separately:** the inert `promptshield-check.sh` and its incorrect settings schema; the exporter's `--target-project` ignoring `--dry-run`; the README layout tree, now on `main`, listing `token_optimizer/` and `parser/` at the repo root when neither is there (`token_optimizer` lives in `tools/`).
 
 ---
