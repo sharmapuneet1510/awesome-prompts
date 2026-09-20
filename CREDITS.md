@@ -20,4 +20,4 @@ If you believe any of the above too closely resembles the original source text r
 
 ## License Note
 
-The source repository is licensed under GPL-3.0. Because the files above are original rewrites rather than derivative copies, they do not carry the source repository's license obligations. This repository's own licensing is unaffected.
+The source repository is licensed under GPL-3.0. Because the files above are original rewrites rather than derivative copies, they do not carry the source repository's license obligations. This repository's own licensing is unaffected: it is released under the MIT License — see [LICENSE](LICENSE).
