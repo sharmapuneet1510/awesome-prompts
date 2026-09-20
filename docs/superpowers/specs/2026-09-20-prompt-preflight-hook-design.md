@@ -1,7 +1,7 @@
 # Prompt Preflight — Optional Local-Model Prompt Hook — Design Specification
 
 **Date:** September 20, 2026
-**Status:** Approved by the user, 2026-09-20. Task 1's eval-set labels and model downloads still need separate approval (see *Model Selection*).
+**Status:** Approved by the user, 2026-09-20; amended the same day (see *Amendments*). The eval-set labels and model downloads still need separate approval at plan Task 4 (see *Model Selection*).
 **Version:** 1.0
 
 Claims in this document carry the RULE 12 labels: **FACT** (verified, sourced), **INFERENCE** (reasoned, not yet measured), **PROPOSAL** (awaiting approval), **DECISION** (approved by the user).
@@ -52,7 +52,7 @@ Each requirement is testable; the traceability matrix is in *Testing*.
 | **R2** | **Tier 1 (heuristics)** decides obvious cases with no model and no network. |
 | **R3** | **Tier 2 (model)** runs only for prompts tier 1 did not decide, only if enabled and reachable, with schema-constrained output that is re-validated in code. |
 | **R4** | **Verdicts and outputs** are exactly those in *Design §2*. `pass` produces no output. |
-| **R5** | **Guardrails.** Never `google` for a prompt bound to the user's own context. A refinement is injected only at or above `min_confidence`. All injected text is capped and sanitized. |
+| **R5** | **Guardrails.** Never `google` for a prompt bound to the user's own context. A model verdict (`google`, `clarify` or `refine`) is acted on only at or above `min_confidence`, and `clarify` and `refine` only on the first prompt of a session (Amendments A1, A4). All injected text is capped and sanitized. |
 | **R6** | **Fail open.** Any error, timeout, or unavailability lets the prompt proceed untouched. |
 | **R7** | **Hook I/O contract.** Exit code is always 0. Stdout is exactly one JSON object or empty. Diagnostics go only to the log. |
 | **R8** | **Privacy.** The model host must be loopback unless `allow_remote` is set. The log never contains prompt text unless `log_prompts` is set. No telemetry. |
@@ -61,6 +61,7 @@ Each requirement is testable; the traceability matrix is in *Testing*.
 | **R11** | **Reversibility.** `--remove` deletes exactly Preflight's own entry and folder. `PROMPT_PREFLIGHT=off` and `"enabled": false` disable it instantly. |
 | **R12** | **Acceptance thresholds** from the bake-off (*Model selection*) are met by the shipped default, or the default is heuristics-only. |
 | **R13** | **Docs.** A user guide, plus a README mention of the optional feature. |
+| **R14** | **Bypass when unconfigured.** If `config.json` is absent from the hook's folder, the launcher exits 0 before importing anything and writes no output, state, or log. Nothing in the repository installs the feature by default, and the default export carries no trace of it. |
 
 ### Non-goals
 
@@ -99,7 +100,10 @@ Rewriting the user's prompt (not possible). Other assistants (only Claude Code h
 prompt submitted
   │
   ▼
-[0] skip       slash commands, "!" and "#" prompts, bypass_marker, over skip_over_chars → untouched
+[-] bypass     no config.json in the hook's folder → exit at once, before importing anything (R14)
+  │
+  ▼
+[0] skip       slash commands, "!" and "#" prompts, bypass_marker, over skip_over_chars, under min_words → untouched
   │
   ▼
 [1] heuristics token_optimizer + context-bound signals → decides clear cases
@@ -122,8 +126,8 @@ output: systemMessage (user) and/or additionalContext (Claude); never blocks unl
 
 ### 3. Definitions
 
-- **Context-bound signals** (**PROPOSAL**): a code fence, a file path, a stack trace, or the words "my" / "this repo" / "this file". Any signal forbids `google`.
-- **Tier 1 decides** only: `google` (strong web-search pattern hit **and** no context-bound signal); `clarify` (analyzer returns `skip`, i.e. invalid or too vague). Everything else is *undecided*.
+- **Context-bound signals** (**DECISION**, extended by Amendment A3): a code fence, a file path, a stack trace, an ownership word ("my", "our"), a reference word ("this", "that", "it", "now", "same", …), a code noun ("repo", "commit", "function", "test", …), or a leading task verb ("implement", "add", "refactor", …). Any signal forbids `google`.
+- **Tier 1 decides** only `google` (strong web-search pattern hit **and** no context-bound signal). It never decides `clarify` (Amendment A2): the analyzer marks short conversational replies such as "yes" and "commit and push" as `skip`. Everything else is *undecided*.
 - **Gray zone** = undecided by tier 1.
 - **Heuristics-only mode** (model disabled, unavailable, or cooling down): tier-1 decisions still speak; undecided prompts pass silently.
 - Tier-1 rules are validated against the bake-off eval set and adjusted there; the table in *Problem Statement* is why they are not trusted to decide `pass` or `refine`.
@@ -202,6 +206,7 @@ The entry is identified by its command path, which makes install idempotent and 
 | `min_confidence` | `0.7` | below this, the refinement is not injected |
 | `notify` | `{google, clarify, refine: true}` | silence any verdict individually |
 | `skip_over_chars` | `2000` | longer prompts are left untouched (both tiers) |
+| `min_words` | `3` | shorter prompts are left untouched (both tiers) |
 | `bypass_marker` | `"[raw]"` | a prompt containing it is untouched |
 | `keep_alive` | `"10m"` | passed to Ollama |
 | `cooldown_s` | `300` | model-tier pause after a failure |
@@ -242,7 +247,7 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 | `google` verdicts on guardrail cases | 0 |
 | Valid-JSON rate | ≥ 99% |
 
-- **Off-ramp.** Tier 1 alone is scored on the same set as a baseline. If no candidate clearly beats it and meets every threshold, the recommendation is **heuristics-only as the default**, with the model optional.
+- **Off-ramp.** Tier 1 alone is scored on the same set as a baseline. If no candidate meets every threshold **and** beats it by at least 10 percentage points of accuracy (Amendment A5), the recommendation is **heuristics-only as the default**, with the model optional.
 - Results are recorded in this spec, and the default model and `budget_ms` follow from them. Results are specific to this hardware.
 
 ---
@@ -259,6 +264,8 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 | D6 | Fail open everywhere; always exit 0 | **DECISION** (accepted, user, 2026-09-20) |
 | D7 | Loopback only; no prompt text in logs by default | **DECISION** (accepted, user, 2026-09-20) |
 | D8 | Default model chosen by measurement; heuristics-only is an allowed outcome | **DECISION** (accepted, user, 2026-09-20) |
+| D9 | Conversation awareness: `clarify` and `refine` only on a session's first prompt; tier 1 decides `google` only (Amendments A1–A3) | **DECISION** (accepted, user, 2026-09-20) |
+| D10 | Optional by construction: nothing installs the feature by default, and an install with no `config.json` is a complete bypass (Amendment A6, R14) | **DECISION** (accepted, user, 2026-09-20) |
 
 D3–D8 were approved in chat section by section and accepted by the user on approving this spec (2026-09-20).
 
@@ -310,6 +317,21 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 - **RULE 11a.** D1–D8 above; D3–D8 were accepted on the user's explicit approval of the spec (2026-09-20).
 - **Branching.** Work happens on `feat/prompt-preflight`, branched from `origin/main` after pull request #14 (README redesign, MIT license, MCP builder skill) was merged.
 - **Out of scope, tracked separately:** the inert `promptshield-check.sh` and its incorrect settings schema; the exporter's `--target-project` ignoring `--dry-run`; the README layout tree, now on `main`, listing `token_optimizer/` and `parser/` at the repo root when neither is there (`token_optimizer` lives in `tools/`).
+
+---
+
+## Amendments
+
+Made while planning, from evidence gathered on 2026-09-20. They refine the design above and win wherever they conflict with it.
+
+| ID | Amendment | Evidence (**FACT**) |
+|---|---|---|
+| A1 | `clarify` and `refine` are issued only on the first prompt of a session, tracked by `session_id` in the state file. A later prompt usually depends on the conversation, which the model cannot see. | The analyzer marked 11 of 12 ordinary mid-session replies ("yes", "continue", "commit and push", "approve", "run the tests", …) as `skip`. |
+| A2 | Tier 1 decides `google` only; it never decides `clarify`. | Same probe: the analyzer's `skip` (score below 30) is not evidence of vagueness. |
+| A3 | Prompts under `min_words` (default 3) are left untouched, and the context-bound signals are extended: reference words, code nouns, and a leading task verb. | "now do the same for orders" was routed to web search because "now" matches a temporal pattern. The eval baseline called "implement rate limiting on the api" a lookup. |
+| A4 | `min_confidence` applies to every model verdict, not only to refinements. | The costly error is a wrong `google`, so the threshold should guard it too. |
+| A5 | "Clearly beats tier 1" means at least +10 percentage points of accuracy on the eval set. | The spec left "clearly" undefined. Tier 1 alone scores 31.7% (19 of 60) with a 0% false-`google` rate. |
+| A6 | An unconfigured install is a complete bypass (new requirement R14): with no `config.json` beside it, the launcher exits before importing anything and writes nothing. Nothing installs the feature by default. | The user's requirement, 2026-09-20. Before this, a missing config fell back to defaults and the hook stayed active, and the launcher imported all its modules before checking anything. |
 
 ---
 
