@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -121,6 +122,19 @@ def test_dry_run_writes_nothing_and_shows_the_diff(env, tmp_path):
     assert "download the model tiny:1b" in io.text
 
 
+@pytest.fixture(autouse=True)
+def no_model_traffic(request, monkeypatch):
+    """The real self-test runs the installed hook, which calls a real local Ollama when a model is configured.
+    Tests must never reach one, so the self-test is stubbed unless a test asks for `real_self_test`."""
+    if "real_self_test" not in request.fixturenames:
+        monkeypatch.setattr(setup, "_self_test", lambda install_dir, io: True)
+
+
+@pytest.fixture
+def real_self_test():
+    return None
+
+
 # ---------- install ---------------------------------------------------------------------------
 
 
@@ -137,10 +151,14 @@ def test_install_local_writes_the_layout_and_one_hook_entry(env):
 
 def test_copy_files_ships_only_what_the_hook_needs(tmp_path):
     source_cache = setup.TOOLS_DIR / "prompt_preflight" / "__pycache__"
+    junk = source_cache / "junk.pyc"
     source_cache.mkdir(exist_ok=True)  # make sure the source tree really has bytecode to leave out
-    (source_cache / "junk.pyc").write_bytes(b"x")
+    junk.write_bytes(b"x")
     target = tmp_path / "out"
-    setup.copy_files(target)
+    try:
+        setup.copy_files(target)
+    finally:
+        junk.unlink()
     names = {p.relative_to(target).as_posix() for p in target.rglob("*")}
     assert {"hook.py", "prompt_preflight/decide.py", "prompt_preflight/hook.py", "token_optimizer/analyzer.py", ".gitignore"} <= names
     assert not [n for n in names if "__pycache__" in n or n.endswith(".pyc")]
@@ -211,6 +229,85 @@ def test_installing_twice_keeps_one_entry_and_the_users_config_edits(env):
     assert (kept["mode"], kept["min_confidence"]) == ("block", 0.95)
 
 
+@pytest.mark.parametrize("scope", ["local", "user"])
+def test_relative_project_and_home_paths_still_produce_an_absolute_hook_command(env, monkeypatch, scope):
+    monkeypatch.chdir(env[0].parent)  # so "proj" and "home" are relative to here
+    setup.main(["--project", "proj", "--home", "home", "--yes", "--scope", scope, "--no-model"], io=ScriptedIO(), ollama=FakeAdmin())
+    [entry] = entries(local_settings(env) if scope == "local" else user_settings(env))
+    path = re.search(r'"(.+)"', entry["command"]).group(1)
+    assert os.path.isabs(path) and os.path.exists(path)
+
+
+def test_yes_alone_never_chooses_a_model_from_the_menu(env):
+    admin, io = FakeAdmin(), ScriptedIO()
+    setup.main(flags(env, "--yes", "--scope", "local"), io=io, ollama=admin)
+    assert config_of(env)["model"] == "" and admin.pulled == [] and admin.started == 0
+    assert not any("model" in question.lower() for question in io.asked)
+
+
+def test_a_named_model_without_ollama_installed_means_heuristics_only_everywhere(env):
+    admin = FakeAdmin(installed=False)
+    io = ScriptedIO()
+    setup.main(flags(env, "--yes", "--scope", "local", "--model", "tiny:1b"), io=io, ollama=admin)
+    assert config_of(env)["model"] == "" and admin.pulled == [] and "heuristics-only" in io.text
+
+
+def test_an_unparsable_config_is_copied_aside_on_install_not_silently_replaced(env):
+    args = flags(env, "--yes", "--scope", "local", "--no-model")
+    setup.main(args, io=ScriptedIO(), ollama=FakeAdmin())
+    config = env[1] / ".claude" / "prompt-preflight" / "config.json"
+    config.write_text('{"mode": "block",}', encoding="utf-8")  # a trailing comma
+    io = ScriptedIO()
+    setup.main(args, io=io, ollama=FakeAdmin())
+    [saved] = list(config.parent.glob("config.json.bak-*"))
+    assert saved.read_text(encoding="utf-8") == '{"mode": "block",}' and str(saved) in io.text
+    assert json.loads(config.read_text())["mode"] == "advise"
+
+
+def test_update_never_rewrites_an_unparsable_config_and_never_creates_one(env):
+    args = flags(env, "--yes", "--scope", "local", "--no-model")
+    setup.main(args, io=ScriptedIO(), ollama=FakeAdmin())
+    config = env[1] / ".claude" / "prompt-preflight" / "config.json"
+    config.write_text('{"mode": "block",}', encoding="utf-8")
+    io = ScriptedIO()
+    setup.main(flags(env, "--update", "--scope", "local"), io=io, ollama=FakeAdmin())
+    assert config.read_text(encoding="utf-8") == '{"mode": "block",}' and "config kept" not in io.text and "not valid JSON" in io.text
+    config.unlink()
+    io = ScriptedIO()
+    setup.main(flags(env, "--update", "--scope", "local"), io=io, ollama=FakeAdmin())
+    assert not config.exists() and "switched off" in io.text  # an update must not turn a bypassed install back on
+
+
+def test_a_failure_while_copying_stops_cleanly_and_leaves_the_settings_alone(env, monkeypatch):
+    def full_disk(install_dir):
+        raise OSError("No space left on device")
+
+    monkeypatch.setattr(setup, "copy_files", full_disk)
+    io = ScriptedIO()
+    assert setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=io, ollama=FakeAdmin()) == 1
+    assert "Stopped: No space left on device" in io.text and not local_settings(env).exists()
+
+
+def test_remove_says_where_the_settings_backup_went(env):
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    io = ScriptedIO()
+    setup.main(flags(env, "--remove", "--yes", "--scope", "local"), io=io, ollama=FakeAdmin())
+    assert "Backed up your settings to" in io.text
+
+
+def test_remove_deletes_a_symlinked_install_folder_link_not_its_target(env, tmp_path):
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    install = env[1] / ".claude" / "prompt-preflight"
+    moved = tmp_path / "elsewhere"
+    install.rename(moved)
+    try:
+        install.symlink_to(moved, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks are not available here")
+    assert setup.main(flags(env, "--remove", "--yes", "--scope", "local"), io=ScriptedIO(), ollama=FakeAdmin()) == 0
+    assert not install.exists() and not install.is_symlink() and moved.exists()
+
+
 def test_the_installed_hook_really_answers_as_claude_code_would_call_it(env):
     setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
     hook = env[1] / ".claude" / "prompt-preflight" / "hook.py"
@@ -232,14 +329,26 @@ def test_a_settings_entry_whose_files_are_gone_can_never_block_a_prompt(env):
 
 
 @pytest.mark.skipif(os.name == "nt", reason="PATH lookup semantics differ")
-def test_the_self_test_runs_the_exact_command_written_to_settings(env, tmp_path, monkeypatch):
+def test_the_self_test_runs_the_exact_command_written_to_settings(env, tmp_path, monkeypatch, real_self_test):
     setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
     root = env[1] / ".claude" / "prompt-preflight"
     monkeypatch.setenv("PATH", str(tmp_path / "no-python-here"))  # `python3` cannot be found, as in a broken setup
     assert setup._self_test(root, ScriptedIO()) is False
 
 
-def test_the_self_test_reports_and_leaves_no_state_behind(env):
+def test_a_kept_config_that_switches_advice_off_does_not_fail_the_self_test(env, real_self_test):
+    args = flags(env, "--yes", "--scope", "local", "--no-model")
+    setup.main(args, io=ScriptedIO(), ollama=FakeAdmin())
+    config = env[1] / ".claude" / "prompt-preflight" / "config.json"
+    edited = json.loads(config.read_text())
+    edited["enabled"] = False  # the documented way to switch it off without uninstalling
+    config.write_text(json.dumps(edited), encoding="utf-8")
+    io = ScriptedIO()
+    assert setup.main(args, io=io, ollama=FakeAdmin()) == 0
+    assert "switched off in config.json" in io.text and "self-test failed" not in io.text
+
+
+def test_the_self_test_reports_and_leaves_no_state_behind(env, real_self_test):
     io = ScriptedIO()
     setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=io, ollama=FakeAdmin())
     root = env[1] / ".claude" / "prompt-preflight"

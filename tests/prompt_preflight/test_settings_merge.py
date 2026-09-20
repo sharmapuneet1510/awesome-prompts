@@ -141,6 +141,14 @@ def test_adding_or_removing_never_shares_structure_with_the_input():
     assert with_hook == snapshot
 
 
+def test_a_users_own_hook_in_a_similarly_named_folder_is_not_mistaken_for_ours():
+    mine = {"type": "command", "command": 'python3 "/home/u/tools/my-prompt-preflight/hook.py"'}
+    settings = {"hooks": {"UserPromptSubmit": [{"hooks": [dict(mine)]}]}}
+    assert sm.has_hook(settings) is False
+    assert sm.remove_hook(settings) == settings
+    assert [h for g in sm.add_hook(settings, CMD)["hooks"]["UserPromptSubmit"] for h in g["hooks"]].count(mine) == 1
+
+
 def test_a_symlinked_settings_file_is_written_through_not_replaced(tmp_path):
     real = tmp_path / "dotfiles" / "settings.json"
     real.parent.mkdir()

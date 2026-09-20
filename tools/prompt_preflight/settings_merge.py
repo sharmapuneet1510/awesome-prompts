@@ -8,6 +8,7 @@ import datetime
 import difflib
 import json
 import os
+import re
 import shutil
 import tempfile
 from typing import Any, Dict, List, Optional
@@ -22,8 +23,13 @@ class SettingsError(Exception):
     """The settings file cannot be edited safely."""
 
 
+_MARKER = re.compile(r"(?:^|[/\s\"'])" + re.escape(MARKER))
+
+
 def _ours(handler: Any) -> bool:
-    return isinstance(handler, dict) and MARKER in str(handler.get("command", "")).replace("\\", "/")
+    """True for Preflight's own entry. The marker must begin a path component, so a user's
+    `.../my-prompt-preflight/hook.py` is not mistaken for it."""
+    return isinstance(handler, dict) and _MARKER.search(str(handler.get("command", "")).replace("\\", "/")) is not None
 
 
 def _strip(groups: List[Any]) -> List[Any]:

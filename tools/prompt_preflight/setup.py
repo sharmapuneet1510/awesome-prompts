@@ -22,7 +22,7 @@ if __package__ in (None, ""):  # started as a script: make `prompt_preflight` im
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from prompt_preflight import __version__, defaults, settings_merge as sm  # noqa: E402
-from prompt_preflight.config import DEFAULTS, is_loopback  # noqa: E402
+from prompt_preflight.config import DEFAULTS, is_loopback, load_config  # noqa: E402
 from prompt_preflight.ollama_client import open_no_proxy  # noqa: E402
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -147,20 +147,44 @@ def copy_files(install_dir: Path) -> None:
     (install_dir / ".gitignore").write_text("*\n", encoding="utf-8")
 
 
-def write_config(install_dir: Path, model: Optional[str]) -> None:
-    """New install: write defaults. Existing config: keep the user's edits, update version and model."""
-    path = install_dir / "config.json"
+def _read_config(path: Path) -> Optional[Dict[str, Any]]:
+    """The parsed config object, or None if the file is missing or is not a JSON object."""
     try:
         cfg = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(cfg, dict):
-            raise ValueError
     except (OSError, ValueError):
-        cfg = build_config(model or "")
+        return None
+    return cfg if isinstance(cfg, dict) else None
+
+
+def write_config(install_dir: Path, model: str) -> Optional[Path]:
+    """Install: keep the user's edits to an existing config and set the model and version; otherwise write
+    defaults. A config that exists but cannot be parsed is copied aside first (returned), never just replaced."""
+    path = install_dir / "config.json"
+    cfg = _read_config(path)
+    saved: Optional[Path] = None
+    if cfg is None:
+        if path.exists():
+            saved = path.with_name("config.json.bak-%s" % time.strftime("%Y%m%d%H%M%S"))
+            shutil.copy2(path, saved)
+        cfg = build_config(model)
     else:
-        if model is not None:
-            cfg["model"] = model
+        cfg["model"] = model
     cfg["installed_version"] = __version__
     path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+    return saved
+
+
+def refresh_config(install_dir: Path) -> str:
+    """Update: stamp the version into an existing valid config and touch nothing else. Never creates one
+    (no config.json means the hook is bypassed, and an update must not switch it on). Returns
+    "kept", "missing" or "unreadable"."""
+    path = install_dir / "config.json"
+    cfg = _read_config(path)
+    if cfg is None:
+        return "unreadable" if path.exists() else "missing"
+    cfg["installed_version"] = __version__
+    path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+    return "kept"
 
 
 # ---------- model choice ---------------------------------------------------------------------
@@ -178,12 +202,14 @@ def _choose_model(args: argparse.Namespace, io: Any, ollama: Any) -> ModelPlan:
     if args.no_model:
         return ModelPlan()
     installed = ollama.installed()
-    running = installed and ollama.is_running()
-    start = False
     if not installed:
         io.say("Ollama is not installed (https://ollama.com/download, or `brew install ollama`).")
         io.say("Continuing in heuristics-only mode; re-run this setup after installing it.")
-        return ModelPlan(args.model or "")
+        return ModelPlan()
+    if args.yes and not args.model:
+        return ModelPlan()  # --yes answers the install questions; a model is only ever chosen on purpose
+    running = ollama.is_running()
+    start = False
     if not running and not args.yes:
         start = io.ask_yes_no("Ollama is installed but not running. Start it now?", False)
     have = {m["name"]: m["size"] for m in ollama.models()} if running else {}
@@ -236,6 +262,10 @@ def _self_test(install_dir: Path, io: Any) -> bool:
     command = command_for(install_dir)
     state, log = install_dir / "state.json", install_dir / "preflight.log"
     existed = (state.exists(), log.exists())
+    cfg = load_config(str(install_dir / "config.json"))
+    first = SELF_TEST_PROMPTS[0]
+    # A kept config can legitimately silence the lookup advice; that must not read as a broken install.
+    expects_advice = cfg["enabled"] and cfg["notify"]["google"] and len(first.split()) >= cfg["min_words"] and len(first) <= cfg["skip_over_chars"]
     env = {k: v for k, v in os.environ.items() if k != "PROMPT_PREFLIGHT"}
     passed = False
     io.say("")
@@ -253,7 +283,9 @@ def _self_test(install_dir: Path, io: Any) -> bool:
                     note = "INVALID OUTPUT"
             io.say('  "%s" -> %s' % (prompt, note))
             if index == 0:
-                passed = done.returncode == 0 and "Google" in text
+                passed = done.returncode == 0 and ("Google" in text or not expects_advice)
+                if not expects_advice:
+                    io.say("  (advice is switched off in config.json, so only the exit code is checked)")
     finally:
         for path, was_there in zip((state, log), existed):
             if not was_there and path.exists():
@@ -307,10 +339,12 @@ def _install(args: argparse.Namespace, io: Any, ollama: Any, home: str, project:
         model = ""
 
     copy_files(install_dir)
-    write_config(install_dir, model)
+    saved_config = write_config(install_dir, model)
     backup = sm.write_settings(str(settings_path), after)
     io.say("")
     io.say("Installed to %s" % install_dir)
+    if saved_config:
+        io.say("The existing config.json was not valid JSON; it was copied to %s and replaced with defaults." % saved_config)
     if backup:
         io.say("Backed up your settings to %s" % backup)
     if scope == "local":
@@ -351,8 +385,12 @@ def _remove(args: argparse.Namespace, io: Any, home: str, project: str) -> int:
         return 0
     for scope, install_dir, settings_path, settings in found:
         if sm.has_hook(settings):
-            sm.write_settings(str(settings_path), sm.remove_hook(settings))
-        if install_dir.exists():
+            backup = sm.write_settings(str(settings_path), sm.remove_hook(settings))
+            if backup:
+                io.say("Backed up your settings to %s" % backup)
+        if install_dir.is_symlink():
+            install_dir.unlink()  # rmtree refuses a symlink; remove the link, not what it points at
+        elif install_dir.exists():
             shutil.rmtree(install_dir)
     io.say("Removed. Restart Claude Code to unload the hook.")
     return 0
@@ -369,8 +407,13 @@ def _update(args: argparse.Namespace, io: Any, home: str, project: str) -> int:
             io.say("Would refresh the code in %s (config kept)." % install_dir)
             continue
         copy_files(install_dir)
-        write_config(install_dir, None)
-        io.say("Updated %s (config kept)." % install_dir)
+        outcome = refresh_config(install_dir)
+        if outcome == "kept":
+            io.say("Updated %s (config kept)." % install_dir)
+        elif outcome == "missing":
+            io.say("Updated the code in %s. It has no config.json, so the hook stays switched off." % install_dir)
+        else:
+            io.say("Updated the code in %s. config.json is not valid JSON, so it was left exactly as it is." % install_dir)
     return 0
 
 
@@ -391,8 +434,8 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[Sequence[str]] = None, io: Any = None, ollama: Any = None) -> int:
     args = parse_args(argv)
     io = io or ConsoleIO()
-    home = args.home or os.path.expanduser("~")
-    project = args.project or os.getcwd()
+    home = os.path.abspath(os.path.expanduser(args.home or "~"))  # the hook command must not depend on the cwd
+    project = os.path.abspath(args.project or os.getcwd())
     try:
         if args.remove:
             return _remove(args, io, home, project)
@@ -401,6 +444,9 @@ def main(argv: Optional[Sequence[str]] = None, io: Any = None, ollama: Any = Non
         return _install(args, io, ollama or RealOllama(), home, project)
     except sm.SettingsError as exc:
         io.say("Stopped. Nothing was changed: %s" % exc)
+        return 1
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        io.say("Stopped: %s. Fix that and run the setup again (it is safe to repeat), or run `--remove`." % exc)
         return 1
 
 
