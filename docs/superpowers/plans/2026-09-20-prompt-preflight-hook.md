@@ -49,6 +49,15 @@ Every file and edit below was written and run in a scratch copy first, then the 
 
 **Not replayed:** the three gates and six manual steps. The bake-off needs Ollama, about 4.3 GB of downloads, and the user's approval; the end-to-end check needs the user's terminal. The runner's own logic (metrics, thresholds, the comparison table, the recommendation rule) is unit-tested with fakes, so those steps run tested code, but the real-model numbers do not exist yet.
 
+## Revisions made during execution
+
+Code review of the first executed tasks found real defects in this plan's original draft, so the code shown in Tasks 1 and 3 is the **corrected** version, not the draft.
+
+- **Task 1: the loopback gate (`config.host_only` / `is_loopback`).** The draft accepted `http://localhost:11434@evil.com` (userinfo). The first fix (strip up to the last `@`) opened a worse hole: `http://evil.com?@localhost` passed the gate while Python's HTTP client would connect to `evil.com`. The shipped grammar is strict and fail-closed: it refuses `@ ? # \ %`, whitespace, bad or out-of-range ports, non-http(s) schemes, and bracketed or bare colon forms that are not valid IPv6. A differential test compares the gate with `urllib.parse.urlsplit` and `urllib.request.Request` over about 50,000 generated strings, and proves it can fail by running against a deliberately broken gate.
+- **Task 1: `state.State`.** `notice_due` and `remember_block` raised on valid-JSON but malformed state files (a list where a dict belonged, `null`/string block values). Both are hardened, with tests.
+- **Task 3: `ollama_client`.** The draft built its connection address from the raw configured string, which let the gate and the HTTP client disagree about the host. It now builds the URL only from the validated host name and port (`chat_url`), brackets IPv6, honours `https`, still validates the grammar when `allow_remote` is set, and treats `http.client` errors as `ModelUnavailable`.
+- Tests in Task 1 grew from 43 to 111 as a result; every cumulative count in this plan already reflects that.
+
 ## File Structure
 
 | File | Responsibility | Task |
@@ -68,7 +77,7 @@ Every file and edit below was written and run in a scratch copy first, then the 
 | `tools/prompt_preflight/setup.py` | the opt-in wizard | 6 |
 | `tools/interactive_exporter.py` | one opt-in question (modify) | 7 |
 | `docs/03-guides/prompt-preflight.md` | user guide | 8 |
-| `tests/prompt_preflight/` | 14 test modules, 273 tests | all |
+| `tests/prompt_preflight/` | 14 test modules, 358 tests | all |
 
 ---
 
@@ -273,13 +282,215 @@ __version__ = "1.0.0"
 **`tests/prompt_preflight/test_config.py`**
 
 ````python
+import ipaddress
+import itertools
 import json
+import random
+import urllib.parse
+import urllib.request
 
 import pytest
 
 from prompt_preflight.config import DEFAULTS, host_only, is_loopback, load_config
 
 COVERS = ["R8", "R9"]
+
+# Module-level constants for host_only test cases
+ACCEPT_HOSTS = {
+    "127.0.0.1": "127.0.0.1",
+    "127.0.0.1:11434": "127.0.0.1",
+    "localhost": "localhost",
+    "localhost:11434": "localhost",
+    "[::1]:11434": "::1",
+    "[::1]": "::1",
+    "::1": "::1",
+    "http://localhost:11434": "localhost",
+    "http://localhost:11434/api/chat": "localhost",
+    "https://[::1]:11434/": "::1",
+    "HTTP://LocalHost:11434": "LocalHost",
+}
+
+REFUSE_HOSTS = {
+    "http://localhost:11434@evil.com": "",
+    "127.0.0.1:80@evil.com": "",
+    "[::1]@evil.com": "",
+    "http://[::1]:11434@evil.com": "",
+    "user@localhost:11434": "",
+    "http://evil.com?@localhost": "",
+    "http://evil.com#@localhost": "",
+    "http://evil.com:80?@127.0.0.1:11434": "",
+    "localhost?x=1": "",
+    "localhost#frag": "",
+    "http://evil.com\\@localhost": "",
+    "localhost:abc": "",
+    "localhost:": "",
+    "[::1": "",
+    "ftp://localhost": "",
+    "file:///etc/passwd": "",
+    "loc alhost": "",
+    "local%68ost": "",
+    "": "",
+    "   ": "",
+    "http://": "",
+    "[localhost]": "",
+    "[127.0.0.1]": "",
+    "localhost:65536": "",
+    "localhost:99999999": "",
+    "localhost:²": "",
+}
+
+
+def build_test_corpus():
+    """Build comprehensive test corpus from token combinations."""
+    schemes = ["", "http://", "https://", "HTTP://", "ftp://", "file://"]
+    userinfo = ["", "u@", "localhost:1@", "a@b@", "evil.com@"]
+    hosts = [
+        "localhost", "LOCALHOST", "127.0.0.1", "127.0.0.2", "[::1]", "::1",
+        "evil.com", "0.0.0.0", "127.1", "localhost.evil.com", "127.0.0.1.evil.com",
+        "[::ffff:127.0.0.1]", "2130706433", "10.0.0.5"
+    ]
+    ports = ["", ":11434", ":80", ":", ":abc", ":99999999"]
+    tails = [
+        "", "/", "/api/chat", "?x", "#y", "?@localhost", "#@localhost",
+        "?@127.0.0.1:11434", "/x@localhost", "\\@localhost", "\\",
+        "%40localhost", " ", "\t", "\n", "@evil.com", ":11434@evil.com",
+        ".", "%2f", ";@localhost"
+    ]
+
+    # Generate all combinations
+    all_strings = [
+        scheme + userinfo_part + host + port + tail
+        for scheme, userinfo_part, host, port, tail in itertools.product(schemes, userinfo, hosts, ports, tails)
+    ]
+
+    # Sample if too many
+    if len(all_strings) > 60000:
+        rng = random.Random(1234)
+        all_strings = rng.sample(all_strings, 6000)
+
+    # Add all strings from accept/refuse tables
+    all_strings.extend(ACCEPT_HOSTS.keys())
+    all_strings.extend(REFUSE_HOSTS.keys())
+
+    return list(set(all_strings))  # Deduplicate
+
+
+def is_hostile(s):
+    """Check if a string's host is intentionally hostile (not loopback)."""
+    # Mark as hostile if:
+    # - host token is in the hostile list
+    # - AND userinfo token is "" (no "@")
+    # - AND tail token is in ["", "/", "/api/chat"]
+    hostile_hosts = ["evil.com", "0.0.0.0", "localhost.evil.com", "127.0.0.1.evil.com", "10.0.0.5"]
+
+    # Extract tokens from s
+    # This is a simplification: just check if any hostile host appears with no userinfo
+    if "@" in s:
+        return False  # Has userinfo
+
+    for hostile_host in hostile_hosts:
+        if hostile_host in s:
+            # Check that the tail is simple (no query/fragment/path that changes meaning)
+            authority_end = s.find("/") if "/" in s else len(s)
+            authority = s[:authority_end]
+            if hostile_host in authority:
+                # Extract the tail after authority
+                tail = s[authority_end:] if authority_end < len(s) else ""
+                if tail in ["", "/", "/api/chat"]:
+                    return True
+    return False
+
+
+def gate_violations(gate, corpus):
+    """Check gate function against corpus. Returns list of (string, reason) violations."""
+    violations = []
+
+    for s in corpus:
+        t = s.strip()
+        gate_result = gate(s)
+
+        # REVERSE: if s is hostile, gate must be False
+        if is_hostile(s) and gate_result:
+            violations.append((s, f"REVERSE: hostile host but gate returned True"))
+            continue
+
+        # FORWARD SAFETY: if gate is True, verify urllib agrees
+        if gate_result:
+            # Extract the host part that host_only extracted
+            extracted_host = gate(s) if hasattr(gate, '__name__') and 'is_loopback' in str(gate) else None
+
+            # Detect bare IPv6 (multiple colons, no brackets, no scheme, not host:port)
+            # Bare IPv6 example: ::1, 2001:db8::1 (not localhost:80 or http://::1)
+            t_no_scheme = t.split("://", 1)[-1].split("/", 1)[0]
+            # Bare IPv6: has "://" in original? No. Starts with "["? No. Has 2+ colons? Yes.
+            is_bare_ipv6 = "://" not in t and not t_no_scheme.startswith("[") and t_no_scheme.count(":") >= 2
+
+            if is_bare_ipv6:
+                # For bare IPv6, validate directly
+                try:
+                    ipaddress.IPv6Address(t_no_scheme)
+                except ValueError:
+                    violations.append((s, f"FORWARD: bare IPv6 '{t_no_scheme}' is not valid"))
+            else:
+                # Try urlsplit for non-bare-IPv6
+                try:
+                    url_for_urlsplit = t if "://" in t else "//" + t
+                    parsed = urllib.parse.urlsplit(url_for_urlsplit)
+                    hostname = parsed.hostname
+
+                    if hostname is None:
+                        violations.append((s, f"FORWARD: gate=True but urlsplit gave no hostname"))
+                        continue
+
+                    # Check if hostname is loopback
+                    is_loopback_host = False
+                    if hostname.lower() == "localhost":
+                        is_loopback_host = True
+                    else:
+                        try:
+                            is_loopback_host = ipaddress.ip_address(hostname).is_loopback
+                        except ValueError:
+                            pass
+
+                    if not is_loopback_host:
+                        violations.append((s, f"FORWARD: gate=True but urlsplit hostname '{hostname}' is not loopback"))
+                        continue
+
+                except ValueError as e:
+                    violations.append((s, f"FORWARD: gate=True but urlsplit raised ValueError: {e}"))
+                    continue
+
+            # Try urllib.request.Request (skip for bare IPv6)
+            if not is_bare_ipv6:
+                try:
+                    authority = t.split("://", 1)[-1].split("/", 1)[0]
+                    url_for_request = "http://" + authority + "/api/chat"
+                    req = urllib.request.Request(url_for_request)
+                    req_host = req.host
+
+                    # Strip port and brackets
+                    if req_host.startswith("["):
+                        req_host = req_host.split("]")[0][1:]
+                    elif ":" in req_host:
+                        req_host = req_host.rsplit(":", 1)[0]
+
+                    # Check if req_host is loopback
+                    is_loopback_req_host = False
+                    if req_host.lower() == "localhost":
+                        is_loopback_req_host = True
+                    else:
+                        try:
+                            is_loopback_req_host = ipaddress.ip_address(req_host).is_loopback
+                        except ValueError:
+                            pass
+
+                    if not is_loopback_req_host:
+                        violations.append((s, f"FORWARD: gate=True but urllib.request host '{req_host}' is not loopback"))
+
+                except Exception as e:
+                    violations.append((s, f"FORWARD: gate=True but urllib.request raised {type(e).__name__}: {e}"))
+
+    return violations
 
 
 def write(tmp_path, content):
@@ -333,22 +544,60 @@ def test_loading_does_not_mutate_defaults(tmp_path):
     assert DEFAULTS["notify"]["google"] is True
 
 
-@pytest.mark.parametrize(
-    "host",
-    ["127.0.0.1", "127.0.0.1:11434", "localhost", "localhost:11434", "[::1]:11434", "::1", "http://localhost:11434", "127.5.5.5"],
-)
-def test_loopback_hosts_are_accepted(host):
-    assert is_loopback(host)
+@pytest.mark.parametrize("input_host,expected_host", list(ACCEPT_HOSTS.items()))
+def test_host_only_accepts_valid_hosts(input_host, expected_host):
+    assert host_only(input_host) == expected_host
 
 
-@pytest.mark.parametrize("host", ["10.0.0.5", "192.168.1.2:11434", "example.com", "0.0.0.0", "http://ollama.internal:11434", ""])
-def test_other_hosts_are_refused(host):
-    assert not is_loopback(host)
+@pytest.mark.parametrize("refused_host,expected_empty", list(REFUSE_HOSTS.items()))
+def test_host_only_refuses_invalid_hosts(refused_host, expected_empty):
+    assert host_only(refused_host) == expected_empty
 
 
-def test_host_only_strips_scheme_port_and_brackets():
-    assert host_only("http://[::1]:11434/api") == "::1"
-    assert host_only("localhost:11434") == "localhost"
+@pytest.mark.parametrize("input_host", list(ACCEPT_HOSTS.keys()))
+def test_is_loopback_accepts_valid_loopback_hosts(input_host):
+    assert is_loopback(input_host) is True
+
+
+@pytest.mark.parametrize("refused_host", list(REFUSE_HOSTS.keys()))
+def test_is_loopback_refuses_invalid_or_remote_hosts(refused_host):
+    assert is_loopback(refused_host) is False
+
+
+def test_differential_is_loopback_vs_urllib():
+    """Real differential test: gate_violations must return no violations for is_loopback."""
+    corpus = build_test_corpus()
+    violations = gate_violations(is_loopback, corpus)
+    assert violations == [], f"Found {len(violations)} violations: {violations[:5]}"
+
+
+def test_differential_vacuity_always_true_gate_fails():
+    """Non-vacuity: an always-true gate must be caught by gate_violations."""
+    corpus = build_test_corpus()
+    violations = gate_violations(lambda s: True, corpus)
+    assert len(violations) > 0, "gate_violations should catch an always-true gate"
+    # Should have both forward and reverse violations
+    forward_viols = [v for v in violations if "FORWARD" in v[1]]
+    reverse_viols = [v for v in violations if "REVERSE" in v[1]]
+    assert len(forward_viols) > 0, "Should have forward-safety violations"
+    assert len(reverse_viols) > 0, "Should have reverse violations"
+
+
+def test_differential_corpus_exercises_gate():
+    """Non-vacuity: corpus must exercise the gate significantly."""
+    corpus = build_test_corpus()
+    true_count = sum(1 for s in corpus if is_loopback(s))
+    false_count = sum(1 for s in corpus if not is_loopback(s))
+    assert true_count >= 100, f"Corpus should have >=100 True cases, got {true_count}"
+    assert false_count >= 100, f"Corpus should have >=100 False cases, got {false_count}"
+
+
+def test_regression_round2_bypasses():
+    """Regression: the 4 round-2 bypasses must be refused."""
+    assert host_only("http://evil.com?@localhost") == ""
+    assert host_only("http://evil.com#@localhost") == ""
+    assert host_only("http://evil.com:80?@127.0.0.1:11434") == ""
+    assert host_only("http://localhost:11434@evil.com") == ""
 ````
 
 Run: `python3 -m pytest tests/prompt_preflight/test_config.py -q`
@@ -466,17 +715,95 @@ def load_config(path: str) -> Dict[str, Any]:
 
 
 def host_only(host: str) -> str:
-    """Strip an optional scheme, path, and port: 'http://[::1]:11434/x' -> '::1'."""
+    """Parse a plain [http(s)://]host[:port][/path] grammar, fail-closed.
+
+    Returns the bare host name, or "" if the string is not a plain
+    [http(s)://]host[:port][/path], contains userinfo, query, fragment,
+    invalid characters, invalid IPv6, or port out of range.
+    """
     text = host.strip()
+    had_scheme = False
+
+    # Step 1: Handle scheme
     if "://" in text:
-        text = text.split("://", 1)[1]
-    text = text.split("/", 1)[0]
-    if text.startswith("["):
-        end = text.find("]")
-        return text[1:end] if end != -1 else text[1:]
-    if text.count(":") == 1:
-        return text.split(":", 1)[0]
-    return text
+        scheme, rest = text.split("://", 1)
+        if scheme.lower() not in ("http", "https"):
+            return ""
+        text = rest
+        had_scheme = True
+
+    # Step 2: Extract authority (up to first "/" is path, ignored)
+    authority = text.split("/", 1)[0]
+
+    # Step 3: Reject if authority contains forbidden characters
+    if not authority:
+        return ""
+    forbidden_chars = {"@", "?", "#", "\\", "%"}
+    if any(c in authority for c in forbidden_chars):
+        return ""
+    # Also reject if contains space, any whitespace, or control chars
+    for char in authority:
+        if char.isspace() or ord(char) < 32 or ord(char) == 127:
+            return ""
+
+    # Step 4: Parse host and port from authority
+    if authority.startswith("["):
+        # Bracketed IPv6: [::1] or [::1]:port
+        close_bracket = authority.find("]")
+        if close_bracket == -1:
+            return ""
+        host_part = authority[1:close_bracket]
+        remainder = authority[close_bracket + 1:]
+
+        # Validate that bracketed part is a valid IPv6 address
+        try:
+            ipaddress.IPv6Address(host_part)
+        except ValueError:
+            return ""
+
+        if not remainder:
+            return host_part
+        if remainder.startswith(":"):
+            port = remainder[1:]
+            if not port or not (port.isascii() and port.isdigit()):
+                return ""
+            try:
+                if int(port) > 65535:
+                    return ""
+            except ValueError:
+                return ""
+            return host_part
+        # Invalid format
+        return ""
+    else:
+        # Non-bracketed: host or host:port
+        # IPv6 without brackets like "::1" should not have a port (multiple colons)
+        colon_count = authority.count(":")
+        if colon_count == 0:
+            # Just host
+            return authority
+        elif colon_count == 1:
+            # host:port
+            host_part, port = authority.split(":", 1)
+            if not port or not (port.isascii() and port.isdigit()):
+                return ""
+            try:
+                if int(port) > 65535:
+                    return ""
+            except ValueError:
+                return ""
+            return host_part
+        else:
+            # Multiple colons: bare IPv6 address (no port allowed)
+            # Bare IPv6 is only allowed without a scheme
+            if had_scheme:
+                return ""
+            # Validate it parses as IPv6
+            try:
+                ipaddress.IPv6Address(authority)
+            except ValueError:
+                return ""
+            return authority
 
 
 def is_loopback(host: str) -> bool:
@@ -492,7 +819,7 @@ def is_loopback(host: str) -> bool:
 
 Run: `python3 -m pytest tests/prompt_preflight/test_config.py -q`
 
-Expected: **PASS** — `32 passed`
+Expected: **PASS** — `95 passed`
 
 - [ ] **Step 4: State: test first**
 
@@ -599,6 +926,38 @@ def test_unwritable_location_never_raises(tmp_path):
     state.start_cooldown(10)
     assert state.in_cooldown()  # kept in memory even though the save failed
     assert not os.path.exists(str(tmp_path / "missing_dir"))
+
+
+def test_notice_due_handles_malformed_notices_list(tmp_path):
+    (tmp_path / "state.json").write_text('{"notices": []}', encoding="utf-8")
+    state = make(tmp_path)
+    assert state.notice_due("degraded") is True
+
+
+def test_notice_due_handles_malformed_notices_string(tmp_path):
+    (tmp_path / "state.json").write_text('{"notices": "a"}', encoding="utf-8")
+    state = make(tmp_path)
+    assert state.notice_due("degraded") is True
+
+
+def test_notice_due_handles_malformed_notices_null(tmp_path):
+    (tmp_path / "state.json").write_text('{"notices": null}', encoding="utf-8")
+    state = make(tmp_path)
+    assert state.notice_due("degraded") is True
+
+
+def test_remember_block_handles_malformed_blocks_null_value(tmp_path):
+    (tmp_path / "state.json").write_text('{"blocks": {"a": null}}', encoding="utf-8")
+    state = make(tmp_path)
+    state.remember_block("x")
+    assert state.consume_override("x", 300) is True
+
+
+def test_remember_block_handles_malformed_blocks_string_value(tmp_path):
+    (tmp_path / "state.json").write_text('{"blocks": {"a": "old", "b": 1.5}}', encoding="utf-8")
+    state = make(tmp_path)
+    state.remember_block("y")
+    assert state.consume_override("y", 300) is True
 ````
 
 Run: `python3 -m pytest tests/prompt_preflight/test_state.py -q`
@@ -663,7 +1022,10 @@ class State:
 
     def notice_due(self, kind: str, every_s: float = 86400) -> bool:
         """True at most once per `every_s` for `kind`; records the time when it returns True."""
-        notices = self._data.setdefault("notices", {})
+        notices = self._data.get("notices", {})
+        if not isinstance(notices, dict):
+            notices = {}
+        self._data["notices"] = notices
         last = notices.get(kind)
         now = self._clock()
         if isinstance(last, (int, float)) and now - last < every_s:
@@ -691,6 +1053,7 @@ class State:
         if not isinstance(blocks, dict):
             blocks = {}
         blocks[_digest(prompt)] = self._clock()
+        blocks = {k: v for k, v in blocks.items() if isinstance(v, (int, float))}
         newest = sorted(blocks.items(), key=lambda item: item[1])[-MAX_BLOCKS:]
         self._data["blocks"] = dict(newest)
         self._save()
@@ -710,7 +1073,7 @@ class State:
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `43 passed`
+Expected: **PASS** — `111 passed`
 
 ```bash
 git add tools/prompt_preflight/__init__.py tools/prompt_preflight/errors.py tools/prompt_preflight/defaults.py tools/prompt_preflight/config.py tools/prompt_preflight/state.py tests/prompt_preflight/__init__.py tests/prompt_preflight/test_config.py tests/prompt_preflight/test_state.py
@@ -1310,7 +1673,7 @@ def degraded_notice() -> Dict[str, Any]:
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `110 passed`
+Expected: **PASS** — `178 passed`
 
 ```bash
 git add tools/prompt_preflight/heuristics.py tools/prompt_preflight/decide.py tools/prompt_preflight/output.py tests/prompt_preflight/test_heuristics.py tests/prompt_preflight/test_decide.py tests/prompt_preflight/test_output.py
@@ -1410,6 +1773,7 @@ class FakeOllama:
 
 ````python
 import copy
+import http.client
 import json
 import socket
 import urllib.request
@@ -1551,6 +1915,84 @@ def test_parse_reply_drops_wrongly_typed_optional_fields():
 def test_build_request_does_not_leak_the_prompt_into_the_system_message():
     body = build_request(cfg("127.0.0.1:1"), "UNIQUE-PROMPT-TEXT")
     assert "UNIQUE-PROMPT-TEXT" not in body["messages"][0]["content"]
+
+
+# ---------- the address the request really goes to ------------------------------------------
+
+
+class _Ok:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def read(self):
+        return json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+
+
+def requested_url(host, **over):
+    seen = []
+
+    def opener(request, timeout):
+        seen.append(request.full_url)
+        return _Ok()
+
+    classify("anything at all here", cfg(host, **over), opener=opener)
+    return seen[0]
+
+
+@pytest.mark.parametrize(
+    "host,url",
+    [
+        ("127.0.0.1:11434", "http://127.0.0.1:11434/api/chat"),
+        ("localhost", "http://localhost/api/chat"),
+        ("[::1]:11434", "http://[::1]:11434/api/chat"),
+        ("::1", "http://[::1]/api/chat"),  # a bare IPv6 host must be bracketed, or http.client mis-parses it
+        ("http://localhost:11434", "http://localhost:11434/api/chat"),
+        ("https://localhost:11434/ignored/path", "https://localhost:11434/api/chat"),
+    ],
+)
+def test_the_request_is_built_from_the_validated_host_and_port(host, url):
+    assert requested_url(host) == url
+
+
+@pytest.mark.parametrize(
+    "host",
+    [
+        "http://evil.com?@localhost",
+        "http://evil.com#@localhost",
+        "http://localhost:11434@evil.com",
+        "localhost:abc",
+        "localhost:99999",
+        "ftp://localhost",
+        "localhost?x=1",
+    ],
+)
+def test_a_host_that_is_not_plain_host_and_port_is_refused_before_any_network_call(host):
+    def never(*args, **kwargs):
+        raise AssertionError("network must not be touched")
+
+    with pytest.raises(ModelUnavailable, match="invalid host"):
+        classify("anything at all here", cfg(host), opener=never)
+
+
+def test_allow_remote_still_requires_a_plain_host():
+    def never(*args, **kwargs):
+        raise AssertionError("network must not be touched")
+
+    with pytest.raises(ModelUnavailable, match="invalid host"):
+        classify("anything at all here", cfg("evil.com?@localhost", allow_remote=True), opener=never)
+    assert requested_url("ollama.internal:11434", allow_remote=True) == "http://ollama.internal:11434/api/chat"
+
+
+@pytest.mark.parametrize("error", [http.client.InvalidURL("x"), http.client.IncompleteRead(b""), http.client.BadStatusLine("x")])
+def test_http_client_errors_become_model_unavailable(error):
+    def broken(request, timeout):
+        raise error
+
+    with pytest.raises(ModelUnavailable):
+        classify("anything at all here", cfg("127.0.0.1:11434"), opener=broken)
 ````
 
 Run: `python3 -m pytest tests/prompt_preflight/test_ollama_client.py -q`
@@ -1569,6 +2011,7 @@ Expected: **FAIL** — `No module named 'prompt_preflight.ollama_client'`
 Environment proxy settings are deliberately ignored: a request to "localhost" must never be
 routed through an HTTP proxy, or the prompt would leave the machine.
 """
+import http.client
 import json
 import urllib.error
 import urllib.request
@@ -1652,36 +2095,61 @@ def parse_reply(body: Any) -> Dict[str, Any]:
     return out
 
 
+def chat_url(host: str, allow_remote: bool) -> str:
+    """The /api/chat URL for `host`, built only from the validated host name and port.
+
+    Never reuses the raw string: the gate that decides "is this loopback?" and the HTTP client must
+    agree on the host. Raises ModelUnavailable for a host that is not a plain
+    [http(s)://]host[:port][/path], and, unless `allow_remote`, for one that is not loopback.
+    """
+    name = host_only(host)
+    if not name:
+        raise ModelUnavailable("invalid host")
+    if not allow_remote and not is_loopback(host):
+        raise ModelUnavailable("non-loopback host refused")
+    text = host.strip()
+    scheme = "http"
+    if "://" in text:
+        scheme, text = text.split("://", 1)
+        scheme = scheme.lower()
+    authority = text.split("/", 1)[0]
+    port = ""
+    if authority.startswith("["):
+        rest = authority[authority.find("]") + 1:]
+        port = rest[1:] if rest.startswith(":") else ""
+    elif authority.count(":") == 1:
+        port = authority.split(":", 1)[1]
+    netloc = "[%s]" % name if ":" in name else name  # a bare IPv6 host must be bracketed
+    if port:
+        netloc += ":" + port
+    return "%s://%s/api/chat" % (scheme, netloc)
+
+
 def classify(prompt: str, cfg: Dict[str, Any], opener: Opener = open_no_proxy) -> Dict[str, Any]:
     """Ask the local model for a verdict. Raises ModelUnavailable on any problem."""
     if not cfg["model"]:
         raise ModelUnavailable("no model configured")
-    host = cfg["ollama_host"]
-    if not cfg["allow_remote"] and not is_loopback(host):
-        raise ModelUnavailable("non-loopback host refused")
-    netloc = host.strip().split("://", 1)[-1].split("/", 1)[0] if host_only(host) else ""
-    if not netloc:
-        raise ModelUnavailable("no host")
+    url = chat_url(cfg["ollama_host"], cfg["allow_remote"])
     request = urllib.request.Request(
-        "http://%s/api/chat" % netloc,
+        url,
         data=json.dumps(build_request(cfg, prompt)).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
     try:
         with opener(request, timeout=cfg["budget_ms"] / 1000.0) as response:
             body = json.loads(response.read().decode("utf-8"))
-    except (urllib.error.URLError, OSError, ValueError) as exc:
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as exc:
         raise ModelUnavailable(str(exc)) from exc
     return parse_reply(body)
 ````
 
 Run: `python3 -m pytest tests/prompt_preflight/test_ollama_client.py -q`
 
-Expected: **PASS** — `23 passed`
+Expected: **PASS** — `40 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `133 passed`
+Expected: **PASS** — `218 passed`
 
 ```bash
 git add tools/prompt_preflight/ollama_client.py tests/prompt_preflight/fake_ollama.py tests/prompt_preflight/test_ollama_client.py
@@ -2242,7 +2710,7 @@ Expected: **PASS** — `20 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `153 passed`
+Expected: **PASS** — `238 passed`
 
 ```bash
 git add tools/prompt_preflight/eval/__init__.py tools/prompt_preflight/eval/prompts.jsonl tools/prompt_preflight/eval/run_eval.py tests/prompt_preflight/test_eval.py
@@ -2790,7 +3258,7 @@ Expected: **PASS** — `37 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `190 passed`
+Expected: **PASS** — `275 passed`
 
 ```bash
 git add tools/prompt_preflight/hook.py tools/prompt_preflight/launcher.py tests/prompt_preflight/conftest.py tests/prompt_preflight/test_hook.py
@@ -3924,7 +4392,7 @@ Expected: **PASS** — `34 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `246 passed`
+Expected: **PASS** — `331 passed`
 
 ```bash
 git add tools/prompt_preflight/setup.py tests/prompt_preflight/test_setup.py
@@ -4164,7 +4632,7 @@ Expected: **PASS** — `3 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `264 passed`
+Expected: **PASS** — `349 passed`
 
 ```bash
 git add tools/interactive_exporter.py tests/prompt_preflight/test_exporter_offer.py tests/prompt_preflight/test_optional.py
@@ -4497,7 +4965,7 @@ Baseline recorded on 2026-09-20 before any of this work, on a clean checkout: **
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `273 passed`
+Expected: **PASS** — `358 passed`
 
 Run: `python3 -m pytest tests/test_token_optimizer.py -q`
 
@@ -4505,7 +4973,7 @@ Expected: **PASS** — `35 passed`
 
 Run: `python3 -m pytest tests -q --continue-on-collection-errors`
 
-Expected: **PASS** — `506 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 273 = 506, and **no new failure**.
+Expected: **PASS** — `591 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 358 = 591, and **no new failure**.
 
 - [ ] **Step 5: GATE C — the real end-to-end check (asks first)**
 
