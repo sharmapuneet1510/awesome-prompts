@@ -11,6 +11,7 @@ guide covers one tool in detail — flags, edge cases, troubleshooting.
 | [code-review-tool.md](code-review-tool.md) | Code review setup, configuration, and worked examples | [06 — Review a PR](../01-workflows/06-review-a-pull-request.md) |
 | [exporting-to-platforms.md](exporting-to-platforms.md) | Per-platform export detail for all 8 targets | [14 — Export to platforms](../01-workflows/14-export-to-platforms.md) |
 | [requirement-input.md](requirement-input.md) | Requirement parsing from free text, Jira, and files | [03 — Feature from a requirement](../01-workflows/03-feature-from-requirement.md) |
+| [prompt-preflight.md](prompt-preflight.md) | The optional Prompt Preflight hook: setup, models, configuration, privacy | [14 — Export to platforms](../01-workflows/14-export-to-platforms.md) |
 
 Python setup moved to
 [../00-getting-started/installation.md](../00-getting-started/installation.md).
