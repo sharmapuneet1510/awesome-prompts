@@ -1,6 +1,6 @@
 # Skill Reference
 
-**35 skills.** Reusable implementation modules that agents dispatch to. A skill
+**36 skills.** Reusable implementation modules that agents dispatch to. A skill
 knows *how*; an [agent](agents.md) decides *what*.
 
 Skills are never invoked directly by users — agents load them. Source:
@@ -87,6 +87,7 @@ See [../01-workflows/05-record-a-decision.md](../01-workflows/05-record-a-decisi
 |---|---|
 | `agent_skill_design_skill` | Authoring new skills in this repository |
 | `mcp_server_skill` | Tool minimisation, least-privilege scoping, schema clarity |
+| `mcp_server_builder_skill` | Building an MCP server: SDK pinning, transport choice, testing, Claude Code registration |
 
 ---
 

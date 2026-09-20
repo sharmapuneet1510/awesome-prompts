@@ -10,7 +10,7 @@
 |---|---|---|---|
 | **Agent** | A role that decides and dispatches | 5 | Architect |
 | **Function** | One callable capability of an agent | 42 | `architect:adr` |
-| **Skill** | Implementation knowledge a function loads | 35 | `adr_skill` |
+| **Skill** | Implementation knowledge a function loads | 36 | `adr_skill` |
 | **Gate** | A refusal that blocks progress until you approve | 6 | RULE 11a, ADR accepted |
 
 ```

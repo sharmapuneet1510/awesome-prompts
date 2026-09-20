@@ -44,7 +44,7 @@ Groups skills by primary tag:
 
 ### 5. **Quick Presets** (Step 3)
 Choose from quick options:
-1. **All available** - Export everything (35 skills, 5 agents)
+1. **All available** - Export everything (36 skills, 5 agents)
 2. **Core skills only** - 4 essential skills (database, backend, frontend, test)
 3. **Custom selection** - Interactive multi-select for agents and skills
 4. **Minimal** - Just core agents, no extra skills
@@ -173,7 +173,7 @@ Selected: autonomous_dev_agent, implementation_agent
 ## Options Explained
 
 ### Quick Preset 1: All Available
-- Exports all 35 skills
+- Exports all 36 skills
 - Exports all 5 agents
 - Best for comprehensive setup
 - Good for learning what's available

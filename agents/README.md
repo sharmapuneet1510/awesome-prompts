@@ -1,6 +1,6 @@
 # 🤖 AI Agents Directory (v3.0 — 4-Role Architecture)
 
-> Lean, role-based AI agents with function dispatch. **5 agents, 35 skills, 42 callable functions.**  
+> Lean, role-based AI agents with function dispatch. **5 agents, 36 skills, 42 callable functions.**  
 > **New in v3.0:** Consolidated 13 specialized agents into 4 primary roles + 1 utility agent. Linear execution pipeline prevents context loss.
 
 ## 🎯 Foundational Principles (Guide All Agents)
@@ -207,7 +207,7 @@ Role-Based Agent (Orchestrator, Architect, Implementer, Quality)
     ├─ Apply skill(s)
     └─ Generate + validate + document
     ↓
-Reusable Skills Layer (35 skills)
+Reusable Skills Layer (36 skills)
     ├─ Code Documentation (Javadoc, docstrings, JSDoc)
     ├─ Database (DDL, migrations, schema design)
     ├─ Backend API (REST, OpenAPI)
