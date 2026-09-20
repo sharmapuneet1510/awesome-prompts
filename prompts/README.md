@@ -1,6 +1,6 @@
 # 📋 Prompts Directory
 
-> Reusable, copy-paste-ready prompt templates organized by category. 11 categories, 19 prompts.
+> Reusable, copy-paste-ready prompt templates organized by category. 12 categories, 18 prompts.
 
 Prompts complement `skills/` and `agents/`: a skill defines *how* to do something (reusable methodology), an agent *dispatches* work, a prompt is a ready-to-use template for a specific task.
 

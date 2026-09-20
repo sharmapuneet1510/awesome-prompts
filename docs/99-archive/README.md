@@ -36,7 +36,7 @@ occasionally matters when reading an old commit or issue.
 
 **The count problem.** Five of these documented functions and disagreed: 28, 28,
 31. None was wrong when written; all were left behind by later work. The
-verified numbers are **5 agents, 42 functions, 35 skills** — see
+verified numbers are **5 agents, 42 functions, 36 skills** — see
 [../02-reference/README.md](../02-reference/README.md).
 
 ---
