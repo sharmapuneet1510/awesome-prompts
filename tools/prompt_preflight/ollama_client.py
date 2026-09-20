@@ -5,9 +5,11 @@ routed through an HTTP proxy, or the prompt would leave the machine.
 """
 import http.client
 import json
+import re
+import time
 import urllib.error
 import urllib.request
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List
 
 from .config import host_only, is_loopback
 from .errors import ModelUnavailable
@@ -43,11 +45,21 @@ SYSTEM_PROMPT = (
     "confidence: a number from 0 to 1."
 )
 
+MAX_REPLY_BYTES = 65536
+_HOSTNAME = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9._-]{0,251}[A-Za-z0-9])?")
+
 Opener = Callable[..., Any]
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Refuse every redirect: following one would connect to a host the gate never validated."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None  # urllib then raises HTTPError for the 3xx, which classify turns into ModelUnavailable
+
+
 def open_no_proxy(request: urllib.request.Request, timeout: float) -> Any:
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
     return opener.open(request, timeout=timeout)
 
 
@@ -71,7 +83,7 @@ def parse_reply(body: Any) -> Dict[str, Any]:
         data = json.loads(body["message"]["content"])
         verdict = data["verdict"]
         confidence = data["confidence"]
-    except (KeyError, TypeError, ValueError):
+    except (KeyError, TypeError, ValueError, RecursionError):
         raise ModelUnavailable("unreadable reply") from None
     if verdict not in VERDICTS:
         raise ModelUnavailable("unknown verdict")
@@ -97,6 +109,8 @@ def chat_url(host: str, allow_remote: bool) -> str:
     name = host_only(host)
     if not name:
         raise ModelUnavailable("invalid host")
+    if ":" not in name and not _HOSTNAME.fullmatch(name):
+        raise ModelUnavailable("invalid host")  # host_only accepts any name; the URL parser must never see odd ones
     if not allow_remote and not is_loopback(host):
         raise ModelUnavailable("non-loopback host refused")
     text = host.strip()
@@ -117,19 +131,42 @@ def chat_url(host: str, allow_remote: bool) -> str:
     return "%s://%s/api/chat" % (scheme, netloc)
 
 
+def _read_limited(response: Any, deadline: float) -> bytes:
+    """Read the whole reply in small chunks, giving up at `deadline` or past MAX_REPLY_BYTES.
+
+    urllib's timeout applies to each socket operation, so on its own a server that sends one byte at a
+    time could keep the hook waiting far beyond the budget. The deadline is checked between chunks.
+    """
+    chunks: List[bytes] = []
+    total = 0
+    while True:
+        if time.monotonic() > deadline:
+            raise ModelUnavailable("reply too slow")
+        # read1 returns what one socket read delivers; read(n) would block until n bytes had arrived
+        chunk = response.read1(4096) if hasattr(response, "read1") else response.read(4096)
+        if not chunk:
+            return b"".join(chunks)
+        total += len(chunk)
+        if total > MAX_REPLY_BYTES:
+            raise ModelUnavailable("reply too large")
+        chunks.append(chunk)
+
+
 def classify(prompt: str, cfg: Dict[str, Any], opener: Opener = open_no_proxy) -> Dict[str, Any]:
     """Ask the local model for a verdict. Raises ModelUnavailable on any problem."""
     if not cfg["model"]:
         raise ModelUnavailable("no model configured")
     url = chat_url(cfg["ollama_host"], cfg["allow_remote"])
-    request = urllib.request.Request(
-        url,
-        data=json.dumps(build_request(cfg, prompt)).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
+    budget = cfg["budget_ms"] / 1000.0
+    deadline = time.monotonic() + budget
     try:
-        with opener(request, timeout=cfg["budget_ms"] / 1000.0) as response:
-            body = json.loads(response.read().decode("utf-8"))
-    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as exc:
+        request = urllib.request.Request(
+            url,
+            data=json.dumps(build_request(cfg, prompt)).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        with opener(request, timeout=budget) as response:
+            body = json.loads(_read_limited(response, deadline).decode("utf-8"))
+    except (urllib.error.URLError, OSError, ValueError, RecursionError, http.client.HTTPException) as exc:
         raise ModelUnavailable(str(exc)) from exc
     return parse_reply(body)

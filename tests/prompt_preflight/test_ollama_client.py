@@ -2,6 +2,7 @@ import copy
 import http.client
 import json
 import socket
+import time
 import urllib.request
 
 import pytest
@@ -84,14 +85,18 @@ def test_allow_remote_lifts_the_loopback_restriction():
     seen = []
 
     class Response:
+        def __init__(self):
+            self._data = json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+
         def __enter__(self):
             return self
 
         def __exit__(self, *exc):
             return False
 
-        def read(self):
-            return json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+        def read(self, size=-1):
+            data, self._data = self._data, b""
+            return data
 
     def opener(request, timeout):
         seen.append(request.full_url)
@@ -147,14 +152,18 @@ def test_build_request_does_not_leak_the_prompt_into_the_system_message():
 
 
 class _Ok:
+    def __init__(self):
+        self._data = json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+
     def __enter__(self):
         return self
 
     def __exit__(self, *exc):
         return False
 
-    def read(self):
-        return json.dumps({"message": {"content": json.dumps(GOOD)}}).encode()
+    def read(self, size=-1):
+        data, self._data = self._data, b""
+        return data
 
 
 def requested_url(host, **over):
@@ -219,3 +228,58 @@ def test_http_client_errors_become_model_unavailable(error):
 
     with pytest.raises(ModelUnavailable):
         classify("anything at all here", cfg("127.0.0.1:11434"), opener=broken)
+
+
+# ---------- a hostile or broken server must never hang, exhaust memory, or crash the hook --------
+
+
+def timed_failure(server, match=None, **over):
+    """Run classify against `server`, which must fail; return how long it took."""
+    started = time.monotonic()
+    with pytest.raises(ModelUnavailable, match=match):
+        classify("anything at all here", cfg(server.host, **over))
+    return time.monotonic() - started
+
+
+def test_a_redirect_is_a_failure_and_is_never_followed():
+    with FakeOllama() as target:
+        with FakeOllama(mode="redirect", redirect_to="http://%s/api/chat" % target.host) as server:
+            timed_failure(server)
+    assert target.requests == []  # the client never connected to the host it was redirected to
+
+
+def test_a_server_that_trickles_bytes_cannot_outlast_the_budget():
+    with FakeOllama(mode="trickle", delay=0.1) as server:
+        elapsed = timed_failure(server, match="too slow", budget_ms=500)
+    assert elapsed < 2.0
+
+
+def test_an_oversized_reply_is_refused_without_reading_it_all():
+    with FakeOllama(mode="huge") as server:
+        elapsed = timed_failure(server, match="too large", budget_ms=5000)
+    assert elapsed < 4.0
+
+
+def test_deeply_nested_json_is_a_failure_not_a_crash():
+    with FakeOllama(mode="deep") as server:
+        timed_failure(server, budget_ms=5000)
+
+
+@pytest.mark.parametrize("mode", ["non_utf8", "content_not_string"])
+def test_undecodable_or_mistyped_replies_are_failures(mode):
+    with FakeOllama(mode=mode) as server:
+        timed_failure(server)
+
+
+def test_parse_reply_survives_nesting_inside_the_content_string():
+    with pytest.raises(ModelUnavailable):
+        parse_reply({"message": {"content": "[" * 50000}})
+
+
+@pytest.mark.parametrize("host", ["a[b:11434", "a]b:11434", "a_b!:11434", "-:11434", "a" * 300 + ":11434"])
+def test_allow_remote_still_refuses_names_with_odd_characters(host):
+    def never(*args, **kwargs):
+        raise AssertionError("network must not be touched")
+
+    with pytest.raises(ModelUnavailable, match="invalid host"):
+        classify("anything at all here", cfg(host, allow_remote=True), opener=never)
