@@ -31,7 +31,8 @@ class State:
             return {}
         return data if isinstance(data, dict) else {}
 
-    def _save(self) -> None:
+    def _save(self) -> bool:
+        """Write the state; False when it could not be saved."""
         try:
             directory = os.path.dirname(self._path) or "."
             fd, tmp = tempfile.mkstemp(dir=directory, prefix=".state-")
@@ -39,7 +40,8 @@ class State:
                 json.dump(self._data, handle)
             os.replace(tmp, self._path)
         except OSError:
-            pass
+            return False
+        return True
 
     def in_cooldown(self) -> bool:
         until = self._data.get("cooldown_until", 0)
@@ -77,7 +79,8 @@ class State:
         self._save()
         return True
 
-    def remember_block(self, prompt: str) -> None:
+    def remember_block(self, prompt: str) -> bool:
+        """Record a block so the identical prompt can pass once. False if it could not be saved."""
         blocks = self._data.get("blocks", {})
         if not isinstance(blocks, dict):
             blocks = {}
@@ -85,7 +88,7 @@ class State:
         blocks = {k: v for k, v in blocks.items() if isinstance(v, (int, float))}
         newest = sorted(blocks.items(), key=lambda item: item[1])[-MAX_BLOCKS:]
         self._data["blocks"] = dict(newest)
-        self._save()
+        return self._save()
 
     def consume_override(self, prompt: str, window_s: float) -> bool:
         """True if this exact prompt was blocked within `window_s`. Consumes the record."""

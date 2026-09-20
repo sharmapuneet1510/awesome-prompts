@@ -19,6 +19,7 @@ from .state import State
 
 MAX_STDIN_BYTES = 1000000
 MAX_LOG_BYTES = 1000000
+MAX_MODEL_BUDGET_MS = 4000  # Claude Code drops a hook's output at 5 s; leave room for start-up and file I/O
 
 
 def _log(root: str, line: Dict[str, Any]) -> None:
@@ -33,6 +34,13 @@ def _log(root: str, line: Dict[str, Any]) -> None:
             handle.write(json.dumps(line) + "\n")
     except OSError:
         pass
+
+
+def _describe(exc_info: Any) -> str:
+    """The exception's type and where it was raised; never its message, which can hold the user's prompt."""
+    frames = traceback.extract_tb(exc_info[2])
+    where = "%s:%d" % (os.path.basename(frames[-1].filename), frames[-1].lineno) if frames else "?"
+    return "%s at %s" % (exc_info[0].__name__, where)
 
 
 def run(
@@ -70,7 +78,8 @@ def run(
 
     call: Optional[ModelCall] = None
     if cfg["model"] and not state.in_cooldown():
-        call = model_call or (lambda text: ollama_client.classify(text, cfg))
+        capped = dict(cfg, budget_ms=min(cfg["budget_ms"], MAX_MODEL_BUDGET_MS))
+        call = model_call or (lambda text: ollama_client.classify(text, capped))
 
     started = time.perf_counter()
     model_failed = False
@@ -86,8 +95,8 @@ def run(
     if out is not None and out.get("decision") == "block":
         if state.consume_override(prompt, cfg["override_window_s"]):
             out = None
-        else:
-            state.remember_block(prompt)
+        elif not state.remember_block(prompt):
+            out = build_output(decision, dict(cfg, mode="advise"))  # without saved state the override cannot work: never trap the user
     if out is None and model_failed and state.notice_due("degraded"):
         out = degraded_notice()
 
@@ -116,7 +125,7 @@ def main(root: str) -> None:
             sys.stdout.flush()
     except Exception:  # fail open by design: Preflight must never get in the way
         try:
-            _log(root, {"ts": round(time.time(), 1), "error": traceback.format_exc()[-2000:]})
+            _log(root, {"ts": round(time.time(), 1), "error": _describe(sys.exc_info())})
         except Exception:
             pass
     sys.exit(0)

@@ -118,6 +118,12 @@ def test_notice_due_handles_malformed_notices_null(tmp_path):
     assert state.notice_due("degraded") is True
 
 
+def test_remember_block_says_whether_it_was_saved(tmp_path):
+    assert make(tmp_path).remember_block("x") is True
+    unwritable = State(str(tmp_path / "missing-dir" / "state.json"), Clock())
+    assert unwritable.remember_block("x") is False
+
+
 def test_remember_block_handles_malformed_blocks_null_value(tmp_path):
     (tmp_path / "state.json").write_text('{"blocks": {"a": null}}', encoding="utf-8")
     state = make(tmp_path)

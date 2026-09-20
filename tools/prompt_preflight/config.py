@@ -28,7 +28,7 @@ _RANGES = {
     "skip_over_chars": (1, 1000000),
     "min_words": (0, 100),
     "cooldown_s": (0, 86400),
-    "override_window_s": (0, 86400),
+    "override_window_s": (1, 86400),
 }
 
 

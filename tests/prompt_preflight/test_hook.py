@@ -62,6 +62,7 @@ def test_kill_switches_disable_it_instantly(tmp_path, env, cfg):
 
 @pytest.mark.parametrize("stdin", ["", "not json", "[]", "{}", '{"prompt": 5}', '{"prompt": null}', "null"])
 def test_bad_input_is_ignored(tmp_path, stdin):
+    configure(tmp_path)  # without a config file run() returns at the bypass and never reads the input
     assert hook.run(stdin, str(tmp_path), env={}) is None
 
 
@@ -108,12 +109,29 @@ def test_block_mode_blocks_once_then_lets_the_identical_prompt_through(tmp_path)
     assert call(tmp_path, "what is the capital of France")["decision"] == "block"  # override was single-use
 
 
+def test_block_mode_never_traps_the_user_when_state_cannot_be_saved(tmp_path, monkeypatch):
+    configure(tmp_path, mode="block")
+    monkeypatch.setattr(hook.State, "_save", lambda self: False)  # e.g. a read-only install directory
+    for _ in range(3):
+        out = call(tmp_path, "what is the capital of France")
+        assert "decision" not in out and "Google" in out["systemMessage"]  # advised, never blocked
+
+
 def test_block_override_expires(tmp_path):
     configure(tmp_path, mode="block", override_window_s=60)
     clock = Clock()
     assert call(tmp_path, "what is the capital of France", clock=clock)["decision"] == "block"
     clock.now += 61
     assert call(tmp_path, "what is the capital of France", clock=clock)["decision"] == "block"
+
+
+@pytest.mark.parametrize("configured,sent", [(8000, 4000), (30000, 4000), (1500, 1500)])
+def test_the_model_budget_always_fits_inside_the_hook_timeout(tmp_path, monkeypatch, configured, sent):
+    configure(tmp_path, model="tiny:1b", budget_ms=configured)
+    seen = []
+    monkeypatch.setattr(hook.ollama_client, "classify", lambda text, cfg: seen.append(cfg["budget_ms"]) or {"verdict": "pass", "confidence": 0.9})
+    call(tmp_path, REAL_WORK)
+    assert seen == [sent] and hook.MAX_MODEL_BUDGET_MS < 5000
 
 
 def test_the_log_has_no_prompt_text_by_default(tmp_path):
@@ -159,6 +177,24 @@ def test_main_exits_zero_and_prints_nothing_even_if_run_explodes(tmp_path, monke
     assert info.value.code == 0
     assert capsys.readouterr().out == ""
     assert "RuntimeError" in (tmp_path / "preflight.log").read_text(encoding="utf-8")
+
+
+def test_an_internal_error_never_puts_the_prompt_in_the_log(tmp_path, monkeypatch):
+    monkeypatch.setattr(hook, "run", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("the prompt said zebra-token-91")))
+    monkeypatch.setattr(sys, "stdin", type("S", (), {"buffer": type("B", (), {"read": staticmethod(lambda n: b"{}")})()})())
+    with pytest.raises(SystemExit):
+        hook.main(str(tmp_path))
+    log = (tmp_path / "preflight.log").read_text(encoding="utf-8")
+    assert "RuntimeError at test_hook.py" in log and "zebra-token-91" not in log
+
+
+def test_main_reads_no_more_than_the_stdin_cap(tmp_path, monkeypatch):
+    asked = []
+    buffer = type("B", (), {"read": staticmethod(lambda n: asked.append(n) or b"")})()
+    monkeypatch.setattr(sys, "stdin", type("S", (), {"buffer": buffer})())
+    with pytest.raises(SystemExit):
+        hook.main(str(tmp_path))
+    assert asked == [hook.MAX_STDIN_BYTES]
 
 
 def test_without_a_config_file_it_does_nothing_at_all(tmp_path):

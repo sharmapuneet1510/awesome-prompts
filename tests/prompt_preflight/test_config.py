@@ -240,6 +240,7 @@ def test_valid_values_override_defaults(tmp_path):
         ("allow_remote", 1),
         ("cooldown_s", -1),
         ("min_words", True),
+        ("override_window_s", 0),  # 0 would make every block permanent
     ],
 )
 def test_invalid_values_fall_back_to_default(tmp_path, key, bad):
