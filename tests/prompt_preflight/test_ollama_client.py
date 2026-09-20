@@ -2,8 +2,12 @@ import copy
 import http.client
 import json
 import socket
+import subprocess
+import sys
+import threading
 import time
 import urllib.request
+from pathlib import Path
 
 import pytest
 
@@ -14,6 +18,8 @@ from prompt_preflight.ollama_client import SCHEMA, build_request, classify, pars
 from .fake_ollama import GOOD, FakeOllama
 
 COVERS = ["R3", "R6", "R8"]
+
+TOOLS = Path(__file__).resolve().parents[2] / "tools"
 
 
 def cfg(host, **over):
@@ -252,6 +258,87 @@ def test_a_server_that_trickles_bytes_cannot_outlast_the_budget():
     with FakeOllama(mode="trickle", delay=0.1) as server:
         elapsed = timed_failure(server, match="too slow", budget_ms=500)
     assert elapsed < 2.0
+
+
+class RawServer:
+    """A server that speaks raw bytes, for framing the HTTP library would otherwise hide.
+
+    `script(conn, pause)` runs once per connection; `pause(seconds)` returns True once the test is over.
+    """
+
+    def __init__(self, script):
+        self.script = script
+        self.over = threading.Event()
+        self.listener = socket.socket()
+        self.listener.bind(("127.0.0.1", 0))
+        self.listener.listen(1)
+        self.host = "127.0.0.1:%d" % self.listener.getsockname()[1]
+
+    def _serve(self):
+        try:
+            conn, _ = self.listener.accept()
+            with conn:
+                conn.settimeout(5)
+                conn.recv(65536)  # the request
+                self.script(conn, self.over.wait)
+        except OSError:
+            pass  # the client gave up and hung up, which is the point
+
+    def __enter__(self):
+        threading.Thread(target=self._serve, daemon=True).start()
+        return self
+
+    def __exit__(self, *exc):
+        self.over.set()
+        self.listener.close()
+
+
+def trickle(conn, pause, prefix, filler=b"a", count=100, delay=0.1):
+    conn.sendall(prefix)
+    for _ in range(count):
+        if pause(delay):
+            return
+        conn.sendall(filler)
+
+
+CHUNKED = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n\r\n"
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        pytest.param(CHUNKED + b"1;", id="chunk-size-line"),
+        pytest.param(CHUNKED + b"0\r\nX-Trailer: ", id="trailer"),
+        pytest.param(b"HTTP/1.1 200 OK\r\nX-Slow: ", id="header-line"),
+        pytest.param(b"HTTP/1.1 ", id="status-line"),
+    ],
+)
+def test_a_server_that_trickles_framing_bytes_cannot_outlast_the_budget(prefix):
+    # http.client reads these parts with a blocking readline, so no per-read deadline can see them.
+    with RawServer(lambda conn, pause: trickle(conn, pause, prefix)) as server:
+        elapsed = timed_failure(server, match="too slow", budget_ms=500)
+    assert elapsed < 2.0
+
+
+def test_an_abandoned_exchange_does_not_keep_the_process_alive():
+    # The hook is a short-lived process: a worker still waiting on a trickling server must not delay its exit.
+    with RawServer(lambda conn, pause: trickle(conn, pause, CHUNKED + b"1;")) as server:
+        program = (
+            "import sys\n"
+            "sys.path.insert(0, %r)\n"
+            "from prompt_preflight.config import DEFAULTS\n"
+            "from prompt_preflight.errors import ModelUnavailable\n"
+            "from prompt_preflight.ollama_client import classify\n"
+            "cfg = dict(DEFAULTS, model='tiny:1b', ollama_host=%r, budget_ms=500)\n"
+            "try:\n"
+            "    classify('anything at all here', cfg)\n"
+            "except ModelUnavailable:\n"
+            "    pass\n"
+        ) % (str(TOOLS), server.host)
+        started = time.monotonic()
+        subprocess.run([sys.executable, "-c", program], check=True, timeout=30)
+        elapsed = time.monotonic() - started
+    assert elapsed < 3.0
 
 
 def test_an_oversized_reply_is_refused_without_reading_it_all():

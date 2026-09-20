@@ -6,6 +6,7 @@ routed through an HTTP proxy, or the prompt would leave the machine.
 import http.client
 import json
 import re
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -152,21 +153,45 @@ def _read_limited(response: Any, deadline: float) -> bytes:
         chunks.append(chunk)
 
 
+def _exchange(url: str, cfg: Dict[str, Any], prompt: str, opener: Opener, budget: float, deadline: float) -> Any:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(build_request(cfg, prompt)).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with opener(request, timeout=budget) as response:
+        return json.loads(_read_limited(response, deadline).decode("utf-8"))
+
+
 def classify(prompt: str, cfg: Dict[str, Any], opener: Opener = open_no_proxy) -> Dict[str, Any]:
-    """Ask the local model for a verdict. Raises ModelUnavailable on any problem."""
+    """Ask the local model for a verdict. Raises ModelUnavailable on any problem.
+
+    The exchange runs on a worker thread that the caller abandons at the budget. urllib's timeout only
+    covers each single socket operation, and http.client reads the status line, headers, chunk sizes and
+    trailers with a blocking readline, so a server that trickles bytes could otherwise hold the caller
+    far beyond the budget. An abandoned worker is a daemon thread and stops on its own.
+    """
     if not cfg["model"]:
         raise ModelUnavailable("no model configured")
     url = chat_url(cfg["ollama_host"], cfg["allow_remote"])
     budget = cfg["budget_ms"] / 1000.0
     deadline = time.monotonic() + budget
-    try:
-        request = urllib.request.Request(
-            url,
-            data=json.dumps(build_request(cfg, prompt)).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-        )
-        with opener(request, timeout=budget) as response:
-            body = json.loads(_read_limited(response, deadline).decode("utf-8"))
-    except (urllib.error.URLError, OSError, ValueError, RecursionError, http.client.HTTPException) as exc:
-        raise ModelUnavailable(str(exc)) from exc
-    return parse_reply(body)
+    outcome: List[Any] = []
+
+    def work() -> None:
+        try:
+            outcome.append((True, _exchange(url, cfg, prompt, opener, budget, deadline)))
+        except BaseException as exc:  # handed to the caller, which decides what it means
+            outcome.append((False, exc))
+
+    worker = threading.Thread(target=work, daemon=True)
+    worker.start()
+    worker.join(max(0.0, deadline - time.monotonic()))
+    if not outcome:
+        raise ModelUnavailable("reply too slow")
+    ok, value = outcome[0]
+    if not ok:
+        if isinstance(value, (urllib.error.URLError, OSError, ValueError, RecursionError, http.client.HTTPException)):
+            raise ModelUnavailable(str(value)) from value
+        raise value
+    return parse_reply(value)
