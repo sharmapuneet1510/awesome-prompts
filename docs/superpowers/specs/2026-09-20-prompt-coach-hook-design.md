@@ -1,8 +1,8 @@
 # Prompt Coach — Optional Local-Model Prompt Hook — Design Specification
 
 **Date:** September 20, 2026
-**Status:** Draft — awaiting user review (design approved section by section in chat; formal acceptance pending)
-**Version:** 0.1
+**Status:** Approved by the user, 2026-09-20. Task 1's eval-set labels and model downloads still need separate approval (see *Model Selection*).
+**Version:** 1.0
 
 Claims in this document carry the RULE 12 labels: **FACT** (verified, sourced), **INFERENCE** (reasoned, not yet measured), **PROPOSAL** (awaiting approval), **DECISION** (approved by the user).
 
@@ -232,7 +232,7 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 
 - **Eval set.** About 60 labeled prompts across the four verdicts plus context-bound guardrail cases, in `tools/prompt_coach/eval/`. The labels are judgment calls and remain **PROPOSAL** until the user reviews them.
 - **Candidates.** Two or three small instruct models from Ollama's library (names confirmed at run time), plus the already-pulled `llama3` 8B as an upper-bound reference. **Requires the user's approval** to start `ollama serve` and to download about 1–2 GB per model.
-- **Thresholds (PROPOSAL):**
+- **Thresholds (DECISION — approved with the spec, 2026-09-20):**
 
 | Metric | Threshold |
 |---|---|
@@ -253,14 +253,14 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 |---|---|---|
 | D1 | Local Ollama server plus heuristics-first tiering | **DECISION** (user, chat 2026-09-20) |
 | D2 | Advise by default; blocking is opt-in and `google`-only | **DECISION** (user, chat 2026-09-20) |
-| D3 | Refinement is advisory `additionalContext`, since a prompt cannot be rewritten | Proposed |
-| D4 | Installed only by the opt-in wizard; source in `tools/prompt_coach/`, not `hooks/` | Proposed |
-| D5 | Scope is user or project-local; never the committed settings file | Proposed |
-| D6 | Fail open everywhere; always exit 0 | Proposed |
-| D7 | Loopback only; no prompt text in logs by default | Proposed |
-| D8 | Default model chosen by measurement; heuristics-only is an allowed outcome | Proposed |
+| D3 | Refinement is advisory `additionalContext`, since a prompt cannot be rewritten | **DECISION** (accepted, user, 2026-09-20) |
+| D4 | Installed only by the opt-in wizard; source in `tools/prompt_coach/`, not `hooks/` | **DECISION** (accepted, user, 2026-09-20) |
+| D5 | Scope is user or project-local; never the committed settings file | **DECISION** (accepted, user, 2026-09-20) |
+| D6 | Fail open everywhere; always exit 0 | **DECISION** (accepted, user, 2026-09-20) |
+| D7 | Loopback only; no prompt text in logs by default | **DECISION** (accepted, user, 2026-09-20) |
+| D8 | Default model chosen by measurement; heuristics-only is an allowed outcome | **DECISION** (accepted, user, 2026-09-20) |
 
-Each of D3–D8 was approved in chat as part of its design section; formal acceptance is pending this spec's review (a human-only transition).
+D3–D8 were approved in chat section by section and accepted by the user on approving this spec (2026-09-20).
 
 **Alternatives considered and rejected**
 
@@ -306,8 +306,8 @@ Each of D3–D8 was approved in chat as part of its design section; formal accep
 
 ## Governance and Scope
 
-- **RULE 11.** This spec and the plan that follows are this repo's own design records, in `docs/superpowers/`, following the precedent of the existing specs and plans. Neither is approved until the user says so.
-- **RULE 11a.** D1–D8 above; D3–D8 move from Proposed to Accepted only on the user's explicit approval.
+- **RULE 11.** This spec and the plan that follows are this repo's own design records, in `docs/superpowers/`, following the precedent of the existing specs and plans. The spec was approved by the user on 2026-09-20; the plan needs its own approval.
+- **RULE 11a.** D1–D8 above; D3–D8 were accepted on the user's explicit approval of the spec (2026-09-20).
 - **Branching.** Work happens on `feat/prompt-coach`, branched from `origin/main` after pull request #14 (README redesign, MIT license, MCP builder skill) was merged.
 - **Out of scope, tracked separately:** the inert `promptshield-check.sh` and its incorrect settings schema; the exporter's `--target-project` ignoring `--dry-run`; the README layout tree, now on `main`, listing `token_optimizer/` and `parser/` at the repo root when neither is there (`token_optimizer` lives in `tools/`).
 
