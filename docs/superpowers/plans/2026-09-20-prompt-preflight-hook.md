@@ -59,6 +59,7 @@ Code review of the first executed tasks found real defects in this plan's origin
 - **Task 2: heuristics, verdict logic, output.** Review found five guardrail defects in the draft. Tier 1 said `google` for task and environment prompts ("can you implement rate limiting on the api", "show me the latest logs from staging"): it now requires positive evidence (a lookup-question form), recognises request lead-ins and more request verbs, and knows more environment nouns. The `min_confidence` gate accepted NaN, infinity, out-of-range values and `True`. `decide` raised on malformed model replies (`missing=None`, `missing="abc"`). `sanitize` let newlines, C1 controls, bidi overrides and zero-width characters through to Claude; it now always returns a single clean line. One guardrail test was vacuous and now uses a standalone prompt.
 - **Task 4: the bake-off was run.** Apple M2, 24 GB, Ollama 0.9.1: `qwen2.5:1.5b` 48.3% (p95 wall 1470 ms), `llama3.2:1b` 31.7%, `llama3.2:3b` 43.3%, and the 8B `llama3:latest` reference 50.0% (p95 6150 ms), against a bar of 80%. No candidate qualified, so `defaults.py` keeps `RECOMMENDED_MODEL = None` and heuristics-only is the default. The steps below that set the defaults are therefore the "heuristics-only" branch.
 - **Task 5: the hook entry point.** Review found two ways the draft broke its fail-open promise. In `block` mode with a state file that cannot be written (a read-only install directory), the identical prompt was blocked on every send, because the override could never be recorded; `State.remember_block` now reports whether it saved, and an unsaved block is downgraded to the advisory message. And a `budget_ms` above the 5 s hook timeout made every prompt stall until Claude Code killed the hook, with no cooldown; the model call is now capped at 4000 ms inside the hook. Two smaller fixes came with them: the error log records only the exception type and location (an exception message can hold the prompt), and `override_window_s` may not be 0 (which made every block permanent).
+- **Task 6: the settings command and the file writer** (found in a pre-implementation read of the draft, before any code was written). The draft's settings entry was `python3 "<install>/hook.py"`. If the install folder is deleted by hand, that exits with code 2, which rejects every prompt for a `UserPromptSubmit` hook; the entry now ends in `|| true`, and the self-test runs that exact command so a missing `python3` is caught at install time. `write_settings` also replaced a symlinked settings file with a regular one, changed the file's permissions, and could overwrite the first backup when two writes fell in the same second; it now writes through the link, keeps the mode, and picks a fresh backup name. The spec's outline shows the command without the guard; the guard is a hardening in the spirit of R6 and is recorded as a spec touch-up.
 - Test counts grew as a result (Task 1 from 43 to 111, Task 2 from 67 to 144); every cumulative count in this plan already reflects that.
 
 ## File Structure
@@ -80,7 +81,7 @@ Code review of the first executed tasks found real defects in this plan's origin
 | `tools/prompt_preflight/setup.py` | the opt-in wizard | 6 |
 | `tools/interactive_exporter.py` | one opt-in question (modify) | 7 |
 | `docs/03-guides/prompt-preflight.md` | user guide | 8 |
-| `tests/prompt_preflight/` | 14 test modules, 461 tests | all |
+| `tests/prompt_preflight/` | 14 test modules, 468 tests | all |
 
 ---
 
@@ -3839,7 +3840,7 @@ git commit -m "feat(prompt-preflight): add hook entry point and launcher"
 - Create: `tests/prompt_preflight/test_settings_merge.py`, `tests/prompt_preflight/test_setup.py`
 
 **Interfaces:**
-- Consumes: `hook.py` + `launcher.py` (the wizard copies the launcher to `hook.py` and runs it for the self-test); `config.DEFAULTS`, `config.is_loopback`, `defaults.*`, `ollama_client.open_no_proxy`
+- Consumes: `hook.py` + `launcher.py` (the wizard copies the launcher to `hook.py`; its self-test runs the exact command it writes to settings); `config.DEFAULTS`, `config.is_loopback`, `defaults.*`, `ollama_client.open_no_proxy`
 - Produces:
   - `settings_merge.EVENT = "UserPromptSubmit"`, `MARKER = "prompt-preflight/hook.py"`, `SettingsError`
   - `settings_merge.add_hook(settings, command: str, timeout: int = 5) -> dict`, `remove_hook(settings) -> dict`, `has_hook(settings) -> bool`, `read_settings(path) -> dict`, `write_settings(path, settings, backup=True) -> Optional[str]`, `diff_text(before, after, name='settings') -> str`
@@ -3851,6 +3852,7 @@ git commit -m "feat(prompt-preflight): add hook entry point and launcher"
 **`tests/prompt_preflight/test_settings_merge.py`**
 
 ````python
+import copy
 import json
 import os
 
@@ -3981,6 +3983,63 @@ def test_a_failed_write_keeps_the_original_and_cleans_up(tmp_path):
     assert sorted(os.listdir(tmp_path)) == ["settings.json"]
 
 
+def test_adding_or_removing_never_shares_structure_with_the_input():
+    before = existing()
+    after = sm.add_hook(before, CMD)
+    after["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"] = "changed-by-caller"
+    assert before == existing()
+    with_hook = sm.add_hook(existing(), CMD)
+    snapshot = copy.deepcopy(with_hook)
+    stripped = sm.remove_hook(with_hook)
+    stripped["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"] = "changed-by-caller"
+    assert with_hook == snapshot
+
+
+def test_a_symlinked_settings_file_is_written_through_not_replaced(tmp_path):
+    real = tmp_path / "dotfiles" / "settings.json"
+    real.parent.mkdir()
+    real.write_text('{"old": true}', encoding="utf-8")
+    link = tmp_path / "settings.json"
+    try:
+        os.symlink(real, link)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks are not available here")
+    sm.write_settings(str(link), {"new": True})
+    assert os.path.islink(link)
+    assert json.loads(real.read_text(encoding="utf-8")) == {"new": True}
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits")
+def test_the_file_keeps_its_permissions(tmp_path):
+    path = tmp_path / "settings.json"
+    path.write_text("{}", encoding="utf-8")
+    os.chmod(path, 0o644)
+    sm.write_settings(str(path), {"a": 1})
+    assert (os.stat(path).st_mode & 0o777) == 0o644
+
+
+def test_two_backups_in_the_same_second_never_overwrite_each_other(tmp_path, monkeypatch):
+    class Frozen(sm.datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 9, 21, 12, 0, 0)
+
+    monkeypatch.setattr(sm.datetime, "datetime", Frozen)
+    path = tmp_path / "settings.json"
+    path.write_text('{"original": true}', encoding="utf-8")
+    first = sm.write_settings(str(path), {"v": 1})
+    second = sm.write_settings(str(path), {"v": 2})
+    assert first != second
+    assert json.loads(open(first, encoding="utf-8").read()) == {"original": True}
+    assert json.loads(open(second, encoding="utf-8").read()) == {"v": 1}
+
+
+def test_non_ascii_text_is_kept_as_written(tmp_path):
+    path = tmp_path / "settings.json"
+    sm.write_settings(str(path), {"note": "café ✓"})
+    assert "café ✓" in path.read_text(encoding="utf-8")
+
+
 def test_diff_shows_exactly_the_added_hook():
     text = sm.diff_text({}, sm.add_hook({}, CMD))
     assert "+" in text and "prompt-preflight/hook.py" in text and "(before)" in text
@@ -3992,6 +4051,8 @@ Run: `python3 -m pytest tests/prompt_preflight/test_settings_merge.py -q`
 Expected: **FAIL** — `cannot import name 'settings_merge' from 'prompt_preflight'`
 
 - [ ] **Step 2: Settings merge: implementation**
+
+Two properties matter beyond the obvious. `write_settings` writes *through* a symlinked settings file (dotfile setups) instead of replacing the link, keeps the file's permissions, and never lets a second backup in the same second overwrite the first (which would destroy the original). `add_hook` and `remove_hook` deep-copy, so the caller's `before` is never aliased by `after`.
 
 **`tools/prompt_preflight/settings_merge.py`**
 
@@ -4059,7 +4120,7 @@ def has_hook(settings: Settings) -> bool:
 
 def add_hook(settings: Settings, command: str, timeout: int = 5) -> Settings:
     """Return a copy of `settings` with exactly one Preflight handler (any older one is replaced)."""
-    groups = _strip(_groups(settings))
+    groups = _strip(copy.deepcopy(_groups(settings)))
     groups.append({"hooks": [{"type": "command", "command": command, "timeout": timeout}]})
     result = copy.deepcopy(settings)
     result.setdefault("hooks", {})[EVENT] = groups
@@ -4068,7 +4129,7 @@ def add_hook(settings: Settings, command: str, timeout: int = 5) -> Settings:
 
 def remove_hook(settings: Settings) -> Settings:
     """Return a copy of `settings` without Preflight handler, tidying any container it empties."""
-    groups = _strip(_groups(settings))
+    groups = _strip(copy.deepcopy(_groups(settings)))
     result = copy.deepcopy(settings)
     if groups:
         result["hooks"][EVENT] = groups
@@ -4095,19 +4156,35 @@ def read_settings(path: str) -> Settings:
     return data
 
 
+def _backup_path(path: str) -> str:
+    stamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    candidate, count = "%s.bak-%s" % (path, stamp), 0
+    while os.path.exists(candidate):  # two writes in one second must not overwrite the first backup
+        count += 1
+        candidate = "%s.bak-%s-%d" % (path, stamp, count)
+    return candidate
+
+
 def write_settings(path: str, settings: Settings, backup: bool = True) -> Optional[str]:
-    """Write atomically. Returns the backup path when an existing file was backed up."""
+    """Write atomically. Returns the backup path when an existing file was backed up.
+
+    A symlinked settings file (dotfile setups) is written through, not replaced by a regular file, and the
+    file keeps its permissions. Backups never overwrite each other.
+    """
+    path = os.path.realpath(path)
     directory = os.path.dirname(path) or "."
     os.makedirs(directory, exist_ok=True)
     backup_path = None
     if backup and os.path.exists(path):
-        backup_path = "%s.bak-%s" % (path, datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
+        backup_path = _backup_path(path)
         shutil.copy2(path, backup_path)
     fd, tmp = tempfile.mkstemp(dir=directory, prefix=".settings-")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            json.dump(settings, handle, indent=2)
+            json.dump(settings, handle, indent=2, ensure_ascii=False)
             handle.write("\n")
+        if os.path.exists(path):
+            shutil.copymode(path, tmp)
         os.replace(tmp, path)
     except BaseException:
         if os.path.exists(tmp):
@@ -4125,7 +4202,7 @@ def diff_text(before: Settings, after: Settings, name: str = "settings") -> str:
 
 Run: `python3 -m pytest tests/prompt_preflight/test_settings_merge.py -q`
 
-Expected: **PASS** — `22 passed`
+Expected: **PASS** — `27 passed`
 
 ```bash
 git add tools/prompt_preflight/settings_merge.py tests/prompt_preflight/test_settings_merge.py
@@ -4273,7 +4350,7 @@ def test_install_local_writes_the_layout_and_one_hook_entry(env):
     config = json.loads((root / "config.json").read_text())
     assert config["model"] == "" and config["installed_version"]
     [entry] = entries(local_settings(env))
-    assert entry == {"type": "command", "command": 'python3 "%s"' % (root / "hook.py"), "timeout": 5}
+    assert entry == {"type": "command", "command": 'python3 "%s" || true' % (root / "hook.py"), "timeout": 5}
 
 
 def test_copy_files_ships_only_what_the_hook_needs(tmp_path):
@@ -4358,6 +4435,26 @@ def test_the_installed_hook_really_answers_as_claude_code_would_call_it(env):
     payload = json.dumps({"session_id": "x", "prompt": "what is the capital of France"}).encode()
     done = subprocess.run([sys.executable, str(hook)], input=payload, capture_output=True, timeout=30)
     assert done.returncode == 0 and "try Google" in json.loads(done.stdout)["systemMessage"]
+
+
+@pytest.mark.skipif(os.name == "nt", reason="the guard is a POSIX shell construct")
+def test_a_settings_entry_whose_files_are_gone_can_never_block_a_prompt(env):
+    # Deleting the install folder by hand leaves the entry behind. `python3 <missing file>` exits 2, and exit 2
+    # rejects the user's prompt, so the entry must swallow that.
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    root = env[1] / ".claude" / "prompt-preflight"
+    [entry] = entries(local_settings(env))
+    shutil.rmtree(root)
+    assert subprocess.run([sys.executable, str(root / "hook.py")], capture_output=True).returncode == 2
+    assert subprocess.run(entry["command"], shell=True, input=b"{}", capture_output=True).returncode == 0
+
+
+@pytest.mark.skipif(os.name == "nt", reason="PATH lookup semantics differ")
+def test_the_self_test_runs_the_exact_command_written_to_settings(env, tmp_path, monkeypatch):
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    root = env[1] / ".claude" / "prompt-preflight"
+    monkeypatch.setenv("PATH", str(tmp_path / "no-python-here"))  # `python3` cannot be found, as in a broken setup
+    assert setup._self_test(root, ScriptedIO()) is False
 
 
 def test_the_self_test_reports_and_leaves_no_state_behind(env):
@@ -4538,6 +4635,8 @@ Expected: **FAIL** — `cannot import name 'setup' from 'prompt_preflight'`
 
 - [ ] **Step 4: Wizard: implementation**
 
+The settings command is `python3 "<install>/hook.py" || true`, not the bare interpreter call. If someone deletes the install folder by hand, `python3 <missing file>` exits with code 2, and for a `UserPromptSubmit` hook exit code 2 rejects the user's prompt, so every prompt would be blocked by a leftover entry. The guard makes a missing file harmless. For the same reason the self-test runs that exact command through the shell rather than `sys.executable`: it proves that `python3` resolves on `PATH` the way Claude Code will resolve it.
+
 **`tools/prompt_preflight/setup.py`**
 
 ````python
@@ -4662,7 +4761,9 @@ def paths_for(scope: str, home: str, project: str) -> Tuple[Path, Path]:
 
 
 def command_for(install_dir: Path) -> str:
-    return 'python3 "%s"' % (install_dir / "hook.py")
+    """The settings entry. `|| true` matters: if the install folder is ever deleted by hand, python exits 2
+    for the missing script, and for a UserPromptSubmit hook exit 2 blocks every prompt."""
+    return 'python3 "%s" || true' % (install_dir / "hook.py")
 
 
 def build_config(model: str, env: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
@@ -4773,7 +4874,8 @@ def _show_plan(io: Any, install_dir: Path, settings_path: Path, plan: ModelPlan,
 
 
 def _self_test(install_dir: Path, io: Any) -> bool:
-    """Run sample prompts through the installed hook exactly as Claude Code would."""
+    """Run sample prompts through the exact command written to settings, as Claude Code would."""
+    command = command_for(install_dir)
     state, log = install_dir / "state.json", install_dir / "preflight.log"
     existed = (state.exists(), log.exists())
     env = {k: v for k, v in os.environ.items() if k != "PROMPT_PREFLIGHT"}
@@ -4783,9 +4885,7 @@ def _self_test(install_dir: Path, io: Any) -> bool:
     try:
         for index, prompt in enumerate(SELF_TEST_PROMPTS):
             payload = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "self-test-%d" % index, "prompt": prompt})
-            done = subprocess.run(
-                [sys.executable, str(install_dir / "hook.py")], input=payload.encode(), capture_output=True, timeout=30, env=env
-            )
+            done = subprocess.run(command, shell=True, input=payload.encode(), capture_output=True, timeout=30, env=env)
             text = done.stdout.decode("utf-8", "replace").strip()
             note = "silent (no advice)"
             if text:
@@ -4952,11 +5052,11 @@ if __name__ == "__main__":
 
 Run: `python3 -m pytest tests/prompt_preflight/test_setup.py -q`
 
-Expected: **PASS** — `34 passed`
+Expected: **PASS** — `36 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `434 passed`
+Expected: **PASS** — `441 passed`
 
 ```bash
 git add tools/prompt_preflight/setup.py tests/prompt_preflight/test_setup.py
@@ -5196,7 +5296,7 @@ Expected: **PASS** — `3 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `452 passed`
+Expected: **PASS** — `459 passed`
 
 ```bash
 git add tools/interactive_exporter.py tests/prompt_preflight/test_exporter_offer.py tests/prompt_preflight/test_optional.py
@@ -5529,7 +5629,7 @@ Baseline recorded on 2026-09-20 before any of this work, on a clean checkout: **
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `461 passed`
+Expected: **PASS** — `468 passed`
 
 Run: `python3 -m pytest tests/test_token_optimizer.py -q`
 
@@ -5537,7 +5637,7 @@ Expected: **PASS** — `35 passed`
 
 Run: `python3 -m pytest tests -q --continue-on-collection-errors`
 
-Expected: **PASS** — `694 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 461 = 694, and **no new failure**.
+Expected: **PASS** — `701 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 468 = 701, and **no new failure**.
 
 - [ ] **Step 5: GATE C — the real end-to-end check (asks first)**
 
