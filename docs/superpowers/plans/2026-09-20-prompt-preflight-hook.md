@@ -47,7 +47,7 @@ Found while writing this plan, from measurements taken on 2026-09-20. Task 0 wri
 
 Every file and edit below was written and run in a scratch copy first, then the plan was **replayed mechanically in a fresh checkout**: each RED step failed for the stated reason, each GREEN step passed with the stated count, and the full suite ended at the stated totals with no new failures. The suite also passes on Python 3.11 and 3.14. A static check found no syntax Python 3.8 cannot parse and no 3.9+ APIs in the hook code, but Python 3.8 itself was not run. Sixteen deliberate mutations (ten across the hook, client, and core, three of them for the bypass; six in the wizard) were each caught by a test.
 
-**Not replayed:** the three gates and six manual steps. The bake-off needs Ollama, about 4.3 GB of downloads, and the user's approval; the end-to-end check needs the user's terminal. The runner's own logic (metrics, thresholds, the comparison table, the recommendation rule) is unit-tested with fakes, so those steps run tested code, but the real-model numbers do not exist yet.
+**Not replayed:** the three gates and six manual steps. The bake-off needs Ollama and about 4.3 GB of downloads; it was run once on 2026-09-21 with the user's approval (results in the spec's "Bake-off results" section: no candidate met the thresholds, so the shipped default is heuristics-only), and the plan's replay does not repeat it. The end-to-end check needs the user's terminal. The runner's own logic (metrics, thresholds, the comparison table, the recommendation rule) is unit-tested with fakes.
 
 ## Revisions made during execution
 
@@ -57,6 +57,8 @@ Code review of the first executed tasks found real defects in this plan's origin
 - **Task 1: `state.State`.** `notice_due` and `remember_block` raised on valid-JSON but malformed state files (a list where a dict belonged, `null`/string block values). Both are hardened, with tests.
 - **Task 3: `ollama_client`.** The draft built its connection address from the raw configured string, which let the gate and the HTTP client disagree about the host. It now builds the URL only from the validated host name and port (`chat_url`), brackets IPv6, honours `https`, still validates the grammar when `allow_remote` is set, and treats `http.client` errors as `ModelUnavailable`. Review then found three more defects in the draft, all fixed: redirects were followed, `urllib`'s timeout applied per socket operation (so a server trickling one byte at a time could outlast the budget) and the reply was read without a size limit, and `RecursionError` from a deeply nested reply escaped `classify`. The client now refuses redirects, caps the reply at 64 KiB, catches `RecursionError`, and requires host names to start and end with a letter or digit. A second review round showed that a per-read deadline is still not a hard bound: `http.client` reads the status line, headers, chunk sizes and trailers with a blocking `readline`, so a server trickling those bytes held the call for over ten seconds against a half-second budget. `classify` therefore runs the whole exchange on a daemon worker thread and abandons it at the budget, which bounds every phase (tests trickle each of the four framing parts, and a subprocess test proves an abandoned worker does not delay process exit).
 - **Task 2: heuristics, verdict logic, output.** Review found five guardrail defects in the draft. Tier 1 said `google` for task and environment prompts ("can you implement rate limiting on the api", "show me the latest logs from staging"): it now requires positive evidence (a lookup-question form), recognises request lead-ins and more request verbs, and knows more environment nouns. The `min_confidence` gate accepted NaN, infinity, out-of-range values and `True`. `decide` raised on malformed model replies (`missing=None`, `missing="abc"`). `sanitize` let newlines, C1 controls, bidi overrides and zero-width characters through to Claude; it now always returns a single clean line. One guardrail test was vacuous and now uses a standalone prompt.
+- **Task 4: the bake-off was run.** Apple M2, 24 GB, Ollama 0.9.1: `qwen2.5:1.5b` 48.3% (p95 wall 1470 ms), `llama3.2:1b` 31.7%, `llama3.2:3b` 43.3%, and the 8B `llama3:latest` reference 50.0% (p95 6150 ms), against a bar of 80%. No candidate qualified, so `defaults.py` keeps `RECOMMENDED_MODEL = None` and heuristics-only is the default. The steps below that set the defaults are therefore the "heuristics-only" branch.
+- **Task 5: the hook entry point.** Review found two ways the draft broke its fail-open promise. In `block` mode with a state file that cannot be written (a read-only install directory), the identical prompt was blocked on every send, because the override could never be recorded; `State.remember_block` now reports whether it saved, and an unsaved block is downgraded to the advisory message. And a `budget_ms` above the 5 s hook timeout made every prompt stall until Claude Code killed the hook, with no cooldown; the model call is now capped at 4000 ms inside the hook. Two smaller fixes came with them: the error log records only the exception type and location (an exception message can hold the prompt), and `override_window_s` may not be 0 (which made every block permanent).
 - Test counts grew as a result (Task 1 from 43 to 111, Task 2 from 67 to 144); every cumulative count in this plan already reflects that.
 
 ## File Structure
@@ -78,7 +80,7 @@ Code review of the first executed tasks found real defects in this plan's origin
 | `tools/prompt_preflight/setup.py` | the opt-in wizard | 6 |
 | `tools/interactive_exporter.py` | one opt-in question (modify) | 7 |
 | `docs/03-guides/prompt-preflight.md` | user guide | 8 |
-| `tests/prompt_preflight/` | 14 test modules, 453 tests | all |
+| `tests/prompt_preflight/` | 14 test modules, 461 tests | all |
 
 ---
 
@@ -525,6 +527,7 @@ def test_valid_values_override_defaults(tmp_path):
         ("allow_remote", 1),
         ("cooldown_s", -1),
         ("min_words", True),
+        ("override_window_s", 0),  # 0 would make every block permanent
     ],
 )
 def test_invalid_values_fall_back_to_default(tmp_path, key, bad):
@@ -670,7 +673,7 @@ _RANGES = {
     "skip_over_chars": (1, 1000000),
     "min_words": (0, 100),
     "cooldown_s": (0, 86400),
-    "override_window_s": (0, 86400),
+    "override_window_s": (1, 86400),
 }
 
 
@@ -820,7 +823,7 @@ def is_loopback(host: str) -> bool:
 
 Run: `python3 -m pytest tests/prompt_preflight/test_config.py -q`
 
-Expected: **PASS** — `95 passed`
+Expected: **PASS** — `96 passed`
 
 - [ ] **Step 4: State: test first**
 
@@ -947,6 +950,12 @@ def test_notice_due_handles_malformed_notices_null(tmp_path):
     assert state.notice_due("degraded") is True
 
 
+def test_remember_block_says_whether_it_was_saved(tmp_path):
+    assert make(tmp_path).remember_block("x") is True
+    unwritable = State(str(tmp_path / "missing-dir" / "state.json"), Clock())
+    assert unwritable.remember_block("x") is False
+
+
 def test_remember_block_handles_malformed_blocks_null_value(tmp_path):
     (tmp_path / "state.json").write_text('{"blocks": {"a": null}}', encoding="utf-8")
     state = make(tmp_path)
@@ -1003,7 +1012,8 @@ class State:
             return {}
         return data if isinstance(data, dict) else {}
 
-    def _save(self) -> None:
+    def _save(self) -> bool:
+        """Write the state; False when it could not be saved."""
         try:
             directory = os.path.dirname(self._path) or "."
             fd, tmp = tempfile.mkstemp(dir=directory, prefix=".state-")
@@ -1011,7 +1021,8 @@ class State:
                 json.dump(self._data, handle)
             os.replace(tmp, self._path)
         except OSError:
-            pass
+            return False
+        return True
 
     def in_cooldown(self) -> bool:
         until = self._data.get("cooldown_until", 0)
@@ -1049,7 +1060,8 @@ class State:
         self._save()
         return True
 
-    def remember_block(self, prompt: str) -> None:
+    def remember_block(self, prompt: str) -> bool:
+        """Record a block so the identical prompt can pass once. False if it could not be saved."""
         blocks = self._data.get("blocks", {})
         if not isinstance(blocks, dict):
             blocks = {}
@@ -1057,7 +1069,7 @@ class State:
         blocks = {k: v for k, v in blocks.items() if isinstance(v, (int, float))}
         newest = sorted(blocks.items(), key=lambda item: item[1])[-MAX_BLOCKS:]
         self._data["blocks"] = dict(newest)
-        self._save()
+        return self._save()
 
     def consume_override(self, prompt: str, window_s: float) -> bool:
         """True if this exact prompt was blocked within `window_s`. Consumes the record."""
@@ -1074,7 +1086,7 @@ class State:
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `111 passed`
+Expected: **PASS** — `113 passed`
 
 ```bash
 git add tools/prompt_preflight/__init__.py tools/prompt_preflight/errors.py tools/prompt_preflight/defaults.py tools/prompt_preflight/config.py tools/prompt_preflight/state.py tests/prompt_preflight/__init__.py tests/prompt_preflight/test_config.py tests/prompt_preflight/test_state.py
@@ -1908,7 +1920,7 @@ def degraded_notice() -> Dict[str, Any]:
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `255 passed`
+Expected: **PASS** — `257 passed`
 
 ```bash
 git add tools/prompt_preflight/heuristics.py tools/prompt_preflight/decide.py tools/prompt_preflight/output.py tests/prompt_preflight/test_heuristics.py tests/prompt_preflight/test_decide.py tests/prompt_preflight/test_output.py
@@ -2641,7 +2653,7 @@ Expected: **PASS** — `57 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `312 passed`
+Expected: **PASS** — `314 passed`
 
 ```bash
 git add tools/prompt_preflight/ollama_client.py tests/prompt_preflight/fake_ollama.py tests/prompt_preflight/test_ollama_client.py
@@ -3217,7 +3229,7 @@ Expected: **PASS** — `21 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `333 passed`
+Expected: **PASS** — `335 passed`
 
 ```bash
 git add tools/prompt_preflight/eval/__init__.py tools/prompt_preflight/eval/prompts.jsonl tools/prompt_preflight/eval/run_eval.py tests/prompt_preflight/test_eval.py
@@ -3405,6 +3417,7 @@ def test_kill_switches_disable_it_instantly(tmp_path, env, cfg):
 
 @pytest.mark.parametrize("stdin", ["", "not json", "[]", "{}", '{"prompt": 5}', '{"prompt": null}', "null"])
 def test_bad_input_is_ignored(tmp_path, stdin):
+    configure(tmp_path)  # without a config file run() returns at the bypass and never reads the input
     assert hook.run(stdin, str(tmp_path), env={}) is None
 
 
@@ -3451,12 +3464,29 @@ def test_block_mode_blocks_once_then_lets_the_identical_prompt_through(tmp_path)
     assert call(tmp_path, "what is the capital of France")["decision"] == "block"  # override was single-use
 
 
+def test_block_mode_never_traps_the_user_when_state_cannot_be_saved(tmp_path, monkeypatch):
+    configure(tmp_path, mode="block")
+    monkeypatch.setattr(hook.State, "_save", lambda self: False)  # e.g. a read-only install directory
+    for _ in range(3):
+        out = call(tmp_path, "what is the capital of France")
+        assert "decision" not in out and "Google" in out["systemMessage"]  # advised, never blocked
+
+
 def test_block_override_expires(tmp_path):
     configure(tmp_path, mode="block", override_window_s=60)
     clock = Clock()
     assert call(tmp_path, "what is the capital of France", clock=clock)["decision"] == "block"
     clock.now += 61
     assert call(tmp_path, "what is the capital of France", clock=clock)["decision"] == "block"
+
+
+@pytest.mark.parametrize("configured,sent", [(8000, 4000), (30000, 4000), (1500, 1500)])
+def test_the_model_budget_always_fits_inside_the_hook_timeout(tmp_path, monkeypatch, configured, sent):
+    configure(tmp_path, model="tiny:1b", budget_ms=configured)
+    seen = []
+    monkeypatch.setattr(hook.ollama_client, "classify", lambda text, cfg: seen.append(cfg["budget_ms"]) or {"verdict": "pass", "confidence": 0.9})
+    call(tmp_path, REAL_WORK)
+    assert seen == [sent] and hook.MAX_MODEL_BUDGET_MS < 5000
 
 
 def test_the_log_has_no_prompt_text_by_default(tmp_path):
@@ -3502,6 +3532,24 @@ def test_main_exits_zero_and_prints_nothing_even_if_run_explodes(tmp_path, monke
     assert info.value.code == 0
     assert capsys.readouterr().out == ""
     assert "RuntimeError" in (tmp_path / "preflight.log").read_text(encoding="utf-8")
+
+
+def test_an_internal_error_never_puts_the_prompt_in_the_log(tmp_path, monkeypatch):
+    monkeypatch.setattr(hook, "run", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("the prompt said zebra-token-91")))
+    monkeypatch.setattr(sys, "stdin", type("S", (), {"buffer": type("B", (), {"read": staticmethod(lambda n: b"{}")})()})())
+    with pytest.raises(SystemExit):
+        hook.main(str(tmp_path))
+    log = (tmp_path / "preflight.log").read_text(encoding="utf-8")
+    assert "RuntimeError at test_hook.py" in log and "zebra-token-91" not in log
+
+
+def test_main_reads_no_more_than_the_stdin_cap(tmp_path, monkeypatch):
+    asked = []
+    buffer = type("B", (), {"read": staticmethod(lambda n: asked.append(n) or b"")})()
+    monkeypatch.setattr(sys, "stdin", type("S", (), {"buffer": buffer})())
+    with pytest.raises(SystemExit):
+        hook.main(str(tmp_path))
+    assert asked == [hook.MAX_STDIN_BYTES]
 
 
 def test_without_a_config_file_it_does_nothing_at_all(tmp_path):
@@ -3624,6 +3672,7 @@ from .state import State
 
 MAX_STDIN_BYTES = 1000000
 MAX_LOG_BYTES = 1000000
+MAX_MODEL_BUDGET_MS = 4000  # Claude Code drops a hook's output at 5 s; leave room for start-up and file I/O
 
 
 def _log(root: str, line: Dict[str, Any]) -> None:
@@ -3638,6 +3687,13 @@ def _log(root: str, line: Dict[str, Any]) -> None:
             handle.write(json.dumps(line) + "\n")
     except OSError:
         pass
+
+
+def _describe(exc_info: Any) -> str:
+    """The exception's type and where it was raised; never its message, which can hold the user's prompt."""
+    frames = traceback.extract_tb(exc_info[2])
+    where = "%s:%d" % (os.path.basename(frames[-1].filename), frames[-1].lineno) if frames else "?"
+    return "%s at %s" % (exc_info[0].__name__, where)
 
 
 def run(
@@ -3675,7 +3731,8 @@ def run(
 
     call: Optional[ModelCall] = None
     if cfg["model"] and not state.in_cooldown():
-        call = model_call or (lambda text: ollama_client.classify(text, cfg))
+        capped = dict(cfg, budget_ms=min(cfg["budget_ms"], MAX_MODEL_BUDGET_MS))
+        call = model_call or (lambda text: ollama_client.classify(text, capped))
 
     started = time.perf_counter()
     model_failed = False
@@ -3691,8 +3748,8 @@ def run(
     if out is not None and out.get("decision") == "block":
         if state.consume_override(prompt, cfg["override_window_s"]):
             out = None
-        else:
-            state.remember_block(prompt)
+        elif not state.remember_block(prompt):
+            out = build_output(decision, dict(cfg, mode="advise"))  # without saved state the override cannot work: never trap the user
     if out is None and model_failed and state.notice_due("degraded"):
         out = degraded_notice()
 
@@ -3721,7 +3778,7 @@ def main(root: str) -> None:
             sys.stdout.flush()
     except Exception:  # fail open by design: Preflight must never get in the way
         try:
-            _log(root, {"ts": round(time.time(), 1), "error": traceback.format_exc()[-2000:]})
+            _log(root, {"ts": round(time.time(), 1), "error": _describe(sys.exc_info())})
         except Exception:
             pass
     sys.exit(0)
@@ -3761,11 +3818,11 @@ sys.exit(0)
 
 Run: `python3 -m pytest tests/prompt_preflight/test_hook.py -q`
 
-Expected: **PASS** — `37 passed`
+Expected: **PASS** — `43 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `370 passed`
+Expected: **PASS** — `378 passed`
 
 ```bash
 git add tools/prompt_preflight/hook.py tools/prompt_preflight/launcher.py tests/prompt_preflight/conftest.py tests/prompt_preflight/test_hook.py
@@ -4899,7 +4956,7 @@ Expected: **PASS** — `34 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `426 passed`
+Expected: **PASS** — `434 passed`
 
 ```bash
 git add tools/prompt_preflight/setup.py tests/prompt_preflight/test_setup.py
@@ -5139,7 +5196,7 @@ Expected: **PASS** — `3 passed`
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `444 passed`
+Expected: **PASS** — `452 passed`
 
 ```bash
 git add tools/interactive_exporter.py tests/prompt_preflight/test_exporter_offer.py tests/prompt_preflight/test_optional.py
@@ -5472,7 +5529,7 @@ Baseline recorded on 2026-09-20 before any of this work, on a clean checkout: **
 
 Run: `python3 -m pytest tests/prompt_preflight -q`
 
-Expected: **PASS** — `453 passed`
+Expected: **PASS** — `461 passed`
 
 Run: `python3 -m pytest tests/test_token_optimizer.py -q`
 
@@ -5480,7 +5537,7 @@ Expected: **PASS** — `35 passed`
 
 Run: `python3 -m pytest tests -q --continue-on-collection-errors`
 
-Expected: **PASS** — `686 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 453 = 686, and **no new failure**.
+Expected: **PASS** — `694 passed` with the same `4 failed` and `41 errors` as the baseline — 233 + 461 = 694, and **no new failure**.
 
 - [ ] **Step 5: GATE C — the real end-to-end check (asks first)**
 
