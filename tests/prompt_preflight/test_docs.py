@@ -1,4 +1,5 @@
 import copy
+import json
 import re
 from pathlib import Path
 
@@ -27,9 +28,19 @@ def test_every_relative_link_in_the_guide_resolves():
     assert missing == []
 
 
-def test_the_guide_documents_every_config_key():
-    guide = GUIDE.read_text(encoding="utf-8")
-    assert [key for key in DEFAULTS if "`%s`" % key not in guide] == []
+def test_the_config_table_lists_exactly_the_real_keys_with_their_real_defaults():
+    rows = {}
+    for line in GUIDE.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^\| `(\w+)` \| (.*?) \| .* \|$", line)  # | `key` | default | meaning |
+        if match:
+            rows[match.group(1)] = match.group(2)
+    assert sorted(rows) == sorted(DEFAULTS)
+    for key, cell in rows.items():
+        if key == "notify":
+            assert all(DEFAULTS["notify"].values()) and "all `true`" in cell
+            continue
+        shown = re.search(r"`([^`]*)`", cell).group(1)
+        assert shown == json.dumps(DEFAULTS[key]), "%s: the guide says %s, the default is %s" % (key, shown, json.dumps(DEFAULTS[key]))
 
 
 def test_the_guide_states_the_real_model_budget_cap():

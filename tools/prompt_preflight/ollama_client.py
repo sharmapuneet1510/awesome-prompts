@@ -64,7 +64,11 @@ def open_no_proxy(request: urllib.request.Request, timeout: float) -> Any:
     return opener.open(request, timeout=timeout)
 
 
+_DELIMITER = re.compile(r"</?\s*prompt\s*>", re.IGNORECASE)
+
+
 def build_request(cfg: Dict[str, Any], prompt: str) -> Dict[str, Any]:
+    prompt = _DELIMITER.sub("(prompt tag)", prompt)  # text inside the tags is data: it must not be able to close them
     return {
         "model": cfg["model"],
         "stream": False,
@@ -185,7 +189,10 @@ def classify(prompt: str, cfg: Dict[str, Any], opener: Opener = open_no_proxy) -
             outcome.append((False, exc))
 
     worker = threading.Thread(target=work, daemon=True)
-    worker.start()
+    try:
+        worker.start()
+    except RuntimeError as exc:  # e.g. "can't start new thread"
+        raise ModelUnavailable(str(exc)) from exc
     worker.join(max(0.0, deadline - time.monotonic()))
     if not outcome:
         raise ModelUnavailable("reply too slow")

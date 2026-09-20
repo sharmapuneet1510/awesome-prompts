@@ -38,6 +38,13 @@ def test_anything_but_yes_installs_nothing(monkeypatch, spy, capsys, reply):
     assert "Skipped" in capsys.readouterr().out
 
 
+def test_the_skip_hint_is_a_command_for_this_project_not_the_current_directory(monkeypatch, spy, capsys):
+    answer(monkeypatch, "n")
+    ie.offer_prompt_preflight(Path("/tmp/proj"))
+    out = capsys.readouterr().out
+    assert str(TOOLS / "prompt_preflight" / "setup.py") in out and '--project "/tmp/proj"' in out
+
+
 def test_a_closed_stdin_counts_as_no(monkeypatch, spy):
     answer(monkeypatch)  # input() raises EOFError
     ie.offer_prompt_preflight(Path("/tmp/proj"))

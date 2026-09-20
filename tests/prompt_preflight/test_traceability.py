@@ -22,7 +22,8 @@ def declared_coverage():
         if path.name == "test_traceability.py":
             continue
         match = re.search(r"^COVERS = \[(.*?)\]", path.read_text(encoding="utf-8"), re.M)
-        covers[path.name] = set(re.findall(r"R\d+", match.group(1))) if match else None
+        ids = set(re.findall(r"R\d+", match.group(1))) if match else set()
+        covers[path.name] = ids or None  # a missing or empty COVERS is the same failure
     return covers
 
 

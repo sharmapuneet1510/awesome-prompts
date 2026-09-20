@@ -1,4 +1,5 @@
 """R1 / R14: the feature is optional by construction and leaves no trace unless it is configured."""
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -8,6 +9,8 @@ COVERS = ["R1", "R14"]
 TOOLS = Path(__file__).resolve().parents[2] / "tools"
 REPO = TOOLS.parent
 NAMES = ("prompt_preflight", "prompt-preflight", "PROMPT_PREFLIGHT", "Prompt Preflight")
+# The exporter checks GitHub for a newer version. A dead proxy makes that fail at once, so the test never waits on the network.
+OFFLINE = dict(os.environ, HTTP_PROXY="http://127.0.0.1:9", HTTPS_PROXY="http://127.0.0.1:9", ALL_PROXY="http://127.0.0.1:9", NO_PROXY="", no_proxy="")
 
 
 def test_the_default_export_carries_nothing_of_the_feature(tmp_path):
@@ -17,6 +20,7 @@ def test_the_default_export_carries_nothing_of_the_feature(tmp_path):
         capture_output=True,
         text=True,
         timeout=120,
+        env=OFFLINE,
     )
     assert done.returncode == 0, done.stderr[-500:]
     files = [p for p in tmp_path.rglob("*") if p.is_file()]

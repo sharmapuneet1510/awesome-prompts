@@ -39,7 +39,7 @@ def _log(root: str, line: Dict[str, Any]) -> None:
 def _describe(exc_info: Any) -> str:
     """The exception's type and where it was raised; never its message, which can hold the user's prompt."""
     frames = traceback.extract_tb(exc_info[2])
-    where = "%s:%d" % (os.path.basename(frames[-1].filename), frames[-1].lineno) if frames else "?"
+    where = "%s:%s" % (os.path.basename(frames[-1].filename), frames[-1].lineno) if frames else "?"
     return "%s at %s" % (exc_info[0].__name__, where)
 
 

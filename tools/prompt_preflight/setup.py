@@ -267,25 +267,38 @@ def _self_test(install_dir: Path, io: Any) -> bool:
     # A kept config can legitimately silence the lookup advice; that must not read as a broken install.
     expects_advice = cfg["enabled"] and cfg["notify"]["google"] and len(first.split()) >= cfg["min_words"] and len(first) <= cfg["skip_over_chars"]
     env = {k: v for k, v in os.environ.items() if k != "PROMPT_PREFLIGHT"}
-    passed = False
+    # The command ends in `|| true`, so its exit code is always 0: what proves the install is that the files
+    # exist, `python3` resolves the way Claude Code will resolve it, and every answer is empty or one JSON object.
+    ready = (install_dir / "hook.py").exists() and (install_dir / "prompt_preflight" / "hook.py").exists()
+    ready = ready and shutil.which("python3", path=env.get("PATH")) is not None
+    clean, advised = True, False
     io.say("")
     io.say("Self-test:")
     try:
         for index, prompt in enumerate(SELF_TEST_PROMPTS):
             payload = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "self-test-%d" % index, "prompt": prompt})
-            done = subprocess.run(command, shell=True, input=payload.encode(), capture_output=True, timeout=30, env=env)
+            try:
+                done = subprocess.run(command, shell=True, input=payload.encode(), capture_output=True, timeout=30, env=env)
+            except subprocess.TimeoutExpired:
+                io.say('  "%s" -> TIMED OUT after 30 seconds' % prompt)
+                clean = False
+                continue
             text = done.stdout.decode("utf-8", "replace").strip()
             note = "silent (no advice)"
             if text:
                 try:
-                    note = json.loads(text).get("systemMessage", "adds context for Claude")
+                    parsed = json.loads(text)
+                    if not isinstance(parsed, dict):
+                        raise ValueError
+                    note = parsed.get("systemMessage", "adds context for Claude")
                 except ValueError:
-                    note = "INVALID OUTPUT"
+                    note, clean = "INVALID OUTPUT", False
             io.say('  "%s" -> %s' % (prompt, note))
             if index == 0:
-                passed = done.returncode == 0 and ("Google" in text or not expects_advice)
-                if not expects_advice:
-                    io.say("  (advice is switched off in config.json, so only the exit code is checked)")
+                advised = "Google" in text
+        if not expects_advice:
+            io.say("  (advice is switched off in config.json, so the first prompt is expected to be silent)")
+        passed = ready and clean and (advised or not expects_advice)
     finally:
         for path, was_there in zip((state, log), existed):
             if not was_there and path.exists():
@@ -344,7 +357,7 @@ def _install(args: argparse.Namespace, io: Any, ollama: Any, home: str, project:
     io.say("")
     io.say("Installed to %s" % install_dir)
     if saved_config:
-        io.say("The existing config.json was not valid JSON; it was copied to %s and replaced with defaults." % saved_config)
+        io.say("The existing config.json was not a valid JSON object; it was copied to %s and replaced with defaults." % saved_config)
     if backup:
         io.say("Backed up your settings to %s" % backup)
     if scope == "local":
@@ -413,7 +426,7 @@ def _update(args: argparse.Namespace, io: Any, home: str, project: str) -> int:
         elif outcome == "missing":
             io.say("Updated the code in %s. It has no config.json, so the hook stays switched off." % install_dir)
         else:
-            io.say("Updated the code in %s. config.json is not valid JSON, so it was left exactly as it is." % install_dir)
+            io.say("Updated the code in %s. config.json is not a valid JSON object, so it was left exactly as it is." % install_dir)
     return 0
 
 

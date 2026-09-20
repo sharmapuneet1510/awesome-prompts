@@ -271,7 +271,7 @@ def test_update_never_rewrites_an_unparsable_config_and_never_creates_one(env):
     config.write_text('{"mode": "block",}', encoding="utf-8")
     io = ScriptedIO()
     setup.main(flags(env, "--update", "--scope", "local"), io=io, ollama=FakeAdmin())
-    assert config.read_text(encoding="utf-8") == '{"mode": "block",}' and "config kept" not in io.text and "not valid JSON" in io.text
+    assert config.read_text(encoding="utf-8") == '{"mode": "block",}' and "config kept" not in io.text and "not a valid JSON object" in io.text
     config.unlink()
     io = ScriptedIO()
     setup.main(flags(env, "--update", "--scope", "local"), io=io, ollama=FakeAdmin())
@@ -346,6 +346,54 @@ def test_a_kept_config_that_switches_advice_off_does_not_fail_the_self_test(env,
     io = ScriptedIO()
     assert setup.main(args, io=io, ollama=FakeAdmin()) == 0
     assert "switched off in config.json" in io.text and "self-test failed" not in io.text
+
+
+@pytest.mark.parametrize("advice", [True, False])
+@pytest.mark.parametrize("damage", ["package", "launcher"])
+def test_the_self_test_notices_a_broken_install_whether_or_not_advice_is_on(env, real_self_test, advice, damage):
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    root = env[1] / ".claude" / "prompt-preflight"
+    config = json.loads((root / "config.json").read_text())
+    config["enabled"] = advice
+    (root / "config.json").write_text(json.dumps(config), encoding="utf-8")
+    shutil.rmtree(root / "prompt_preflight") if damage == "package" else (root / "hook.py").unlink()
+    assert setup._self_test(root, ScriptedIO()) is False
+
+
+def install_with_advice_off(env):
+    """An install whose kept config silences the lookup advice, so only the install's health can fail the self-test."""
+    setup.main(flags(env, "--yes", "--scope", "local", "--no-model"), io=ScriptedIO(), ollama=FakeAdmin())
+    root = env[1] / ".claude" / "prompt-preflight"
+    config = json.loads((root / "config.json").read_text())
+    config["enabled"] = False
+    (root / "config.json").write_text(json.dumps(config), encoding="utf-8")
+    return root
+
+
+def test_a_self_test_that_times_out_fails_cleanly_instead_of_raising(env, monkeypatch, real_self_test):
+    root = install_with_advice_off(env)
+
+    def hang(*args, **kwargs):
+        raise subprocess.TimeoutExpired("hook", 30)
+
+    monkeypatch.setattr(setup.subprocess, "run", hang)
+    io = ScriptedIO()
+    assert setup._self_test(root, io) is False and "TIMED OUT" in io.text
+
+
+def test_a_self_test_fails_when_the_hook_prints_anything_but_one_json_object(env, monkeypatch, real_self_test):
+    root = install_with_advice_off(env)
+    for garbage in (b"plain text", b"[1, 2]"):
+        monkeypatch.setattr(setup.subprocess, "run", lambda *a, _g=garbage, **k: subprocess.CompletedProcess(a, 0, _g, b""))
+        io = ScriptedIO()
+        assert setup._self_test(root, io) is False and "INVALID OUTPUT" in io.text
+
+
+@pytest.mark.skipif(os.name == "nt", reason="PATH lookup semantics differ")
+def test_a_self_test_fails_without_python3_on_the_path_even_when_advice_is_off(env, tmp_path, monkeypatch, real_self_test):
+    root = install_with_advice_off(env)
+    monkeypatch.setenv("PATH", str(tmp_path / "no-python-here"))
+    assert setup._self_test(root, ScriptedIO()) is False
 
 
 def test_the_self_test_reports_and_leaves_no_state_behind(env, real_self_test):

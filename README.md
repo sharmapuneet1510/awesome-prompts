@@ -186,7 +186,7 @@ More: [docs/00-getting-started/concepts.md](docs/00-getting-started/concepts.md)
 | **Prompts** | 18 templates in 12 categories | [`prompts/`](prompts/) |
 | **Rules** | RULES 0–12 plus 4 behavioural principles | [`instructions/`](instructions/) · [reference](docs/02-reference/rules.md) |
 | **Tools** | 22 Python utilities, including the exporter | [`tools/`](tools/) · [reference](docs/02-reference/tools.md) |
-| **Prompt Preflight** | Optional, and off unless you set it up: a hook that tells you when a web search would do and sharpens vague requests, using a small local model | [guide](docs/03-guides/prompt-preflight.md) |
+| **Prompt Preflight** | Optional, and off unless you set it up: a hook that tells you when a web search would do and, with a small local model you choose, sharpens vague requests | [guide](docs/03-guides/prompt-preflight.md) |
 
 ### The five agents
 

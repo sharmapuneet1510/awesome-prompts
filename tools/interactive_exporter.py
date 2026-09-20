@@ -398,10 +398,12 @@ def offer_prompt_preflight(project_root: Path) -> None:
         answer = input().strip().lower()
     except EOFError:
         answer = ""
-    if answer not in ("y", "yes"):
-        print(f"  Skipped. Run it any time: {Colors.OKCYAN}python3 tools/prompt_preflight/setup.py{Colors.ENDC}\n")
-        return
+        print()
     setup_script = Path(__file__).parent / "prompt_preflight" / "setup.py"
+    if answer not in ("y", "yes"):
+        # The exact command, for THIS project: the wizard defaults to the current directory otherwise.
+        print(f"  Skipped. Run it any time: {Colors.OKCYAN}python3 \"{setup_script}\" --project \"{project_root}\"{Colors.ENDC}\n")
+        return
     subprocess.run([sys.executable, str(setup_script), "--project", str(project_root)])
 
 
