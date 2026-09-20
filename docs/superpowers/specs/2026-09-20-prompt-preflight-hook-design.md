@@ -340,3 +340,25 @@ Made while planning, from evidence gathered on 2026-09-20. They refine the desig
 - Claude Code hooks reference (raw markdown): https://code.claude.com/docs/en/hooks.md — fetched 2026-09-20
 - Ollama API reference: https://raw.githubusercontent.com/ollama/ollama/main/docs/api.md — fetched 2026-09-20
 - Local verification: `tools/token_optimizer` probe and tests; `hooks/promptshield-check.sh` run against a stdin payload; machine and Ollama inspection — all 2026-09-20
+
+---
+
+## Bake-off results
+
+**FACT (measured 2026-09-21).** Machine: Apple M2, 24 GB. Ollama 0.9.1, run locally; models were downloaded to `~/.ollama` with the user's approval and nothing model-shaped is in this repository. Eval set: the 60 labelled prompts in `tools/prompt_preflight/eval/prompts.jsonl` (labels approved by the user), scored with the shipped system prompt and JSON schema at temperature 0, with `min_confidence` at its default of 0.7 and the runner's generous per-call limit of 30 s so that slow replies are timed rather than cut off. The p95 columns are the 95th percentile over the prompts that reached the model; wall time adds one measured interpreter start-up. Raw summaries: `tools/prompt_preflight/eval/results/*.json`.
+
+| Candidate | Accuracy | False-google | Guardrail google | Reply OK | p95 model (ms) | p95 wall (ms) | Thresholds |
+|---|---|---|---|---|---|---|---|
+| baseline | 31.7% | 0.0% | 0 | 100.0% | n/a | n/a | accuracy 32% < 80% |
+| llama3:latest | 50.0% | 0.0% | 0 | 100.0% | 6097 | 6150 | accuracy 50% < 80%; p95 wall 6150 ms > 2000 ms |
+| llama3.2:1b | 31.7% | 4.4% | 0 | 100.0% | 2417 | 2471 | accuracy 32% < 80%; p95 wall 2471 ms > 2000 ms |
+| llama3.2:3b | 43.3% | 0.0% | 0 | 100.0% | 3272 | 3321 | accuracy 43% < 80%; p95 wall 3321 ms > 2000 ms |
+| qwen2.5:1.5b | 48.3% | 4.4% | 0 | 100.0% | 1436 | 1470 | accuracy 48% < 80% |
+
+Recommendation: heuristics-only default (no model met every threshold and clearly beat tier 1)
+
+**FACT.** No candidate met every threshold. The best accuracy was 48.3% (`qwen2.5:1.5b`, which was also the only candidate inside the 2000 ms wall-time limit) against a bar of 80%; the 8B reference model reached 50.0% at a p95 of 6150 ms. No model produced a `google` verdict on a guardrail prompt, and every reply parsed (reply-OK 100% for all five rows). Two candidates (`qwen2.5:1.5b`, `llama3.2:1b`) had a 4.4% false-`google` rate, inside the 5% limit but not free.
+
+**DECISION (the pre-agreed off-ramp, spec §Model selection and amendment A5).** The shipped default is **heuristics-only**: `defaults.py` keeps `RECOMMENDED_MODEL = None`. The model tier stays an optional extra; the setup wizard offers only models the user already has, and nothing is downloaded without an explicit yes.
+
+**INFERENCE, not measured.** These numbers describe this system prompt and schema on models up to 8B, not what a small model can do in principle. A different prompt, few-shot examples, or a larger model might clear the bar, and the eval runner can re-score any of them (`run_eval.py --model <name>`) without code changes. Treat a better result as a new proposal under RULE 12: re-run the bake-off, then change `defaults.py` and this section together.
