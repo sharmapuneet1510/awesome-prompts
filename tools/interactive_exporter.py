@@ -387,6 +387,24 @@ def print_next_steps(project_root: Path):
     print(f"{Colors.OKGREEN}🎉 Ready to build! Happy coding!{Colors.ENDC}\n")
 
 
+def offer_prompt_preflight(project_root: Path) -> None:
+    """Offer the optional Prompt Preflight hook. The default is No, and declining changes nothing."""
+    print(f"\n{Colors.BOLD}Optional: Prompt Preflight{Colors.ENDC}")
+    print("  A hook that checks each prompt before Claude sees it: it tells you when a web search")
+    print("  would do, and can use a small local model (Ollama) to sharpen vague requests.")
+    print("  Prompts never leave this machine, and nothing is installed unless you say yes.")
+    print("Set it up now? (y/N): ", end="")
+    try:
+        answer = input().strip().lower()
+    except EOFError:
+        answer = ""
+    if answer not in ("y", "yes"):
+        print(f"  Skipped. Run it any time: {Colors.OKCYAN}python3 tools/prompt_preflight/setup.py{Colors.ENDC}\n")
+        return
+    setup_script = Path(__file__).parent / "prompt_preflight" / "setup.py"
+    subprocess.run([sys.executable, str(setup_script), "--project", str(project_root)])
+
+
 def main():
     """Main interactive setup flow."""
     try:
@@ -416,6 +434,9 @@ def main():
 
         # Step 6: Print next steps
         print_next_steps(project_root)
+
+        # Step 7: Offer the optional Prompt Preflight hook (default: no)
+        offer_prompt_preflight(project_root)
 
     except KeyboardInterrupt:
         print(f"\n\n{Colors.WARNING}Setup cancelled by user.{Colors.ENDC}\n")
