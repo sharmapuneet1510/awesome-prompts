@@ -74,12 +74,14 @@ def load_config(path: str) -> Dict[str, Any]:
 
 
 def host_only(host: str) -> str:
-    """Parse a strict [scheme://]host[:port][/path] grammar, fail-closed.
+    """Parse a plain [http(s)://]host[:port][/path] grammar, fail-closed.
 
-    Returns the bare host name, or "" if the string doesn't match the grammar
-    or contains userinfo, query, fragment, or other invalid characters.
+    Returns the bare host name, or "" if the string is not a plain
+    [http(s)://]host[:port][/path], contains userinfo, query, fragment,
+    invalid characters, invalid IPv6, or port out of range.
     """
     text = host.strip()
+    had_scheme = False
 
     # Step 1: Handle scheme
     if "://" in text:
@@ -87,6 +89,7 @@ def host_only(host: str) -> str:
         if scheme.lower() not in ("http", "https"):
             return ""
         text = rest
+        had_scheme = True
 
     # Step 2: Extract authority (up to first "/" is path, ignored)
     authority = text.split("/", 1)[0]
@@ -111,11 +114,22 @@ def host_only(host: str) -> str:
         host_part = authority[1:close_bracket]
         remainder = authority[close_bracket + 1:]
 
+        # Validate that bracketed part is a valid IPv6 address
+        try:
+            ipaddress.IPv6Address(host_part)
+        except ValueError:
+            return ""
+
         if not remainder:
             return host_part
         if remainder.startswith(":"):
             port = remainder[1:]
-            if not port or not port.isdigit():
+            if not port or not (port.isascii() and port.isdigit()):
+                return ""
+            try:
+                if int(port) > 65535:
+                    return ""
+            except ValueError:
                 return ""
             return host_part
         # Invalid format
@@ -130,11 +144,24 @@ def host_only(host: str) -> str:
         elif colon_count == 1:
             # host:port
             host_part, port = authority.split(":", 1)
-            if not port or not port.isdigit():
+            if not port or not (port.isascii() and port.isdigit()):
+                return ""
+            try:
+                if int(port) > 65535:
+                    return ""
+            except ValueError:
                 return ""
             return host_part
         else:
             # Multiple colons: bare IPv6 address (no port allowed)
+            # Bare IPv6 is only allowed without a scheme
+            if had_scheme:
+                return ""
+            # Validate it parses as IPv6
+            try:
+                ipaddress.IPv6Address(authority)
+            except ValueError:
+                return ""
             return authority
 
 
