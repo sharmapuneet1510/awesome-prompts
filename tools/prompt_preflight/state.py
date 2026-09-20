@@ -51,7 +51,10 @@ class State:
 
     def notice_due(self, kind: str, every_s: float = 86400) -> bool:
         """True at most once per `every_s` for `kind`; records the time when it returns True."""
-        notices = self._data.setdefault("notices", {})
+        notices = self._data.get("notices", {})
+        if not isinstance(notices, dict):
+            notices = {}
+        self._data["notices"] = notices
         last = notices.get(kind)
         now = self._clock()
         if isinstance(last, (int, float)) and now - last < every_s:
@@ -79,6 +82,7 @@ class State:
         if not isinstance(blocks, dict):
             blocks = {}
         blocks[_digest(prompt)] = self._clock()
+        blocks = {k: v for k, v in blocks.items() if isinstance(v, (int, float))}
         newest = sorted(blocks.items(), key=lambda item: item[1])[-MAX_BLOCKS:]
         self._data["blocks"] = dict(newest)
         self._save()

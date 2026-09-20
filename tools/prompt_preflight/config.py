@@ -79,6 +79,8 @@ def host_only(host: str) -> str:
     if "://" in text:
         text = text.split("://", 1)[1]
     text = text.split("/", 1)[0]
+    if "@" in text:
+        text = text.split("@")[-1]
     if text.startswith("["):
         end = text.find("]")
         return text[1:end] if end != -1 else text[1:]

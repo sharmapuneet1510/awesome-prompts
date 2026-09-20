@@ -98,3 +98,35 @@ def test_unwritable_location_never_raises(tmp_path):
     state.start_cooldown(10)
     assert state.in_cooldown()  # kept in memory even though the save failed
     assert not os.path.exists(str(tmp_path / "missing_dir"))
+
+
+def test_notice_due_handles_malformed_notices_list(tmp_path):
+    (tmp_path / "state.json").write_text('{"notices": []}', encoding="utf-8")
+    state = make(tmp_path)
+    assert state.notice_due("degraded") is True
+
+
+def test_notice_due_handles_malformed_notices_string(tmp_path):
+    (tmp_path / "state.json").write_text('{"notices": "a"}', encoding="utf-8")
+    state = make(tmp_path)
+    assert state.notice_due("degraded") is True
+
+
+def test_notice_due_handles_malformed_notices_null(tmp_path):
+    (tmp_path / "state.json").write_text('{"notices": null}', encoding="utf-8")
+    state = make(tmp_path)
+    assert state.notice_due("degraded") is True
+
+
+def test_remember_block_handles_malformed_blocks_null_value(tmp_path):
+    (tmp_path / "state.json").write_text('{"blocks": {"a": null}}', encoding="utf-8")
+    state = make(tmp_path)
+    state.remember_block("x")
+    assert state.consume_override("x", 300) is True
+
+
+def test_remember_block_handles_malformed_blocks_string_value(tmp_path):
+    (tmp_path / "state.json").write_text('{"blocks": {"a": "old", "b": 1.5}}', encoding="utf-8")
+    state = make(tmp_path)
+    state.remember_block("y")
+    assert state.consume_override("y", 300) is True

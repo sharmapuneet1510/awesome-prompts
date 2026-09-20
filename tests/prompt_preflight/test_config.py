@@ -66,7 +66,18 @@ def test_loopback_hosts_are_accepted(host):
     assert is_loopback(host)
 
 
-@pytest.mark.parametrize("host", ["10.0.0.5", "192.168.1.2:11434", "example.com", "0.0.0.0", "http://ollama.internal:11434", ""])
+@pytest.mark.parametrize("host", [
+    "10.0.0.5",
+    "192.168.1.2:11434",
+    "example.com",
+    "0.0.0.0",
+    "http://ollama.internal:11434",
+    "",
+    "http://localhost:11434@evil.com",
+    "127.0.0.1:80@evil.com",
+    "[::1]@evil.com",
+    "http://[::1]:11434@evil.com",
+])
 def test_other_hosts_are_refused(host):
     assert not is_loopback(host)
 
@@ -74,3 +85,8 @@ def test_other_hosts_are_refused(host):
 def test_host_only_strips_scheme_port_and_brackets():
     assert host_only("http://[::1]:11434/api") == "::1"
     assert host_only("localhost:11434") == "localhost"
+
+
+def test_host_only_strips_userinfo():
+    assert host_only("user@localhost:11434") == "localhost"
+    assert is_loopback("user@localhost:11434") is True
