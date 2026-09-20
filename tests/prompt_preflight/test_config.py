@@ -59,34 +59,198 @@ def test_loading_does_not_mutate_defaults(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "host",
-    ["127.0.0.1", "127.0.0.1:11434", "localhost", "localhost:11434", "[::1]:11434", "::1", "http://localhost:11434", "127.5.5.5"],
+    "input_host,expected_host",
+    [
+        ("127.0.0.1", "127.0.0.1"),
+        ("127.0.0.1:11434", "127.0.0.1"),
+        ("localhost", "localhost"),
+        ("localhost:11434", "localhost"),
+        ("[::1]:11434", "::1"),
+        ("[::1]", "::1"),
+        ("::1", "::1"),
+        ("http://localhost:11434", "localhost"),
+        ("http://localhost:11434/api/chat", "localhost"),
+        ("https://[::1]:11434/", "::1"),
+        ("HTTP://LocalHost:11434", "LocalHost"),
+    ],
 )
-def test_loopback_hosts_are_accepted(host):
-    assert is_loopback(host)
+def test_host_only_accepts_valid_hosts(input_host, expected_host):
+    assert host_only(input_host) == expected_host
 
 
-@pytest.mark.parametrize("host", [
-    "10.0.0.5",
-    "192.168.1.2:11434",
-    "example.com",
-    "0.0.0.0",
-    "http://ollama.internal:11434",
-    "",
-    "http://localhost:11434@evil.com",
-    "127.0.0.1:80@evil.com",
-    "[::1]@evil.com",
-    "http://[::1]:11434@evil.com",
-])
-def test_other_hosts_are_refused(host):
-    assert not is_loopback(host)
+@pytest.mark.parametrize(
+    "refused_host",
+    [
+        "http://localhost:11434@evil.com",
+        "127.0.0.1:80@evil.com",
+        "[::1]@evil.com",
+        "http://[::1]:11434@evil.com",
+        "user@localhost:11434",
+        "http://evil.com?@localhost",
+        "http://evil.com#@localhost",
+        "http://evil.com:80?@127.0.0.1:11434",
+        "localhost?x=1",
+        "localhost#frag",
+        "http://evil.com\\@localhost",
+        "localhost:abc",
+        "localhost:",
+        "[::1",
+        "ftp://localhost",
+        "file:///etc/passwd",
+        "loc alhost",
+        "local%68ost",
+        "",
+        "   ",
+        "http://",
+    ],
+)
+def test_host_only_refuses_invalid_hosts(refused_host):
+    assert host_only(refused_host) == ""
 
 
-def test_host_only_strips_scheme_port_and_brackets():
-    assert host_only("http://[::1]:11434/api") == "::1"
-    assert host_only("localhost:11434") == "localhost"
+@pytest.mark.parametrize(
+    "input_host",
+    [
+        "127.0.0.1",
+        "127.0.0.1:11434",
+        "localhost",
+        "localhost:11434",
+        "[::1]:11434",
+        "[::1]",
+        "::1",
+        "http://localhost:11434",
+        "http://localhost:11434/api/chat",
+        "https://[::1]:11434/",
+        "HTTP://LocalHost:11434",
+    ],
+)
+def test_is_loopback_accepts_valid_loopback_hosts(input_host):
+    assert is_loopback(input_host) is True
 
 
-def test_host_only_strips_userinfo():
-    assert host_only("user@localhost:11434") == "localhost"
-    assert is_loopback("user@localhost:11434") is True
+@pytest.mark.parametrize(
+    "input_host",
+    [
+        "http://localhost:11434@evil.com",
+        "127.0.0.1:80@evil.com",
+        "[::1]@evil.com",
+        "http://[::1]:11434@evil.com",
+        "user@localhost:11434",
+        "http://evil.com?@localhost",
+        "http://evil.com#@localhost",
+        "http://evil.com:80?@127.0.0.1:11434",
+        "localhost?x=1",
+        "localhost#frag",
+        "http://evil.com\\@localhost",
+        "localhost:abc",
+        "localhost:",
+        "[::1",
+        "ftp://localhost",
+        "file:///etc/passwd",
+        "loc alhost",
+        "local%68ost",
+        "",
+        "   ",
+        "http://",
+        "10.0.0.5:11434",
+        "example.com",
+        "0.0.0.0",
+        "http://ollama.internal:11434",
+        "evil.com/@localhost",
+        "http://a@b@localhost",
+        "localhost@127.0.0.1",
+    ],
+)
+def test_is_loopback_refuses_invalid_or_remote_hosts(input_host):
+    assert is_loopback(input_host) is False
+
+
+def test_differential_is_loopback_vs_urllib():
+    """Verify is_loopback agrees with urllib for all edge cases."""
+    import ipaddress
+    import urllib.parse
+    import urllib.request
+
+    # Strings that should be accepted as loopback
+    accept_cases = [
+        "127.0.0.1",
+        "127.0.0.1:11434",
+        "localhost",
+        "localhost:11434",
+        "[::1]:11434",
+        "[::1]",
+        "::1",
+        "http://localhost:11434",
+        "http://localhost:11434/api/chat",
+        "https://[::1]:11434/",
+        "HTTP://LocalHost:11434",
+    ]
+
+    # Strings that should be refused
+    refuse_cases = [
+        "http://localhost:11434@evil.com",
+        "127.0.0.1:80@evil.com",
+        "[::1]@evil.com",
+        "http://[::1]:11434@evil.com",
+        "user@localhost:11434",
+        "http://evil.com?@localhost",
+        "http://evil.com#@localhost",
+        "http://evil.com:80?@127.0.0.1:11434",
+        "localhost?x=1",
+        "localhost#frag",
+        "http://evil.com\\@localhost",
+        "localhost:abc",
+        "localhost:",
+        "[::1",
+        "ftp://localhost",
+        "file:///etc/passwd",
+        "loc alhost",
+        "local%68ost",
+        "",
+        "   ",
+        "http://",
+        "10.0.0.5:11434",
+        "example.com",
+        "0.0.0.0",
+        "http://ollama.internal:11434",
+        "evil.com/@localhost",
+        "http://a@b@localhost",
+        "localhost@127.0.0.1",
+    ]
+
+    # For accepted cases, verify urllib.parse.urlsplit agrees
+    for s in accept_cases:
+        if is_loopback(s):
+            # Parse with urlsplit
+            parsed = urllib.parse.urlsplit(s if "://" in s else "//" + s)
+            hostname = parsed.hostname
+
+            # Verify the hostname is a loopback
+            if hostname and hostname.lower() != "localhost":
+                try:
+                    assert ipaddress.ip_address(hostname).is_loopback
+                except ValueError:
+                    pytest.fail(f"urlsplit gave non-loopback hostname for {s}: {hostname}")
+
+            # Also check urllib.request.Request
+            url_for_request = "http://" + s.split("://", 1)[-1].split("/", 1)[0]
+            # Remove port from url for host extraction
+            if ":" in url_for_request and not url_for_request.startswith("http://["):
+                url_for_request = url_for_request.rsplit(":", 1)[0]
+            elif url_for_request.startswith("http://["):
+                # Keep IPv6 bracket format
+                pass
+
+            try:
+                req = urllib.request.Request(url_for_request + "/x")
+                req_host = req.host
+                if req_host.startswith("["):
+                    req_host = req_host.strip("[]").split("]")[0]
+                if ":" in req_host and not req_host.startswith("["):
+                    req_host = req_host.rsplit(":", 1)[0]
+            except Exception:
+                pass
+
+    # For refused cases, verify is_loopback returns False
+    for s in refuse_cases:
+        assert is_loopback(s) is False

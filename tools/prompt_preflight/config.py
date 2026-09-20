@@ -74,19 +74,68 @@ def load_config(path: str) -> Dict[str, Any]:
 
 
 def host_only(host: str) -> str:
-    """Strip an optional scheme, path, and port: 'http://[::1]:11434/x' -> '::1'."""
+    """Parse a strict [scheme://]host[:port][/path] grammar, fail-closed.
+
+    Returns the bare host name, or "" if the string doesn't match the grammar
+    or contains userinfo, query, fragment, or other invalid characters.
+    """
     text = host.strip()
+
+    # Step 1: Handle scheme
     if "://" in text:
-        text = text.split("://", 1)[1]
-    text = text.split("/", 1)[0]
-    if "@" in text:
-        text = text.split("@")[-1]
-    if text.startswith("["):
-        end = text.find("]")
-        return text[1:end] if end != -1 else text[1:]
-    if text.count(":") == 1:
-        return text.split(":", 1)[0]
-    return text
+        scheme, rest = text.split("://", 1)
+        if scheme.lower() not in ("http", "https"):
+            return ""
+        text = rest
+
+    # Step 2: Extract authority (up to first "/" is path, ignored)
+    authority = text.split("/", 1)[0]
+
+    # Step 3: Reject if authority contains forbidden characters
+    if not authority:
+        return ""
+    forbidden_chars = {"@", "?", "#", "\\", "%"}
+    if any(c in authority for c in forbidden_chars):
+        return ""
+    # Also reject if contains space, any whitespace, or control chars
+    for char in authority:
+        if char.isspace() or ord(char) < 32 or ord(char) == 127:
+            return ""
+
+    # Step 4: Parse host and port from authority
+    if authority.startswith("["):
+        # Bracketed IPv6: [::1] or [::1]:port
+        close_bracket = authority.find("]")
+        if close_bracket == -1:
+            return ""
+        host_part = authority[1:close_bracket]
+        remainder = authority[close_bracket + 1:]
+
+        if not remainder:
+            return host_part
+        if remainder.startswith(":"):
+            port = remainder[1:]
+            if not port or not port.isdigit():
+                return ""
+            return host_part
+        # Invalid format
+        return ""
+    else:
+        # Non-bracketed: host or host:port
+        # IPv6 without brackets like "::1" should not have a port (multiple colons)
+        colon_count = authority.count(":")
+        if colon_count == 0:
+            # Just host
+            return authority
+        elif colon_count == 1:
+            # host:port
+            host_part, port = authority.split(":", 1)
+            if not port or not port.isdigit():
+                return ""
+            return host_part
+        else:
+            # Multiple colons: bare IPv6 address (no port allowed)
+            return authority
 
 
 def is_loopback(host: str) -> bool:
