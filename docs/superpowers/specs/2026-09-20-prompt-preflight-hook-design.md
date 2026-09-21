@@ -1,7 +1,7 @@
 # Prompt Preflight — Optional Local-Model Prompt Hook — Design Specification
 
 **Date:** September 20, 2026
-**Status:** Approved by the user, 2026-09-20. Task 1's eval-set labels and model downloads still need separate approval (see *Model Selection*).
+**Status:** Approved by the user, 2026-09-20; amended the same day (see *Amendments*). The eval-set labels and model downloads still need separate approval at plan Task 4 (see *Model Selection*).
 **Version:** 1.0
 
 Claims in this document carry the RULE 12 labels: **FACT** (verified, sourced), **INFERENCE** (reasoned, not yet measured), **PROPOSAL** (awaiting approval), **DECISION** (approved by the user).
@@ -52,15 +52,16 @@ Each requirement is testable; the traceability matrix is in *Testing*.
 | **R2** | **Tier 1 (heuristics)** decides obvious cases with no model and no network. |
 | **R3** | **Tier 2 (model)** runs only for prompts tier 1 did not decide, only if enabled and reachable, with schema-constrained output that is re-validated in code. |
 | **R4** | **Verdicts and outputs** are exactly those in *Design §2*. `pass` produces no output. |
-| **R5** | **Guardrails.** Never `google` for a prompt bound to the user's own context. A refinement is injected only at or above `min_confidence`. All injected text is capped and sanitized. |
+| **R5** | **Guardrails.** Never `google` for a prompt bound to the user's own context. A model verdict (`google`, `clarify` or `refine`) is acted on only at or above `min_confidence`, and `clarify` and `refine` only on the first prompt of a session (Amendments A1, A4). All injected text is capped and sanitized. |
 | **R6** | **Fail open.** Any error, timeout, or unavailability lets the prompt proceed untouched. |
 | **R7** | **Hook I/O contract.** Exit code is always 0. Stdout is exactly one JSON object or empty. Diagnostics go only to the log. |
 | **R8** | **Privacy.** The model host must be loopback unless `allow_remote` is set. The log never contains prompt text unless `log_prompts` is set. No telemetry. |
-| **R9** | **Config** keys and defaults are as in *Design §8*. A corrupt or missing file yields defaults. |
+| **R9** | **Config** keys and defaults are as in *Design §8*. A corrupt file, or an invalid value in one, yields the default for it; a *missing* `config.json` means the hook is bypassed (R14). |
 | **R10** | **Setup safety.** Backup before edit; merge, never replace; atomic write; idempotent; refuse a non-JSON settings file; `--dry-run` writes nothing; scope is user or project-local, never the committed `.claude/settings.json`; a self-test runs before finishing. |
 | **R11** | **Reversibility.** `--remove` deletes exactly Preflight's own entry and folder. `PROMPT_PREFLIGHT=off` and `"enabled": false` disable it instantly. |
 | **R12** | **Acceptance thresholds** from the bake-off (*Model selection*) are met by the shipped default, or the default is heuristics-only. |
 | **R13** | **Docs.** A user guide, plus a README mention of the optional feature. |
+| **R14** | **Bypass when unconfigured.** If `config.json` is absent from the hook's folder, the launcher exits 0 before importing anything and writes no output, state, or log. Nothing in the repository installs the feature by default, and the default export carries no trace of it. |
 
 ### Non-goals
 
@@ -99,7 +100,10 @@ Rewriting the user's prompt (not possible). Other assistants (only Claude Code h
 prompt submitted
   │
   ▼
-[0] skip       slash commands, "!" and "#" prompts, bypass_marker, over skip_over_chars → untouched
+[-] bypass     no config.json in the hook's folder → exit at once, before importing anything (R14)
+  │
+  ▼
+[0] skip       slash commands, "!" and "#" prompts, bypass_marker, over skip_over_chars, under min_words → untouched
   │
   ▼
 [1] heuristics token_optimizer + context-bound signals → decides clear cases
@@ -122,8 +126,8 @@ output: systemMessage (user) and/or additionalContext (Claude); never blocks unl
 
 ### 3. Definitions
 
-- **Context-bound signals** (**PROPOSAL**): a code fence, a file path, a stack trace, or the words "my" / "this repo" / "this file". Any signal forbids `google`.
-- **Tier 1 decides** only: `google` (strong web-search pattern hit **and** no context-bound signal); `clarify` (analyzer returns `skip`, i.e. invalid or too vague). Everything else is *undecided*.
+- **Context-bound signals** (**DECISION**, extended by Amendment A3): a code fence, a file path, a stack trace, an ownership word ("my", "our"), a reference word ("this", "that", "it", "now", "same", …), a code noun ("repo", "commit", "function", "test", …), or a leading task verb ("implement", "add", "refactor", …). Any signal forbids `google`.
+- **Tier 1 decides** only `google` (strong web-search pattern hit **and** no context-bound signal). It never decides `clarify` (Amendment A2): the analyzer marks short conversational replies such as "yes" and "commit and push" as `skip`. Everything else is *undecided*.
 - **Gray zone** = undecided by tier 1.
 - **Heuristics-only mode** (model disabled, unavailable, or cooling down): tier-1 decisions still speak; undecided prompts pass silently.
 - Tier-1 rules are validated against the bake-off eval set and adjusted there; the table in *Problem Statement* is why they are not trusted to decide `pass` or `refine`.
@@ -166,11 +170,11 @@ Installed layout: `<scope>/prompt-preflight/` containing `hook.py` and the other
 ```json
 { "hooks": { "UserPromptSubmit": [
   { "hooks": [ { "type": "command",
-                 "command": "python3 /abs/path/prompt-preflight/hook.py",
+                 "command": "python3 '/abs/path/prompt-preflight/hook.py' || true",
                  "timeout": 5 } ] } ] } }
 ```
 
-The entry is identified by its command path, which makes install idempotent and removal exact. The 5 s timeout is deliberately below the 30 s default so a stuck hook cannot stall the session.
+The entry is identified by its command path, which makes install idempotent and removal exact. The path is shell-quoted (`shlex.quote`) because Claude Code runs the command through a shell on every prompt, so a folder name holding `$(...)` or a backtick must stay data (A8). The trailing `|| true` matters: if the install folder is ever deleted by hand, `python3` exits with code 2 for the missing script, and exit code 2 rejects the user's prompt; the guard makes a leftover entry harmless (A8). The 5 s timeout is deliberately below the 30 s default so a stuck hook cannot stall the session.
 
 ### 6. Safety and failure modes (R6, R7, R8)
 
@@ -198,11 +202,13 @@ The entry is identified by its command path, which makes install idempotent and 
 | `mode` | `"advise"` | `"advise"` or `"block"` (`google` verdict only) |
 | `model` | set by setup | Ollama model name |
 | `ollama_host` | `"127.0.0.1:11434"` | the only host source the hook reads (the `OLLAMA_HOST` environment variable is not read at run time, so ambient env cannot redirect prompts); setup seeds it from that variable if set; must be loopback unless `allow_remote` |
-| `budget_ms` | `2500` | model time limit (PROPOSAL; set by the bake-off) |
-| `min_confidence` | `0.7` | below this, the refinement is not injected |
+| `budget_ms` | `2500` | model time limit; the hook caps it at 4000 ms so a call always fits inside the 5 s hook timeout (A9) |
+| `min_confidence` | `0.7` | below this, a model verdict of any kind is ignored (A4) |
 | `notify` | `{google, clarify, refine: true}` | silence any verdict individually |
 | `skip_over_chars` | `2000` | longer prompts are left untouched (both tiers) |
+| `min_words` | `3` | shorter prompts are left untouched (both tiers) |
 | `bypass_marker` | `"[raw]"` | a prompt containing it is untouched |
+| `installed_version` | stamped by setup | bookkeeping so `--update` knows what is installed; not a setting |
 | `keep_alive` | `"10m"` | passed to Ollama |
 | `cooldown_s` | `300` | model-tier pause after a failure |
 | `override_window_s` | `300` | block-mode resend window |
@@ -242,7 +248,7 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 | `google` verdicts on guardrail cases | 0 |
 | Valid-JSON rate | ≥ 99% |
 
-- **Off-ramp.** Tier 1 alone is scored on the same set as a baseline. If no candidate clearly beats it and meets every threshold, the recommendation is **heuristics-only as the default**, with the model optional.
+- **Off-ramp.** Tier 1 alone is scored on the same set as a baseline. If no candidate meets every threshold **and** beats it by at least 10 percentage points of accuracy (Amendment A5), the recommendation is **heuristics-only as the default**, with the model optional.
 - Results are recorded in this spec, and the default model and `budget_ms` follow from them. Results are specific to this hardware.
 
 ---
@@ -259,6 +265,8 @@ Regression guard: the 35 `tests/test_token_optimizer.py` tests must still pass (
 | D6 | Fail open everywhere; always exit 0 | **DECISION** (accepted, user, 2026-09-20) |
 | D7 | Loopback only; no prompt text in logs by default | **DECISION** (accepted, user, 2026-09-20) |
 | D8 | Default model chosen by measurement; heuristics-only is an allowed outcome | **DECISION** (accepted, user, 2026-09-20) |
+| D9 | Conversation awareness: `clarify` and `refine` only on a session's first prompt; tier 1 decides `google` only (Amendments A1–A3) | **DECISION** (accepted, user, 2026-09-20) |
+| D10 | Optional by construction: nothing installs the feature by default, and an install with no `config.json` is a complete bypass (Amendment A6, R14) | **DECISION** (accepted, user, 2026-09-20) |
 
 D3–D8 were approved in chat section by section and accepted by the user on approving this spec (2026-09-20).
 
@@ -278,9 +286,9 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 
 | # | Item | Resolution |
 |---|---|---|
-| O1 | Whether a hook added mid-session takes effect — the docs do not say (**unverified**) | Test in the real end-to-end run; the wizard says "restart" meanwhile |
-| O2 | Whether a non-blocking `systemMessage` is clearly visible in the interactive UI — the docs say "shown to the user" (**unverified visually**) | Test in the real end-to-end run |
-| O3 | Minimum Ollama version for structured outputs; the installed client is 0.9.1 | The wizard reads `/api/version`; confirm the minimum in Task 1 |
+| O1 | Whether a hook added mid-session takes effect — the docs do not say (**still unverified**: it needs an interactive session) | Run the two-terminal check in the plan's Gate C; the wizard says "restart" meanwhile |
+| O2 | Whether a non-blocking `systemMessage` is clearly visible in the interactive UI — the docs say "shown to the user" (**FACT, 2026-09-21, Claude Code 2.1.278, `claude -p`:** it is emitted as a `system`/`informational` event at level `notice`, "UserPromptSubmit says: Prompt Preflight: quick lookup — try Google: …", and the prompt still goes through. **How the interactive terminal renders it is still unverified.**) | Look at it once in an interactive session |
+| O3 | Minimum Ollama version for structured outputs; the installed client is 0.9.1 | Ollama 0.9.1 honoured the JSON-schema `format` in the bake-off (every reply parsed). The wizard checks only that the server answers `/api/version`; no minimum version is enforced |
 | O4 | Model names, sizes, and latency | Task 1 |
 | O5 | Interaction with other `UserPromptSubmit` hooks — not verified | Preflight depends on none |
 | O6 | Vendored `token_optimizer` can go stale | `--update` re-vendors; version stamped in `config.json` |
@@ -307,9 +315,27 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 ## Governance and Scope
 
 - **RULE 11.** This spec and the plan that follows are this repo's own design records, in `docs/superpowers/`, following the precedent of the existing specs and plans. The spec was approved by the user on 2026-09-20; the plan needs its own approval.
-- **RULE 11a.** D1–D8 above; D3–D8 were accepted on the user's explicit approval of the spec (2026-09-20).
+- **RULE 11a.** D1–D10 above; D3–D8 were accepted on the user's explicit approval of the spec (2026-09-20), and D9–D10 follow from the amendments A1–A6 the user approved. Amendments A7–A9 were controller rulings made during implementation and were **approved by the user on 2026-09-21** (each has its evidence below).
 - **Branching.** Work happens on `feat/prompt-preflight`, branched from `origin/main` after pull request #14 (README redesign, MIT license, MCP builder skill) was merged.
 - **Out of scope, tracked separately:** the inert `promptshield-check.sh` and its incorrect settings schema; the exporter's `--target-project` ignoring `--dry-run`; the README layout tree, now on `main`, listing `token_optimizer/` and `parser/` at the repo root when neither is there (`token_optimizer` lives in `tools/`).
+
+---
+
+## Amendments
+
+Made while planning, from evidence gathered on 2026-09-20. They refine the design above and win wherever they conflict with it.
+
+| ID | Amendment | Evidence (**FACT**) |
+|---|---|---|
+| A1 | `clarify` and `refine` are issued only on the first prompt of a session, tracked by `session_id` in the state file. A later prompt usually depends on the conversation, which the model cannot see. | The analyzer marked 11 of 12 ordinary mid-session replies ("yes", "continue", "commit and push", "approve", "run the tests", …) as `skip`. |
+| A2 | Tier 1 decides `google` only; it never decides `clarify`. | Same probe: the analyzer's `skip` (score below 30) is not evidence of vagueness. |
+| A3 | Prompts under `min_words` (default 3) are left untouched, and the context-bound signals are extended: reference words, code nouns, and a leading task verb. | "now do the same for orders" was routed to web search because "now" matches a temporal pattern. The eval baseline called "implement rate limiting on the api" a lookup. |
+| A4 | `min_confidence` applies to every model verdict, not only to refinements. | The costly error is a wrong `google`, so the threshold should guard it too. |
+| A5 | "Clearly beats tier 1" means at least +10 percentage points of accuracy on the eval set. | The spec left "clearly" undefined. Tier 1 alone scores 31.7% (19 of 60) with a 0% false-`google` rate. |
+| A6 | An unconfigured install is a complete bypass (new requirement R14): with no `config.json` beside it, the launcher exits before importing anything and writes nothing. Nothing installs the feature by default. | The user's requirement, 2026-09-20. Before this, a missing config fell back to defaults and the hook stayed active, and the launcher imported all its modules before checking anything. |
+| A7 | In `mode: "block"`, only the **first prompt of a session** is ever blocked; later prompts, and prompts with no session id, get the same suggestion as a note. *(controller ruling, **approved by the user 2026-09-21**)* | **FACT:** tier 1 answers `google` for ordinary second prompts such as "what is the current status", "what is the latest design" and "what is the overview of the new feature" (reproduced against the shipped code by the final review), and the 60-prompt eval set has no such prompt, so the measured false-`google` rate of 0% does not see this class. A block on such a prompt traps the user for one resend. Gating `google` itself was rejected: a mid-session "what is the capital of France" is a legitimate lookup. |
+| A8 | The settings command is `python3 <shell-quoted path> || true`, and the wizard's self-test runs before the settings file is written. *(controller ruling, **approved by the user 2026-09-21**)* | **FACT:** `python3` exits 2 for a missing script and exit 2 rejects the prompt, so a hand-deleted install folder would block every prompt without the guard (verified with Claude Code 2.1.278: with the guard the prompt was answered). The final review reproduced a command injection through an install path containing `$(...)`: it ran during the self-test and was saved into a file Claude Code runs on every prompt. |
+| A9 | The hook caps the model call at 4000 ms whatever `budget_ms` says. *(controller ruling, **approved by the user 2026-09-21**)* | **FACT:** with `budget_ms` = 8000 and a server that never answered, the hook was killed at the 5 s timeout with no cooldown recorded, so every later prompt stalled 5 s. |
 
 ---
 
@@ -318,3 +344,25 @@ D3–D8 were approved in chat section by section and accepted by the user on app
 - Claude Code hooks reference (raw markdown): https://code.claude.com/docs/en/hooks.md — fetched 2026-09-20
 - Ollama API reference: https://raw.githubusercontent.com/ollama/ollama/main/docs/api.md — fetched 2026-09-20
 - Local verification: `tools/token_optimizer` probe and tests; `hooks/promptshield-check.sh` run against a stdin payload; machine and Ollama inspection — all 2026-09-20
+
+---
+
+## Bake-off results
+
+**FACT (measured 2026-09-21).** Machine: Apple M2, 24 GB. Ollama 0.9.1, run locally; models were downloaded to `~/.ollama` with the user's approval and nothing model-shaped is in this repository. Eval set: the 60 labelled prompts in `tools/prompt_preflight/eval/prompts.jsonl` (labels approved by the user), scored with the shipped system prompt and JSON schema at temperature 0, with `min_confidence` at its default of 0.7 and the runner's generous per-call limit of 30 s so that slow replies are timed rather than cut off. The p95 columns are the 95th percentile over the prompts that reached the model; wall time adds one measured interpreter start-up. Raw summaries: `tools/prompt_preflight/eval/results/*.json`.
+
+| Candidate | Accuracy | False-google | Guardrail google | Reply OK | p95 model (ms) | p95 wall (ms) | Thresholds |
+|---|---|---|---|---|---|---|---|
+| baseline | 31.7% | 0.0% | 0 | 100.0% | n/a | n/a | accuracy 32% < 80% |
+| llama3:latest | 50.0% | 0.0% | 0 | 100.0% | 6097 | 6150 | accuracy 50% < 80%; p95 wall 6150 ms > 2000 ms |
+| llama3.2:1b | 31.7% | 4.4% | 0 | 100.0% | 2417 | 2471 | accuracy 32% < 80%; p95 wall 2471 ms > 2000 ms |
+| llama3.2:3b | 43.3% | 0.0% | 0 | 100.0% | 3272 | 3321 | accuracy 43% < 80%; p95 wall 3321 ms > 2000 ms |
+| qwen2.5:1.5b | 48.3% | 4.4% | 0 | 100.0% | 1436 | 1470 | accuracy 48% < 80% |
+
+Recommendation: heuristics-only default (no model met every threshold and clearly beat tier 1)
+
+**FACT.** No candidate met every threshold. The best accuracy was 48.3% (`qwen2.5:1.5b`, which was also the only candidate inside the 2000 ms wall-time limit) against a bar of 80%; the 8B reference model reached 50.0% at a p95 of 6150 ms. No model produced a `google` verdict on a guardrail prompt, and every reply parsed (reply-OK 100% for all five rows). Two candidates (`qwen2.5:1.5b`, `llama3.2:1b`) had a 4.4% false-`google` rate, inside the 5% limit but not free.
+
+**DECISION (the pre-agreed off-ramp, spec §Model selection and amendment A5).** The shipped default is **heuristics-only**: `defaults.py` keeps `RECOMMENDED_MODEL = None`. The model tier stays an optional extra; the setup wizard offers only models the user already has, and nothing is downloaded without an explicit yes.
+
+**INFERENCE, not measured.** These numbers describe this system prompt and schema on models up to 8B, not what a small model can do in principle. A different prompt, few-shot examples, or a larger model might clear the bar, and the eval runner can re-score any of them (`run_eval.py --model <name>`) without code changes. Treat a better result as a new proposal under RULE 12: re-run the bake-off, then change `defaults.py` and this section together.

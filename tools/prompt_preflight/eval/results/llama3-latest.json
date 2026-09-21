@@ -1,0 +1,18 @@
+{
+  "name": "llama3:latest",
+  "summary": {
+    "n": 60,
+    "accuracy": 0.5,
+    "false_google_rate": 0.0,
+    "guardrail_google": 0,
+    "reply_ok_rate": 1.0,
+    "model_calls": 56,
+    "p95_model_ms": 6096.6,
+    "p95_wall_ms": 6149.7,
+    "startup_ms": 53.0
+  },
+  "failures": [
+    "accuracy 50% < 80%",
+    "p95 wall 6150 ms > 2000 ms"
+  ]
+}

@@ -1,0 +1,60 @@
+{"prompt": "what is the capital of Australia", "label": "google", "guardrail": false}
+{"prompt": "how do I reverse a list in python", "label": "google", "guardrail": false}
+{"prompt": "explain the difference between TCP and UDP", "label": "google", "guardrail": false}
+{"prompt": "what is the latest version of react", "label": "google", "guardrail": false}
+{"prompt": "how many tablespoons are in a cup", "label": "google", "guardrail": false}
+{"prompt": "what does the git rebase command do", "label": "google", "guardrail": false}
+{"prompt": "how to center a div in css", "label": "google", "guardrail": false}
+{"prompt": "what is the http status code for too many requests", "label": "google", "guardrail": false}
+{"prompt": "convert 72 fahrenheit to celsius", "label": "google", "guardrail": false}
+{"prompt": "what year was the python language created", "label": "google", "guardrail": false}
+{"prompt": "difference between let and const in javascript", "label": "google", "guardrail": false}
+{"prompt": "how do I undo the last git commit", "label": "google", "guardrail": false}
+{"prompt": "what is a foreign key in sql", "label": "google", "guardrail": false}
+{"prompt": "what port does postgres use by default", "label": "google", "guardrail": false}
+{"prompt": "how to install node on ubuntu", "label": "google", "guardrail": false}
+{"prompt": "make it better and faster", "label": "clarify", "guardrail": false}
+{"prompt": "fix the bug please", "label": "clarify", "guardrail": false}
+{"prompt": "help me with my project", "label": "clarify", "guardrail": false}
+{"prompt": "can you improve this", "label": "clarify", "guardrail": false}
+{"prompt": "do something about the performance", "label": "clarify", "guardrail": false}
+{"prompt": "write some code for me", "label": "clarify", "guardrail": false}
+{"prompt": "I need a good solution", "label": "clarify", "guardrail": false}
+{"prompt": "update the thing we talked about", "label": "clarify", "guardrail": false}
+{"prompt": "make the app work", "label": "clarify", "guardrail": false}
+{"prompt": "clean this up for me", "label": "clarify", "guardrail": false}
+{"prompt": "add the feature we need", "label": "clarify", "guardrail": false}
+{"prompt": "something is wrong with the server", "label": "clarify", "guardrail": false}
+{"prompt": "optimize everything in the app", "label": "clarify", "guardrail": false}
+{"prompt": "build me a nice website", "label": "clarify", "guardrail": false}
+{"prompt": "write some tests", "label": "clarify", "guardrail": false}
+{"prompt": "add a retry to the payment client", "label": "refine", "guardrail": false}
+{"prompt": "write a script that renames all jpg files in a folder by date", "label": "refine", "guardrail": false}
+{"prompt": "refactor the OrderService to use dependency injection", "label": "refine", "guardrail": false}
+{"prompt": "add pagination to the users endpoint", "label": "refine", "guardrail": false}
+{"prompt": "create a dockerfile for the flask app", "label": "refine", "guardrail": false}
+{"prompt": "write unit tests for the login function", "label": "refine", "guardrail": false}
+{"prompt": "migrate the config from yaml to toml", "label": "refine", "guardrail": false}
+{"prompt": "add input validation to the signup form", "label": "refine", "guardrail": false}
+{"prompt": "make the search endpoint faster by adding an index", "label": "refine", "guardrail": false}
+{"prompt": "document the public api of the billing module", "label": "refine", "guardrail": false}
+{"prompt": "convert the callback code in utils.js to async await", "label": "refine", "guardrail": false}
+{"prompt": "add logging to the checkout flow", "label": "refine", "guardrail": false}
+{"prompt": "set up ci for this repo with github actions", "label": "refine", "guardrail": false}
+{"prompt": "implement rate limiting on the api", "label": "refine", "guardrail": false}
+{"prompt": "how do I make this endpoint faster", "label": "refine", "guardrail": true}
+{"prompt": "Add an Idempotency-Key header to OrderService.submit() and dedupe repeated keys in Redis for 24 hours; add tests for duplicate and expired keys", "label": "pass", "guardrail": false}
+{"prompt": "In src/auth/token.py refresh the token 60 seconds before expiry instead of waiting for a 401, and keep the public signature unchanged", "label": "pass", "guardrail": false}
+{"prompt": "Rename the column users.fullname to users.full_name with an Alembic migration and update the queries in src/db/queries.py", "label": "pass", "guardrail": false}
+{"prompt": "Write a pytest fixture in tests/conftest.py that creates a temporary SQLite database from schema.sql", "label": "pass", "guardrail": false}
+{"prompt": "Explain what src/cache/lru.py does and list its public methods", "label": "pass", "guardrail": false}
+{"prompt": "Write a Python function parse_iso(line: str) -> datetime | None that extracts the first ISO-8601 timestamp from a log line, with pytest tests for valid, missing, and malformed timestamps", "label": "pass", "guardrail": false}
+{"prompt": "why does my python script say ModuleNotFoundError: No module named requests", "label": "pass", "guardrail": true}
+{"prompt": "how do I fix this stack trace: Traceback (most recent call last): File \"app.py\", line 3, in <module> ImportError: cannot import name x", "label": "pass", "guardrail": true}
+{"prompt": "what is the latest commit in this repo", "label": "pass", "guardrail": true}
+{"prompt": "how do I reverse the list in my utils.py file", "label": "pass", "guardrail": true}
+{"prompt": "explain what our billing module does", "label": "pass", "guardrail": true}
+{"prompt": "what is the difference between these two functions in checkout.py", "label": "pass", "guardrail": true}
+{"prompt": "how many tests are failing in my build", "label": "pass", "guardrail": true}
+{"prompt": "what version of react does this project use", "label": "pass", "guardrail": true}
+{"prompt": "what is wrong with this code: ```def f(x): return x +```", "label": "pass", "guardrail": true}

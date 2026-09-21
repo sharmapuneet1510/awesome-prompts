@@ -1,0 +1,17 @@
+{
+  "name": "baseline",
+  "summary": {
+    "n": 60,
+    "accuracy": 0.31666666666666665,
+    "false_google_rate": 0.0,
+    "guardrail_google": 0,
+    "reply_ok_rate": 1.0,
+    "model_calls": 0,
+    "p95_model_ms": 0.0,
+    "p95_wall_ms": 0.0,
+    "startup_ms": 0.0
+  },
+  "failures": [
+    "accuracy 32% < 80%"
+  ]
+}

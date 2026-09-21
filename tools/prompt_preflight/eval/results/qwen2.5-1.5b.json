@@ -1,0 +1,17 @@
+{
+  "name": "qwen2.5:1.5b",
+  "summary": {
+    "n": 60,
+    "accuracy": 0.48333333333333334,
+    "false_google_rate": 0.044444444444444446,
+    "guardrail_google": 0,
+    "reply_ok_rate": 1.0,
+    "model_calls": 56,
+    "p95_model_ms": 1435.6,
+    "p95_wall_ms": 1469.8,
+    "startup_ms": 34.2
+  },
+  "failures": [
+    "accuracy 48% < 80%"
+  ]
+}
