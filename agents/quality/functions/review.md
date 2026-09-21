@@ -43,7 +43,7 @@ matches this change (`critical_change`, `security_change` or `payment_change`; u
 report its verdict beside yours. `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` overrides the `PASS`
 until its findings are resolved or its missing evidence is supplied; `SURVIVED WITH CONDITIONS` keeps the
 `PASS` and copies its conditions into your report. After two consecutive `DEFEATED` or `CHALLENGED`
-results for the same change, stop and hand the decision to a human instead of re-reviewing again. Skip
+results for the same change (count the reports in `docs/nemesis/` that name it), stop and hand the decision to a human instead of re-reviewing again. Skip
 this section when the file is absent, and when you are yourself running as a NEMESIS challenger.
 
 ## Example

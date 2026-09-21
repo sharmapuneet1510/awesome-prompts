@@ -48,16 +48,17 @@ def test_the_review_gate_handles_every_verdict_and_stops_a_fix_loop():
     assert "`DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` overrides the `PASS`" in text
     assert "`SURVIVED WITH CONDITIONS` keeps the `PASS` and copies its conditions into your report" in text
     assert "two consecutive `DEFEATED` or `CHALLENGED` results for the same change" in text and "hand the decision to a human" in text
+    assert "count the reports in `docs/nemesis/` that name it" in text
 
 
 def test_the_pr_gate_stops_on_a_defeat_and_stops_a_fix_loop():
     text = gate_text("agents/orchestrator_agent.md")
     assert "stop on a `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` verdict" in text
     assert "on `SURVIVED WITH CONDITIONS`, put its conditions in the PR description" in text
-    assert "two consecutive `DEFEATED` or `CHALLENGED` results for the same release" in text
+    assert "two consecutive `DEFEATED` or `CHALLENGED` results for the same release" in text and "count the reports in `docs/nemesis/` that name it" in text
 
 
-def test_the_pr_gate_sits_inside_the_orchestrator_pr_section_before_its_first_step():
+def test_the_pr_gate_sits_after_the_step_list_of_the_orchestrator_pr_section_and_says_before_step_1():
     text = c.read(c.ROOT / "agents/orchestrator_agent.md")
     section = text[text.index("### orchestrator:pr"):]
     section = section[: section.index("\n---", 10)]

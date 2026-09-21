@@ -79,7 +79,8 @@ def test_the_workflow_doc_states_each_trigger_point_and_the_guards():
     text = c.flat(c.read(ROOT / "docs" / "01-workflows" / "15-challenge-a-conclusion.md"))
     for phrase in ["after a `PASS`", "between `Status: Proposed` and the approval request", "before the release PR", "**two consecutive**", "`maximum_depth`", "A challenger never evaluates a gate", "even a manual `/nemesis`", "not `enabled: false`"]:
         assert phrase in text, phrase
-    assert "target=CR-839" not in text  # one id for the one change
+    assert "target=CR-839" in text and "target=PR-1839" not in text  # the chain uses the review id of the worked example
+    assert "two rounds at most, see Limits" in text
 
 
 def test_the_examples_and_the_config_template_are_indexed():

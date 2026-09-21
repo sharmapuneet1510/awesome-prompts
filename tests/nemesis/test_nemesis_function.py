@@ -92,7 +92,7 @@ def test_the_caller_allocates_the_report_before_spawning_and_hands_the_challenge
     step = c.section(FUNCTION, "### Step 3")
     assert step.index("allocate the report") < step.index("spawn a fresh sub-agent")
     block = c.fenced(step, "text")[0]
-    for needed in ["skills/nemesis_skill.md", "nemesis_id:", "nemesis_persona:", "trigger:", "depth:", "parent_nemesis:", "context_isolated: true", "access: read_only", "<path>"]:
+    for needed in ["skills/nemesis_skill.md", "nemesis_id:", "nemesis_persona:", "original_agent:", "trigger:", "depth:", "parent_nemesis:", "context_isolated: true", "access: read_only", "<path>"]:
         assert needed in block, needed
     assert "context_isolated: false" in step
 
@@ -108,7 +108,13 @@ def test_a_challenger_never_evaluates_a_gate_and_the_fix_loop_is_guarded():
     assert "Do not evaluate any NEMESIS policy gate and do not start another NEMESIS" in block
     guard = c.flat(c.section(FUNCTION, "## Loop guard"))
     assert "new depth-1 challenge" in guard and "two consecutive" in guard and "hand the decision to a human" in guard
+    assert "count them from the reports in `docs/nemesis/`" in guard and "`architect:adr` gate is advice-only" in guard
     assert "A challenger never evaluates a gate" in guard
+
+
+def test_without_a_config_workflow_and_agent_runs_are_explicit_invocations():
+    assert "still explicit invocations: nothing fires on its own" in c.flat(c.section(FUNCTION, "## Triggers"))
+    assert "`original_agent`" in c.flat(c.section(FUNCTION, "### Step 1"))
 
 
 def test_a_refusal_writes_nothing():

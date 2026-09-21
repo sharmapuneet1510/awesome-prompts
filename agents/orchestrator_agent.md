@@ -1039,7 +1039,7 @@ And so on...
 `auto_activate.production_release` matches this release, run `orchestrator:nemesis target=<release id>
 trigger=policy` and stop on a `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` verdict; on `SURVIVED WITH
 CONDITIONS`, put its conditions in the PR description. After two consecutive `DEFEATED` or `CHALLENGED`
-results for the same release, stop and hand the decision to a human. Skip this when the file is absent, and
+results for the same release (count the reports in `docs/nemesis/` that name it), stop and hand the decision to a human. Skip this when the file is absent, and
 when you are yourself running as a NEMESIS challenger.
 
 ---

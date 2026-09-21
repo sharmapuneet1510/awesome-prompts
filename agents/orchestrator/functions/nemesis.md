@@ -66,8 +66,9 @@ hands the fact to the challenger; the challenger writes it into the header.
 ### Step 1 — Resolve the target
 
 Resolve `target` to five things and nothing more: the **artefact**, the **original conclusion**, the
-**original verdict**, the **evidence references** and the **identifiers**. Recognise the type from the
-id prefix or the file. If the target is ambiguous, ask once. If it has no conclusion to challenge
+**original verdict**, the **evidence references** and the **identifiers**. Note who produced the
+conclusion (`original_agent`) for the report header; it is a name, not the agent's reasoning. Recognise
+the type from the id prefix or the file. If the target is ambiguous, ask once. If it has no conclusion to challenge
 (a raw artefact nobody has judged), say so and stop.
 
 ### Step 2 — Select the persona
@@ -117,6 +118,7 @@ agents/orchestrator/functions/nemesis.md and write the report.
 Target: <id>.  Original conclusion: <conclusion>.  Original verdict: <verdict>.
 Evidence references: <refs>.  Identifiers: <ids>.
 Report header facts (write them exactly): nemesis_id: <NMS id>; nemesis_persona: <persona>;
+original_agent: <name from step 1>;
 trigger: <manual|workflow|policy|agent>; depth: <n>; parent_nemesis: <NMS id or null>;
 context_isolated: true; access: read_only.
 Retrieve the source evidence yourself; do not trust summaries. You have read-only access.
@@ -135,8 +137,8 @@ Write the reverse hypothesis first, then the challenge plan for the domain (see 
 
 ### Step 5 — Collect independent evidence
 
-Print `NEMESIS IS CHALLENGING THE CONCLUSION`. Inspect the source systems directly, read-only. Request these MCP roles when the target needs them
-and fall back to git and files when a role is unavailable: `jira`, `git`, `ci_cd`, `test_management`,
+Print `NEMESIS IS CHALLENGING THE CONCLUSION`. Inspect the source systems directly, read-only.
+Request these MCP roles when the target needs them and fall back to git and files when a role is unavailable: `jira`, `git`, `ci_cd`, `test_management`,
 `evidence_store`, `confluence`, `architecture_repository`, `observability`. Record the sources used.
 A source that could not be reached is stated in the report, and anything that depends on it loses
 confidence.
@@ -188,9 +190,11 @@ nothing, and do not run.
 ## Loop guard
 
 A policy gate that runs again after the owner has fixed a defeated result starts a **new depth-1
-challenge**, so `maximum_depth` does not bound that loop. The gates in `quality:review`,
-`architect:adr` and `orchestrator:pr` therefore stop after **two consecutive** `DEFEATED` or
-`CHALLENGED` results for the same target and hand the decision to a human. A challenger never evaluates
+challenge**, so `maximum_depth` does not bound that loop. The gates in `quality:review` and
+`orchestrator:pr` therefore stop after **two consecutive** `DEFEATED` or `CHALLENGED` results for the
+same target and hand the decision to a human; they count them from the reports in `docs/nemesis/`
+that name the same target. (The `architect:adr` gate is advice-only and a human approves every ADR, so
+it needs no counter.) A challenger never evaluates
 a gate: when NEMESIS composes the `quality:review` or `architect:adr` persona, the gate paragraph in
 that file does not apply to it.
 
@@ -202,6 +206,9 @@ that file does not apply to it.
 | `workflow` | A workflow step names it. |
 | `policy` | `quality:review`, `architect:adr` and `orchestrator:pr` each contain an opt-in gate that reads `docs/nemesis/nemesis.yml` and invokes this function when a rule matches. |
 | `agent` | Any function may request it; the depth limit still applies. |
+
+With no `docs/nemesis/nemesis.yml`, `workflow` and `agent` runs are still explicit invocations: nothing
+fires on its own.
 
 ## Refusals
 

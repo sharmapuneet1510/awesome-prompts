@@ -31,16 +31,16 @@ Not for: a first review (use [06](06-review-a-pull-request.md)), or anything wit
 ## The chain
 
 ```
-quality:review pr=1839            → PASS
+quality:review pr=1839            → PASS   (review CR-839)
     ↓
-orchestrator:nemesis target=PR-1839     (or /nemesis PR-1839)
+orchestrator:nemesis target=CR-839      (or /nemesis CR-839)
     ↓  NEMESIS ACTIVATED
     ↓  fresh sub-agent, read-only, five inputs only
     ↓
 docs/nemesis/NMS-2026-00982.md    → verdict + ranked hypotheses of why
     │
     ├─ DEFEATED / CHALLENGED      → back to the owning specialist, hypotheses first
-    │                               fix → re-review → NEMESIS again
+    │                               fix → re-review → NEMESIS again (two rounds at most, see Limits)
     ├─ INSUFFICIENT EVIDENCE      → back to the owner with the evidence to obtain
     └─ SURVIVED (WITH CONDITIONS) → continue the workflow
 ```

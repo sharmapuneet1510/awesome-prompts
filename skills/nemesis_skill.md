@@ -204,7 +204,7 @@ challenge path that was tried and failed; it is recorded but never counts toward
 | Order | Verdict | When |
 |---|---|---|
 | 1 | `DEFEATED` | At least one counting finding at `HIGH` or `CRITICAL` severity with `CONFIRMED` or `HIGH_CONFIDENCE` confidence that is **backed**: it carries a counterexample (`counterexample` is not `none`) or its category is `CONTRADICTORY_EVIDENCE`. The original conclusion is invalidated. |
-| 2 | `INSUFFICIENT EVIDENCE` | Not DEFEATED, and every counting `HIGH` or `CRITICAL` finding that is not `SPECULATIVE` has category `EVIDENCE_GAP`: the conclusion cannot be verified either way. If nothing at all could be verified, record that as a `HIGH` `EVIDENCE_GAP` finding. |
+| 2 | `INSUFFICIENT EVIDENCE` | Not DEFEATED, and there is at least one counting `HIGH` or `CRITICAL` finding that is not `SPECULATIVE`, and every such finding has category `EVIDENCE_GAP`: the conclusion cannot be verified either way. If nothing at all could be verified, record that as a `HIGH` `EVIDENCE_GAP` finding. |
 | 3 | `CHALLENGED` | Not decided above, and there is a counting `HIGH` or `CRITICAL` finding that is not `SPECULATIVE` (for example `CONFIRMED` without a counterexample, or `PLAUSIBLE`), or there are two or more counting `MEDIUM` findings that are not `SPECULATIVE`. The original conclusion needs reconsideration. |
 | 4 | `SURVIVED WITH CONDITIONS` | Not decided above, and there is at least one counting finding (so: `LOW` or `INFORMATIONAL` findings, at most one non-speculative `MEDIUM`, and any `SPECULATIVE` finding at any severity), plus the stated assumptions. The conclusion stands with conditions. |
 | 5 | `SURVIVED` | There are no counting findings. The report lists the challenge paths executed. |
@@ -298,7 +298,7 @@ Body sections, in order:
 
 Write the **Findings** and the **Failure-cause hypotheses** as one fenced `yaml` list each, so tools
 can validate them. A finding is a list item with `id`, `category`, `severity`, `confidence`,
-`traces_to` (a list), `evidence`, `counterexample` (or `none`), `impact` and `required_action`. A
+`traces_to` (a list), `evidence`, `counterexample` (write exactly `none` when there is none), `impact` and `required_action`. A
 hypothesis is a list item with `id`, `layer`, `statement`, `mechanism`, `explains` (a list of finding
 ids), `cause_class`, `confidence`, `rank` and `discriminating_check`. An empty section is `[]`. The
 `findings` and `hypotheses` counts in the header must equal the lists.

@@ -51,6 +51,7 @@ def test_each_verdict_row_states_its_condition():
     rows = {row[1].strip("`"): c.flat(row[2]) for row in c.table_rows(c.section(SKILL, "## 10. Verdict"))}
     assert all(word in rows["DEFEATED"] for word in ["`HIGH` or `CRITICAL`", "`CONFIRMED` or `HIGH_CONFIDENCE`", "counterexample", "CONTRADICTORY_EVIDENCE"])
     assert "has category `EVIDENCE_GAP`" in rows["INSUFFICIENT EVIDENCE"] and "cannot be verified" in rows["INSUFFICIENT EVIDENCE"]
+    assert "there is at least one counting" in rows["INSUFFICIENT EVIDENCE"]  # not vacuously true for an empty or LOW-only report
     assert "`PLAUSIBLE`" in rows["CHALLENGED"] and "two or more" in rows["CHALLENGED"] and "`MEDIUM`" in rows["CHALLENGED"]
     assert "`SPECULATIVE`" in rows["SURVIVED WITH CONDITIONS"] and "at most one" in rows["SURVIVED WITH CONDITIONS"]
     assert "no counting findings" in rows["SURVIVED"]
@@ -80,6 +81,9 @@ def test_disproven_findings_are_recorded_but_do_not_count():
         ([("HIGH", "PLAUSIBLE", "none", "EVIDENCE_GAP")], "INSUFFICIENT EVIDENCE"),
         ([("HIGH", "PLAUSIBLE", "none", "EVIDENCE_GAP"), ("HIGH", "PLAUSIBLE", "none", "DESIGN_RISK")], "CHALLENGED"),  # another strong finding wins
         ([("HIGH", "PLAUSIBLE", "none", "EVIDENCE_GAP"), ("CRITICAL", "CONFIRMED", "steps", "IMPLEMENTATION_DEFECT")], "DEFEATED"),
+        ([("CRITICAL", "CONFIRMED", "steps", "EVIDENCE_GAP")], "DEFEATED"),  # an evidence gap that carries a counterexample still defeats
+        ([("HIGH", "PLAUSIBLE", "none", "EVIDENCE_GAP")] + [("MEDIUM", "PLAUSIBLE", "none", "DESIGN_RISK")] * 2, "INSUFFICIENT EVIDENCE"),  # the mediums are ignored
+        ([("LOW", "CONFIRMED", "none", "EVIDENCE_GAP")], "SURVIVED WITH CONDITIONS"),  # a low gap is a condition, not insufficiency
     ],
 )
 def test_the_verdict_rules_give_every_set_of_findings_exactly_one_verdict(findings, expected):
