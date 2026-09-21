@@ -35,6 +35,14 @@ quality:review pr=123
 5. **Documentation** — Docstrings, examples, clarity
 6. **Requirements** — Business requirement fulfillment
 
+## NEMESIS gate (optional)
+
+After a `PASS`, if `docs/nemesis/nemesis.yml` exists, has `enabled: true`, and an `auto_activate` rule
+matches this change (`critical_change`, `security_change` or `payment_change`; use `policy_match` for the
+project's Jira priorities, labels and paths), run `orchestrator:nemesis target=<review id> trigger=policy`
+and report its verdict beside yours. A `DEFEATED` or `CHALLENGED` verdict overrides the `PASS` until its
+findings are resolved. Without `nemesis.yml`, skip this section entirely.
+
 ## Example
 
 ```bash

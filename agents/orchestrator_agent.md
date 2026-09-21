@@ -1035,6 +1035,10 @@ And so on...
 7. Update CLAUDE.md + AGENTS.md
 8. Generate completion report
 
+**NEMESIS gate (optional).** Before step 1, if `docs/nemesis/nemesis.yml` exists, has `enabled: true`, and
+`auto_activate.production_release` matches this release, run `orchestrator:nemesis target=<release id>
+trigger=policy` and stop on a `DEFEATED` or `CHALLENGED` verdict. Without `nemesis.yml`, skip this.
+
 ---
 
 ### orchestrator:review
