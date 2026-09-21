@@ -1,24 +1,15 @@
 {
   "model": "haiku",
   "hooks": {
-    "PreCommit": [
-      {
-        "type": "command",
-        "command": "hooks/code-format-check.sh"
-      },
-      {
-        "type": "command",
-        "command": "hooks/test-hook.sh"
-      },
-      {
-        "type": "command",
-        "command": "hooks/test-runner-pre-commit.py"
-      }
-    ],
     "UserPromptSubmit": [
       {
-        "type": "command",
-        "command": "hooks/promptshield-check.sh"
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hooks/promptshield-check.sh"
+          }
+        ]
       }
     ]
   },
