@@ -174,7 +174,7 @@ The function instructs the calling agent to hand the sub-agent only the five inp
 
 ### 9. Recursion (N13)
 
-Depth counts nesting: the original challenge is depth 1, a challenge of that verdict is depth 2. `maximum_depth` defaults to 2; a request beyond it is refused with the reason in the report header of the refused attempt.
+Depth counts nesting: the original challenge is depth 1, a challenge of that verdict is depth 2. `maximum_depth` defaults to 2; a request beyond it is refused: the response says which limit was hit and which parent, and nothing is written (a refusal is not an activation, so it has no audit record, and the report stays the only write). Depth is the parent's `depth` plus 1, or 1 with no parent; a re-run after a fix is a new depth-1 challenge of the fixed artefact.
 
 ---
 
