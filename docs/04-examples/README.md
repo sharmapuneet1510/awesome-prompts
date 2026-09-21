@@ -12,6 +12,7 @@ run in detail, including the output.
 | [implementer.md](implementer.md) | Auth service: build → test → doc, then pipeline → Docker → Kubernetes |
 | [quality.md](quality.md) | PR review · Codebase audit · Security audit · Performance analysis · Bug RCA · Batch review |
 | [general.md](general.md) | Assorted shorter examples across the system |
+| [nemesis-defeated.md](nemesis-defeated.md) · [nemesis-survived.md](nemesis-survived.md) | NEMESIS worked reports: a `PASS` that is defeated, and one that survives · config template: [nemesis-config.example.yml](nemesis-config.example.yml) |
 
 ---
 

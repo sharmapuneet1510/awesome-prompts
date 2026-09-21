@@ -56,6 +56,16 @@ architect:adr supersede=ADR-0003 decision="drop the Redis session cache"
    - If `Technical Debt` is non-empty: add the `TD-n` row.
    - Hand off to `architect:spec`.
 
+## NEMESIS gate (optional)
+
+If `docs/nemesis/nemesis.yml` exists, is not `enabled: false`, and its `auto_activate.architecture_change`
+rule matches this decision (use the project's `policy_match` entry for it, if it has one), run
+`orchestrator:nemesis target=<ADR id> trigger=policy` between setting `Status: Proposed` and presenting the
+approval request in step 7, and put the verdict, its conditions and the report path in that request. The
+verdict is advice for the approver: even `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` never replaces
+the human approval. Skip this section when the file is absent, and when you are yourself running as a
+NEMESIS challenger.
+
 ## Refusals
 
 Refuse and report, rather than guessing, when:

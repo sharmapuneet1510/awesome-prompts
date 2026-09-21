@@ -1,6 +1,6 @@
 # 🤖 AI Agents Directory (v3.0 — 4-Role Architecture)
 
-> Lean, role-based AI agents with function dispatch. **5 agents, 36 skills, 42 callable functions.**  
+> Lean, role-based AI agents with function dispatch. **5 agents, 37 skills, 43 callable functions.**  
 > **New in v3.0:** Consolidated 13 specialized agents into 4 primary roles + 1 utility agent. Linear execution pipeline prevents context loss.
 
 ## 🎯 Foundational Principles (Guide All Agents)
@@ -22,7 +22,7 @@ See `instructions/master_instruction_set.md` (FOUNDATIONAL PRINCIPLES section) f
 
 | # | Agent | Role | Functions | Purpose | Version | Status |
 |---|-------|------|-----------|---------|---------|--------|
-| 1 | [Orchestrator](orchestrator_agent.md) | Strategy & Orchestration | plan, build, context, pr, review, tradeoff, risk, ideate, solve | Full-stack generation, technical leadership, ideation & design solving | v3.2 | ✅ Ready |
+| 1 | [Orchestrator](orchestrator_agent.md) | Strategy & Orchestration | plan, build, context, pr, review, tradeoff, risk, ideate, solve, nemesis | Full-stack generation, technical leadership, ideation & design solving | v3.2 | ✅ Ready |
 | 2 | [Architect](architect_agent.md) | Architecture & Design + Developer Companion | design, refactor, frontend, schema, api, a11y, **analyse, adr, spec** | System topology, API contracts, DB schema, UI architecture, technical analysis, ADRs, Current Technical Specification | v3.2 | ✅ Ready |
 | 3 | [Implementer](implementer_agent.md) | Implementation & Execution + Coding Companion | build, test, doc, pipeline, docker, iac, full | Code generation, testing, documentation, deployment (gated on approved spec + ADR) | v3.2 | ✅ Ready |
 | 4 | [Quality](quality_agent.md) | QA, Security & Performance + Review/QA Companions | review, audit, security, perf, debug, report, batch-review, diagnose, **observe, qa** | PR validation, security audit, optimization, debugging, conformance observation, 5 reusable suites | v3.2 | ✅ Ready |
@@ -143,14 +143,14 @@ Companion functions (v3.2):
   quality:qa suite=regression          → Maintain the 5 reusable quality suites
 ```
 
-**See [the function reference](../docs/02-reference/functions.md) for all 42 callable functions with detailed inputs, outputs, and examples.**
+**See [the function reference](../docs/02-reference/functions.md) for all 43 callable functions with detailed inputs, outputs, and examples.**
 ---
 
 ## 📖 Complete Examples Guide
 
-**See [the examples](../docs/04-examples/README.md) for real-world usage examples of 28 of the 42 functions:**
+**See [the examples](../docs/04-examples/README.md) for real-world usage examples of 29 of the 43 functions:**
 
-- **Orchestrator** (9 functions) — plan, build, context, review, tradeoff, risk, pr, ideate, solve
+- **Orchestrator** (10 functions) — plan, build, context, review, tradeoff, risk, pr, ideate, solve, nemesis
 - **Architect** (9 functions) — design, refactor, frontend, schema, api, a11y, analyse, adr, spec
 - **Implementer** (7 functions) — build, test, doc, pipeline, docker, iac, full
 - **Quality** (10 functions) — review, audit, security, perf, debug, report, batch-review, diagnose, observe, qa
@@ -207,7 +207,7 @@ Role-Based Agent (Orchestrator, Architect, Implementer, Quality)
     ├─ Apply skill(s)
     └─ Generate + validate + document
     ↓
-Reusable Skills Layer (36 skills)
+Reusable Skills Layer (37 skills)
     ├─ Code Documentation (Javadoc, docstrings, JSDoc)
     ├─ Database (DDL, migrations, schema design)
     ├─ Backend API (REST, OpenAPI)
@@ -309,7 +309,7 @@ this way, see [../docs/02-reference/agents.md](../docs/02-reference/agents.md).
 - **[Tools Documentation](../tools/README.md)** — Utility scripts
 - **[Master Rules](../instructions/master_instruction_set.md)** — Non-negotiable standards
 - **[Main README](../README.md)** — Project overview
-- **[Workflows](../docs/01-workflows/README.md)** — 14 use cases, each a complete path
+- **[Workflows](../docs/01-workflows/README.md)** — 15 use cases, each a complete path
 
 ---
 
