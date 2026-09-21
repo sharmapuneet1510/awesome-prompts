@@ -92,7 +92,7 @@ def test_the_examples_and_the_config_template_are_indexed():
 
 def test_the_changelog_records_it():
     text = c.read(ROOT / "CHANGELOG.md")
-    unreleased = text.split("## [Unreleased]", 1)[1].split("\n## [", 1)[0]
+    unreleased = text.split("## [5.2.0]", 1)[1].split("\n## [", 1)[0]
     assert "NEMESIS" in unreleased
 
 

@@ -16,6 +16,8 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [5.2.0] — 2026-09-21
+
 ### Added
 - **NEMESIS**, an adversarial validation mode: `orchestrator:nemesis` (alias `/nemesis <id>`) and
   `nemesis_skill` assume a finished conclusion may be wrong and try to prove it wrong with evidence,
@@ -23,6 +25,8 @@ versioning follows [Semantic Versioning](https://semver.org/).
   EVIDENCE) with ranked hypotheses of why it failed. Optional, manual by default; policy activation is an
   opt-in step in `quality:review`, `architect:adr` and `orchestrator:pr` driven by `docs/nemesis/nemesis.yml`.
   Workflow 15, two worked reports, a config template, and contract tests.
+  See [the workflow](docs/01-workflows/15-challenge-a-conclusion.md), [the function](agents/orchestrator/functions/nemesis.md),
+  [the skill](skills/nemesis_skill.md) and [PR #16](https://github.com/sharmapuneet1510/awesome-prompts/pull/16).
   Verified counts: **5 agents, 43 functions, 37 skills, 15 workflows**.
 
 ## [5.1.0] — 2026-08-21
