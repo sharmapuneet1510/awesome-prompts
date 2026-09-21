@@ -57,13 +57,34 @@ def test_the_verdict_is_consistent_with_the_rules(report):
     assert c.permitted(header["verdict"], findings)
 
 
+def report_with(verdict):
+    for path in c.EXAMPLES:
+        loaded = c.load_report(path)
+        if loaded[1]["verdict"] == verdict:
+            return loaded
+    raise AssertionError("no example report has the verdict %s" % verdict)
+
+
+def test_the_stated_number_of_challenge_paths_matches_the_numbered_list(report):
+    section = c.section(report[0], "## Challenge paths executed")
+    stated = re.search(r"^(\d+) paths", section, re.M)
+    listed = re.findall(r"^\d+\. ", section, re.M)
+    assert stated and int(stated.group(1)) == len(listed) >= 1, (stated and stated.group(0), len(listed))
+
+
+def test_a_derived_counterexample_is_never_confirmed(report):
+    for finding in report[2]:
+        if "derived" in str(finding["counterexample"]).lower():
+            assert finding["confidence"] != "CONFIRMED", finding["id"]
+
+
 def test_defeated_and_challenged_reports_carry_hypotheses_of_both_layers_when_they_can():
-    _, header, findings, hypotheses = c.load_report(c.EXAMPLES[0])
+    _, header, findings, hypotheses = report_with("DEFEATED")
     assert header["verdict"] == "DEFEATED" and {h["layer"] for h in hypotheses} == {"defect", "miss"}
     assert hypotheses[0]["rank"] == 1 and set(hypotheses[0]["explains"]) & {f["id"] for f in findings}
 
 
 def test_the_survived_example_lists_the_challenge_paths_and_invents_nothing():
-    text, header, findings, hypotheses = c.load_report(c.EXAMPLES[1])
-    assert header["verdict"] == "SURVIVED" and findings == [] and "21 paths" in text
+    text, header, findings, hypotheses = report_with("SURVIVED")
+    assert header["verdict"] == "SURVIVED" and findings == []
     assert all(h["confidence"] == "SPECULATIVE" for h in hypotheses)  # conditions, not defects

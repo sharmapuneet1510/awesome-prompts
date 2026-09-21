@@ -36,16 +36,16 @@ parent_nemesis: null
 - id: H2
   layer: miss
   statement: The reviewer accepted a sequential duplicate test as proof of AC-01 and never asked what happens under concurrency.
-  mechanism: TEST-RUN-774 sends request A, waits for the response, then sends request B; sequential order hides the race. The review counted the passing test as full coverage.
+  mechanism: TEST-RUN-774 sends request A, waits for the response, then sends request B; sequential order hides the race. The review presumably counted the passing test as full coverage.
   explains: [F1, F2]
   cause_class: CHECK_SCOPE_TOO_NARROW
   confidence: HIGH_CONFIDENCE
   rank: 2
-  discriminating_check: Read the review's checklist and the test source; if neither mentions concurrency or parallel requests, the miss is confirmed.
+  discriminating_check: Read TEST-RUN-774's test source and the review's published output; if neither mentions concurrency or parallel requests, the miss is confirmed.
 - id: H3
   layer: miss
   statement: The 409 response path was validated for its status code only, so the missing rollback of the partial insert went unnoticed.
-  mechanism: The test asserts HTTP 409 and stops; it never inspects what the failed request left in the database.
+  mechanism: If the test asserts HTTP 409 and stops, it never inspects what the failed request left in the database.
   explains: [F3]
   cause_class: EVIDENCE_INADEQUATE
   confidence: PLAUSIBLE
@@ -63,9 +63,21 @@ PR-1839 does **not** completely satisfy JIRA-4821, and/or introduces unacceptabl
 
 ## Challenge paths executed
 
-12 paths: AC-01 to AC-04 individually, concurrency, boundary IDs, error handling, data integrity, security
-(injection through the id), regression of the existing 409 path, test coverage, evidence quality,
-operational behaviour (retry storms).
+13 paths:
+
+1. AC-01: a duplicate transaction id returns HTTP 409
+2. AC-02: a rejected duplicate leaves no partial data behind
+3. AC-03: the 409 response names the existing transaction
+4. AC-04: a retry after a timeout returns the original result
+5. Concurrency: two simultaneous requests with the same id
+6. Boundary and malformed ids
+7. Error handling on the 409 path
+8. Data integrity after a rejected duplicate
+9. Security: injection through the id
+10. Regression of the existing 409 path
+11. Test coverage
+12. Evidence quality
+13. Operational behaviour (retry storms)
 
 ## Findings
 

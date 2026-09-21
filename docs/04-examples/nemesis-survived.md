@@ -48,10 +48,29 @@ both succeed, or the fix regresses another path.
 
 ## Challenge paths executed
 
-21 paths: AC-01 to AC-04 individually; concurrent duplicates (2, 10 and 50 parallel requests);
-PROCESSING and COMPLETED collisions; rollback on the 409 path; retry after a timeout; boundary and
-malformed ids; injection through the id; the migration order; idempotent replay; regression of the
-existing 409 path; test coverage; evidence quality; operational behaviour under retry storms.
+21 paths:
+
+1. AC-01: a duplicate transaction id returns HTTP 409
+2. AC-02: a rejected duplicate leaves no partial data behind
+3. AC-03: the 409 response names the existing transaction
+4. AC-04: a retry after a timeout returns the original result
+5. Concurrent duplicates: 2 parallel requests
+6. Concurrent duplicates: 10 parallel requests
+7. Concurrent duplicates: 50 parallel requests
+8. Collision with a PROCESSING transaction
+9. Collision with a COMPLETED transaction
+10. Rollback on the 409 path
+11. Retry after a timeout
+12. Boundary ids
+13. Malformed ids
+14. Injection through the id
+15. Migration order
+16. The uniqueness constraint exists after all migrations
+17. Idempotent replay
+18. Regression of the existing 409 path
+19. Test coverage
+20. Evidence quality
+21. Operational behaviour under retry storms
 
 ## Findings
 
