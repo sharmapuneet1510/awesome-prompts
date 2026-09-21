@@ -1,0 +1,32 @@
+# Copy to docs/nemesis/nemesis.yml in the project under review.
+# Without this file NEMESIS is manual-only: nothing activates automatically.
+nemesis:
+  enabled: true
+  default_trigger: manual          # manual | workflow | policy | agent
+
+  # Policy activation. Every rule is off until you turn it on.
+  auto_activate:
+    critical_change: false
+    production_release: false
+    architecture_change: false
+    security_change: false
+    regulatory_change: false
+    payment_change: false
+
+  # What the rules above mean for THIS project. Optional; the gate steps in
+  # quality:review, architect:adr and orchestrator:pr read it.
+  policy_match:
+    critical_change:
+      jira_priority: [Blocker, Critical]
+      labels: []
+    payment_change:
+      labels: [payments]
+      paths: ["src/payments/**"]
+    security_change:
+      labels: [security]
+      paths: ["src/auth/**"]
+
+  context_isolation: true                 # spawn a fresh sub-agent; record it when that is not possible
+  independent_source_validation: true     # retrieve source evidence, do not trust summaries
+  default_access: read_only
+  maximum_depth: 2                        # NEMESIS may challenge a NEMESIS verdict once, no further

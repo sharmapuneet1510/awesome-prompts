@@ -38,6 +38,7 @@ Invoke a specific function using `orchestrator:function`. When triggered this wa
 | `orchestrator:risk` | Risk assessment + failure modes + mitigation strategies | Technical Lead PHASE 4 |
 | `orchestrator:ideate` | Transform a vague idea into a validated project plan (uses ideation_engine, expert_panel_generator) | [orchestrator/functions/ideate.md](orchestrator/functions/ideate.md) |
 | `orchestrator:solve` | Solve a design bottleneck with multi-dimensional options (uses design_solver, expert_panel_generator) | [orchestrator/functions/solve.md](orchestrator/functions/solve.md) |
+| `orchestrator:nemesis` | Adversarial validation mode: attack a finished conclusion, return a verdict with ranked hypotheses of why it failed (uses nemesis_skill) | [orchestrator/functions/nemesis.md](orchestrator/functions/nemesis.md) |
 
 ### Dispatch Rules
 - **With function:** `orchestrator:function` → run only that function's steps (skip intro questions)
