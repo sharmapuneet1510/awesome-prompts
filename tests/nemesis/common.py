@@ -100,24 +100,30 @@ def load_report(path):
     return text, header, findings or [], hypotheses or []
 
 
+def expected_verdict(findings):
+    """The documented verdict rules (skill §10): ordered, so every set of findings has exactly one verdict."""
+    counting = [f for f in findings if f["confidence"] != "DISPROVEN"]
+
+    def backed(f):
+        return str(f.get("counterexample", "none")).strip().lower() != "none" or f.get("category") == "CONTRADICTORY_EVIDENCE"
+
+    def strong(f):
+        return f["severity"] in ("CRITICAL", "HIGH") and f["confidence"] != "SPECULATIVE"
+
+    if any(strong(f) and f["confidence"] in ("CONFIRMED", "HIGH_CONFIDENCE") and backed(f) for f in counting):
+        return "DEFEATED"
+    strong_findings = [f for f in counting if strong(f)]
+    if strong_findings and all(f.get("category") == "EVIDENCE_GAP" for f in strong_findings):
+        return "INSUFFICIENT EVIDENCE"
+    if strong_findings or sum(1 for f in counting if f["severity"] == "MEDIUM" and f["confidence"] != "SPECULATIVE") >= 2:
+        return "CHALLENGED"
+    if counting:
+        return "SURVIVED WITH CONDITIONS"
+    return "SURVIVED"
+
+
 def permitted(verdict, findings):
-    """The documented verdict rules (skill §10), as a predicate over a report's findings."""
-    def defeating(f):
-        return f["severity"] in ("CRITICAL", "HIGH") and f["confidence"] in ("CONFIRMED", "HIGH_CONFIDENCE") and str(f["counterexample"]).strip().lower() != "none"
-
-    def challenging(f):
-        return f["severity"] == "HIGH" and f["confidence"] in ("CONFIRMED", "HIGH_CONFIDENCE", "PLAUSIBLE")
-
-    if verdict == "DEFEATED":
-        return any(defeating(f) for f in findings)
-    if any(defeating(f) for f in findings):
-        return False  # a defeating finding leaves no other verdict open
-    if verdict == "CHALLENGED":
-        return any(challenging(f) for f in findings) or sum(1 for f in findings if f["severity"] == "MEDIUM") >= 2
-    if verdict == "SURVIVED":
-        return not findings
-    if verdict == "SURVIVED WITH CONDITIONS":
-        return not any(challenging(f) for f in findings) and sum(1 for f in findings if f["severity"] == "MEDIUM" and f["confidence"] != "SPECULATIVE") < 2
-    if verdict == "INSUFFICIENT EVIDENCE":
-        return True
-    raise ValueError(verdict)
+    """True when `verdict` is the one the rules give for these findings."""
+    if verdict not in VERDICTS:
+        raise ValueError(verdict)
+    return expected_verdict(findings) == verdict

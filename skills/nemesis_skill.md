@@ -187,7 +187,7 @@ something that is fine, or missed something that is not).
 
 `CONFIRMED` (reproduced or directly evidenced), `HIGH_CONFIDENCE`, `PLAUSIBLE`, `SPECULATIVE`,
 `DISPROVEN` (a challenge that was tried and failed; record it so the reader sees the path was
-executed).
+executed; it does not count toward the verdict, see §10).
 
 **Severity and confidence are separate.** A high-impact theoretical risk may still have low
 confidence: `Severity: CRITICAL, Confidence: SPECULATIVE` is valid and honest. A `SPECULATIVE` finding
@@ -195,15 +195,22 @@ can never by itself raise the verdict above SURVIVED WITH CONDITIONS.
 
 ## 10. Verdict
 
-Exactly one of five. Choose by these rules (a proposal, tuned on real reports):
+Exactly one of five, chosen by the rules below (a proposal, tuned on real reports). The rules are
+**ordered: the first one that matches decides**, so every set of findings has exactly one verdict.
 
-| Verdict | When |
-|---|---|
-| `DEFEATED` | At least one finding at `HIGH` or `CRITICAL` severity with `CONFIRMED` or `HIGH_CONFIDENCE` confidence, backed by a counterexample or contradictory evidence. The original conclusion is invalidated. |
-| `CHALLENGED` | A `PLAUSIBLE`-or-better `HIGH` finding without a reproducible counterexample, or several `MEDIUM` findings. The original conclusion needs reconsideration. |
-| `SURVIVED WITH CONDITIONS` | Only `LOW`, `INFORMATIONAL` or `SPECULATIVE` findings, plus stated assumptions. The conclusion stands with conditions. |
-| `SURVIVED` | No findings. The report lists the challenge paths executed. |
-| `INSUFFICIENT EVIDENCE` | Neither the conclusion nor its opposite can be supported from the evidence reachable. |
+**Counting findings** are all findings whose confidence is not `DISPROVEN` (a disproven finding is a
+challenge path that was tried and failed; it is recorded but never counts toward the verdict).
+
+| Order | Verdict | When |
+|---|---|---|
+| 1 | `DEFEATED` | At least one counting finding at `HIGH` or `CRITICAL` severity with `CONFIRMED` or `HIGH_CONFIDENCE` confidence that is **backed**: it carries a counterexample (`counterexample` is not `none`) or its category is `CONTRADICTORY_EVIDENCE`. The original conclusion is invalidated. |
+| 2 | `INSUFFICIENT EVIDENCE` | Not DEFEATED, and every counting `HIGH` or `CRITICAL` finding that is not `SPECULATIVE` has category `EVIDENCE_GAP`: the conclusion cannot be verified either way. If nothing at all could be verified, record that as a `HIGH` `EVIDENCE_GAP` finding. |
+| 3 | `CHALLENGED` | Not decided above, and there is a counting `HIGH` or `CRITICAL` finding that is not `SPECULATIVE` (for example `CONFIRMED` without a counterexample, or `PLAUSIBLE`), or there are two or more counting `MEDIUM` findings that are not `SPECULATIVE`. The original conclusion needs reconsideration. |
+| 4 | `SURVIVED WITH CONDITIONS` | Not decided above, and there is at least one counting finding (so: `LOW` or `INFORMATIONAL` findings, at most one non-speculative `MEDIUM`, and any `SPECULATIVE` finding at any severity), plus the stated assumptions. The conclusion stands with conditions. |
+| 5 | `SURVIVED` | There are no counting findings. The report lists the challenge paths executed. |
+
+A `SPECULATIVE` finding never counts toward rules 2 and 3, which is what keeps it from raising the
+verdict above SURVIVED WITH CONDITIONS.
 
 **NEMESIS never has to find a defect.** A SURVIVED result is a full, valid result:
 
@@ -287,7 +294,7 @@ Body sections, in order:
 5. `## Challenge paths executed`
 6. `## Findings`
 7. `## Evidence assessment`
-8. `## Required actions` (a defeated result ends with: repeat the review, then re-run NEMESIS)
+8. `## Required actions` (a `DEFEATED` or `CHALLENGED` result ends with: repeat the review, then re-run NEMESIS)
 
 Write the **Findings** and the **Failure-cause hypotheses** as one fenced `yaml` list each, so tools
 can validate them. A finding is a list item with `id`, `category`, `severity`, `confidence`,
