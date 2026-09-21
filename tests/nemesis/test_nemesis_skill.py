@@ -153,3 +153,19 @@ def test_the_status_vocabulary_is_defined():
 def test_the_limits_are_stated_plainly():
     section = c.section(SKILL, "## 15. Limits")
     assert "cannot technically enforce" in section and "context_isolated" in section
+
+
+def test_the_independence_rule_admits_bookkeeping_but_not_reasoning():
+    assert "bookkeeping, not the original reasoning" in c.flat(SKILL)
+
+
+def test_lower_findings_never_disappear_from_the_report():
+    assert "Lower findings never disappear" in c.flat(c.section(SKILL, "## 10"))
+
+
+def test_the_report_header_pins_target_types_change_and_the_counting_rule():
+    text = c.flat(SKILL)
+    for target_type in c.TARGET_TYPES:
+        assert "`%s`" % target_type in text, target_type
+    assert "`change` is the stable work item" in text
+    assert "count only **counting** findings (not `DISPROVEN`)" in text

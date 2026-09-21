@@ -39,11 +39,12 @@ quality:review pr=123
 
 After a `PASS`, if `docs/nemesis/nemesis.yml` exists, is not `enabled: false`, and an `auto_activate` rule
 matches this change (`critical_change`, `security_change` or `payment_change`; use the project's
-`policy_match` entries, if it has them), run `orchestrator:nemesis target=<review id> trigger=policy` and
+`policy_match` entries, if it has them), run `orchestrator:nemesis target=PR-<pr> trigger=policy` (the PR you just reviewed) and
 report its verdict beside yours. `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` overrides the `PASS`
 until its findings are resolved or its missing evidence is supplied; `SURVIVED WITH CONDITIONS` keeps the
-`PASS` and copies its conditions into your report. After two consecutive `DEFEATED` or `CHALLENGED`
-results for the same change (count the reports in `docs/nemesis/` that name it), stop and hand the decision to a human instead of re-reviewing again. Skip
+`PASS` and copies its conditions into your report. After two consecutive blocking results (`DEFEATED`,
+`CHALLENGED` or `INSUFFICIENT EVIDENCE`) for the same change (count the reports in `docs/nemesis/` whose
+`change` header matches this work item), stop and hand the decision to a human instead of re-reviewing again. Skip
 this section when the file is absent, and when you are yourself running as a NEMESIS challenger.
 
 ## Example

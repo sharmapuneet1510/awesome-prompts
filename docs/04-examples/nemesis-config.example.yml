@@ -1,5 +1,6 @@
 # Copy to docs/nemesis/nemesis.yml in the project under review.
 # Without this file NEMESIS is manual-only: nothing activates automatically.
+# `enabled: false` refuses every trigger, including a manual /nemesis.
 nemesis:
   enabled: true
   default_trigger: manual          # manual | workflow | policy | agent
@@ -25,6 +26,11 @@ nemesis:
     security_change:
       labels: [security]
       paths: ["src/auth/**"]
+    architecture_change:
+      labels: [architecture]
+      paths: ["docs/adr/**"]
+    regulatory_change:
+      labels: [regulatory, compliance]
 
   context_isolation: true                 # spawn a fresh sub-agent; record it when that is not possible
   independent_source_validation: true     # retrieve source evidence, do not trust summaries

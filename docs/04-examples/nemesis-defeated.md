@@ -1,7 +1,8 @@
 ---
 nemesis_id: NMS-2026-00982
 created: 2026-09-21
-target: {type: code_review, id: CR-839}
+target: {type: pull_request, id: PR-1839}
+change: JIRA-4821
 original_agent: CodeReviewer-04
 original_verdict: PASS
 nemesis_persona: NEMESIS_CODE_REVIEWER

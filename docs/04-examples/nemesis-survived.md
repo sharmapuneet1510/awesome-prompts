@@ -1,7 +1,8 @@
 ---
 nemesis_id: NMS-2026-00983
 created: 2026-09-21
-target: {type: code_review, id: CR-840}
+target: {type: pull_request, id: PR-1852}
+change: JIRA-4821
 original_agent: CodeReviewer-04
 original_verdict: PASS
 nemesis_persona: NEMESIS_CODE_REVIEWER
@@ -18,8 +19,9 @@ parent_nemesis: null
 
 # NEMESIS VERDICT: SURVIVED
 
-> Worked example. `NEMESIS SURVIVED` — the re-review of the fix for CR-839 held up. 21 challenge paths
-> executed, 0 findings, and every applicable acceptance criterion was verified against the source.
+> Worked example. `NEMESIS SURVIVED` — the re-review of the fix for PR-1839 held up. 21 challenge paths
+> executed, 0 counting findings (one challenge was tried and disproven, and is recorded), and every
+> applicable acceptance criterion was verified against the source.
 
 ## Failure-cause hypotheses
 
@@ -39,11 +41,11 @@ Conditions under which the conclusion would fail (not defects found):
 
 ## Original conclusion
 
-`PASS` — PR-1852 fixes CR-839: duplicate transaction IDs are rejected atomically under concurrent requests.
+`PASS` — PR-1852 fixes PR-1839: duplicate transaction IDs are rejected atomically under concurrent requests.
 
 ## Reverse hypothesis
 
-PR-1852 does **not** fully fix CR-839: two concurrent requests with the same transaction id can still
+PR-1852 does **not** fully fix PR-1839: two concurrent requests with the same transaction id can still
 both succeed, or the fix regresses another path.
 
 ## Challenge paths executed
@@ -74,8 +76,19 @@ both succeed, or the fix regresses another path.
 
 ## Findings
 
+One challenge was tried and disproven. It is listed so the reader can see the path was executed, and it
+does not count toward the verdict or the header counts (skill §9, §10).
+
 ```yaml
-[]
+- id: F1
+  category: IMPLEMENTATION_DEFECT
+  severity: HIGH
+  confidence: DISPROVEN
+  traces_to: [AC-01]
+  evidence: 50 parallel requests with one transaction id were sent; the unique constraint rejected 49 and exactly one committed (TEST-RUN-781).
+  counterexample: none
+  impact: None; the challenge failed.
+  required_action: none
 ```
 
 ## Evidence assessment

@@ -19,7 +19,7 @@ Not for: a first review (use [06](06-review-a-pull-request.md)), or anything wit
 
 ## Prerequisites
 
-- A conclusion to challenge, with an id or a path (`PR-1839`, `CR-839`, `ADR-104`, `API-TEST-2291`,
+- A conclusion to challenge, with an id or a path (`PR-1839`, `ADR-104`, `API-TEST-2291`,
   `RELEASE-RC-32`).
 - Read access to the sources: requirements, git, test results.
 - Optional: `docs/nemesis/nemesis.yml` (start from
@@ -31,9 +31,9 @@ Not for: a first review (use [06](06-review-a-pull-request.md)), or anything wit
 ## The chain
 
 ```
-quality:review pr=1839            → PASS   (review CR-839)
+quality:review pr=1839            → PASS
     ↓
-orchestrator:nemesis target=CR-839      (or /nemesis CR-839)
+orchestrator:nemesis target=PR-1839     (or /nemesis PR-1839)
     ↓  NEMESIS ACTIVATED
     ↓  fresh sub-agent, read-only, five inputs only
     ↓
@@ -57,11 +57,11 @@ the required actions. Worked examples:
 
 | Verdict | Meaning |
 |---|---|
-| `SURVIVED` | No findings. The conclusion held up. |
+| `SURVIVED` | No counting findings (a challenge that was tried and disproven is recorded but does not count). The conclusion held up. |
 | `SURVIVED WITH CONDITIONS` | Only minor or speculative findings (at most one non-speculative medium one), plus stated assumptions. |
-| `CHALLENGED` | A significant finding that is not backed by a counterexample, or several medium ones: reconsider the conclusion. |
+| `CHALLENGED` | A significant finding (for example one without a backing counterexample) or several medium ones: reconsider the conclusion. |
 | `DEFEATED` | A high-impact, high-confidence finding backed by a counterexample or by contradictory evidence. |
-| `INSUFFICIENT EVIDENCE` | Neither the conclusion nor its opposite can be supported. |
+| `INSUFFICIENT EVIDENCE` | Neither the conclusion nor its opposite can be supported. Lower findings still appear in the required actions. |
 
 NEMESIS never has to find a defect, and does not invent one.
 
@@ -84,8 +84,9 @@ A prompt cannot technically enforce isolation or read-only access. The function 
 report records what actually happened (`context_isolated`, `access`, `sources`); a run that could not
 spawn a fresh sub-agent says so in its verdict.
 
-Two guards keep it from looping. After **two consecutive** `DEFEATED` or `CHALLENGED` results for the
-same target the gates stop and hand the decision to a human, and a challenge of a NEMESIS verdict
+Two guards keep it from looping. After **two consecutive** blocking results (`DEFEATED`, `CHALLENGED`
+or `INSUFFICIENT EVIDENCE`) for the same change (the `change` header of the reports, normally the Jira
+key) the gates stop and hand the decision to a human, and a challenge of a NEMESIS verdict
 stops at `maximum_depth` (default 2; a third is refused, and writes nothing). A challenger never
 evaluates a gate itself, and `enabled: false` refuses every trigger, even a manual `/nemesis`.
 

@@ -21,7 +21,7 @@ the report format. This file holds the lifecycle, the persona table and the isol
 
 ```yaml
 # Required
-target: string             # JIRA-4821 | PR-1839 | CR-839 | ADR-104 | API-TEST-2291 | RELEASE-RC-32 | a path
+target: string             # JIRA-4821 | PR-1839 | ADR-104 | API-TEST-2291 | RELEASE-RC-32 | a path
 
 # Optional
 persona: string?           # override the persona chosen from the domain table, e.g. quality:security
@@ -39,8 +39,10 @@ orchestrator:nemesis target=PR-1839
 
 ## Configuration
 
-Read `docs/nemesis/nemesis.yml` in the project under review, if it exists. Without it NEMESIS is
-manual-only, read-only, depth 2, and nothing activates automatically. Keys and defaults:
+Read `docs/nemesis/nemesis.yml` in the project under review, if it exists. The file has one root key,
+`nemesis:`, and every key below sits under it (see the template
+`docs/04-examples/nemesis-config.example.yml`). Without the file NEMESIS is manual-only, read-only,
+`maximum_depth: 2`, and nothing activates automatically. Keys and defaults:
 `enabled: true`, `default_trigger: manual`, `auto_activate` (all rules default off),
 `context_isolation: true`, `independent_source_validation: true`, `default_access: read_only`,
 `maximum_depth: 2`. An optional `policy_match` block (Jira priorities, labels, path globs) tells the
@@ -66,10 +68,13 @@ hands the fact to the challenger; the challenger writes it into the header.
 ### Step 1 — Resolve the target
 
 Resolve `target` to five things and nothing more: the **artefact**, the **original conclusion**, the
-**original verdict**, the **evidence references** and the **identifiers**. Note who produced the
-conclusion (`original_agent`) for the report header; it is a name, not the agent's reasoning. Recognise
-the type from the id prefix or the file. If the target is ambiguous, ask once. If it has no conclusion to challenge
-(a raw artefact nobody has judged), say so and stop.
+**original verdict**, the **evidence references** and the **identifiers**. Also record three facts for
+the report header: `original_agent` (who produced the conclusion; a name, not the agent's reasoning),
+the **target type** (`requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment` or `recommendation`), recognised from the id prefix or the file, and the **change**: the
+stable work item the target belongs to (the Jira key when there is one, otherwise the PR or release id),
+which stays the same when the owner fixes the work and it is reviewed again. If the target is
+ambiguous, ask once. If it has no conclusion to challenge (a raw artefact nobody has judged), say so
+and stop.
 
 ### Step 2 — Select the persona
 
@@ -82,7 +87,7 @@ existing functions. A `persona=` override wins.
 | Architecture, ADR, technical, API and data design | `architect:design`, `architect:adr`, `architect:api`, `architect:schema` | `adr_skill`, `oop_skill` |
 | Code, PR approval, code review, security review | `quality:review`, `quality:security` | `code_review_skill`, `security_audit_skill` |
 | API, UI and automation test results, test strategy, regression, evidence pack | `quality:qa`, `quality:observe` | `test_skill`, `traceability_skill` |
-| Release approval, deployment readiness | `implementer:pipeline` | `debugging_skill`, `opentelemetry_skill` |
+| Release approval, deployment readiness | `quality:observe`, `orchestrator:risk` | `debugging_skill`, `opentelemetry_skill` |
 | RCA, production incident conclusions | `quality:debug`, `quality:diagnose` | `debugging_skill` |
 | Documentation | `implementer:doc` | `code_documentation_skill` |
 | Compliance, risk, performance assessment | `quality:security`, `quality:perf` | `security_audit_skill` |
@@ -98,8 +103,9 @@ Base persona + domain skills + nemesis_skill + target context + available eviden
 
 ### Step 3 — Isolate
 
-First **allocate the report**: the id `NMS-<year>-<seq>` (sequence = the highest existing in
-`docs/nemesis/` plus one, five digits; the directory may not exist yet) and the path
+First **allocate the report**: the id `NMS-<year>-<seq>` (sequence = the highest existing for that
+year in `docs/nemesis/` plus one, five digits, restarting at `00001` each year; the directory may not
+exist yet) and the path
 `docs/nemesis/<id>.md`. Work out the **depth**: the parent's `depth` plus 1 (`parent` is the NMS id
 being challenged), or 1 when there is no parent. Refuse if that exceeds `maximum_depth` (see Recursion).
 A re-run after the owner has fixed a defeated result is a **new depth-1 challenge** of the fixed
@@ -118,7 +124,7 @@ agents/orchestrator/functions/nemesis.md and write the report.
 Target: <id>.  Original conclusion: <conclusion>.  Original verdict: <verdict>.
 Evidence references: <refs>.  Identifiers: <ids>.
 Report header facts (write them exactly): nemesis_id: <NMS id>; nemesis_persona: <persona>;
-original_agent: <name from step 1>;
+target: {type: <target type>, id: <id>}; change: <change>; original_agent: <name from step 1>;
 trigger: <manual|workflow|policy|agent>; depth: <n>; parent_nemesis: <NMS id or null>;
 context_isolated: true; access: read_only.
 Retrieve the source evidence yourself; do not trust summaries. You have read-only access.
@@ -191,11 +197,11 @@ nothing, and do not run.
 
 A policy gate that runs again after the owner has fixed a defeated result starts a **new depth-1
 challenge**, so `maximum_depth` does not bound that loop. The gates in `quality:review` and
-`orchestrator:pr` therefore stop after **two consecutive** `DEFEATED` or `CHALLENGED` results for the
-same target and hand the decision to a human; they count them from the reports in `docs/nemesis/`
-that name the same target. (The `architect:adr` gate is advice-only and a human approves every ADR, so
-it needs no counter.) A challenger never evaluates
-a gate: when NEMESIS composes the `quality:review` or `architect:adr` persona, the gate paragraph in
+`orchestrator:pr` therefore stop after **two consecutive blocking results** (`DEFEATED`, `CHALLENGED`
+or `INSUFFICIENT EVIDENCE`) for the same change and hand the decision to a human. They count them from
+the reports in `docs/nemesis/` whose `change` header matches; a re-review after a fix has a new review
+or PR id but the same `change`, so the count carries across rounds. (The `architect:adr` gate is
+advice-only and a human approves every ADR, so it needs no counter.) A challenger never evaluates a gate: when NEMESIS composes the `quality:review` or `architect:adr` persona, the gate paragraph in
 that file does not apply to it.
 
 ## Triggers
@@ -220,7 +226,7 @@ fires on its own.
 ## Example
 
 ```bash
-orchestrator:nemesis target=CR-839
+orchestrator:nemesis target=PR-1839
 ```
 
 Result: `NEMESIS DEFEATED THE CONCLUSION` — the duplicate check ignores PROCESSING transactions, so two
@@ -228,6 +234,17 @@ concurrent requests can both pass. Ranked hypotheses point at the missing concur
 and the read-then-write check (defect layer); the report goes back to the developer. See the worked
 examples in [`docs/04-examples/nemesis-defeated.md`](../../../docs/04-examples/nemesis-defeated.md) and
 [`nemesis-survived.md`](../../../docs/04-examples/nemesis-survived.md).
+
+## Extending
+
+- **A persona:** add a row to the table in step 2 naming existing `agent:function` entries (each must be
+  declared in that agent's dispatch table) and existing skills; `tests/nemesis/test_nemesis_function.py`
+  checks both.
+- **A gate:** add a paragraph headed "NEMESIS gate", marked optional, to the host function, an `auto_activate`
+  key and a `policy_match` entry to the template, and the host file to `GATES` in
+  `tests/nemesis/test_nemesis_gates.py`.
+- **A verdict, category or cause class:** change `skills/nemesis_skill.md`, `tests/nemesis/common.py`
+  and the spec together; the tests pin all three.
 
 ## Related
 

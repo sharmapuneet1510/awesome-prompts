@@ -127,7 +127,7 @@ def test_disabled_config_refuses_every_trigger_including_manual():
     assert "refuse every trigger, including a manual `/nemesis`" in c.flat(c.section(FUNCTION, "## Configuration"))
 
 
-def test_the_status_strings_are_printed_at_the_right_moments():
+def test_the_function_names_every_status_string():
     text = c.flat(FUNCTION)
     for status in ["NEMESIS ACTIVATED", "NEMESIS IS CHALLENGING THE CONCLUSION", "COUNTEREXAMPLE DETECTED", "CONCLUSION COMPROMISED", "NEMESIS SURVIVED", "NEMESIS DEFEATED THE CONCLUSION"]:
         assert status in text, status
@@ -160,3 +160,28 @@ def test_the_function_documents_the_config_and_its_defaults():
                 "independent_source_validation: true", "default_access: read_only", "maximum_depth: 2", "policy_match"]:
         assert key in section, key
     assert "manual-only" in section
+
+
+def test_the_challenger_is_told_the_target_type_and_the_change():
+    step3 = c.flat(c.section(FUNCTION, "### Step 3"))
+    assert "target: {type:" in step3 and "change:" in step3
+    step1 = c.flat(c.section(FUNCTION, "### Step 1"))
+    assert "original_agent" in step1 and "target type" in step1 and "change" in step1
+
+
+def test_the_loop_guard_counts_by_change_and_blocking_results():
+    guard = c.flat(c.section(FUNCTION, "## Loop guard"))
+    assert "two consecutive blocking results" in guard and "`change` header" in guard
+    for verdict in ["DEFEATED", "CHALLENGED", "INSUFFICIENT EVIDENCE"]:
+        assert verdict in guard
+
+
+def test_the_configuration_has_one_root_key_and_the_release_persona_is_an_existing_function():
+    assert "one root key, `nemesis:`" in c.flat(c.section(FUNCTION, "## Configuration"))
+    assert "| Release approval, deployment readiness | `quality:observe`, `orchestrator:risk` |" in c.flat(c.section(FUNCTION, "### Step 2"))
+
+
+def test_the_function_says_how_to_extend_it():
+    extending = c.flat(c.section(FUNCTION, "## Extending"))
+    for item in ["A persona", "A gate", "A verdict, category or cause class"]:
+        assert item in extending, item

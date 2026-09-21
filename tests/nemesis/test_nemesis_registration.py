@@ -79,7 +79,8 @@ def test_the_workflow_doc_states_each_trigger_point_and_the_guards():
     text = c.flat(c.read(ROOT / "docs" / "01-workflows" / "15-challenge-a-conclusion.md"))
     for phrase in ["after a `PASS`", "between `Status: Proposed` and the approval request", "before the release PR", "**two consecutive**", "`maximum_depth`", "A challenger never evaluates a gate", "even a manual `/nemesis`", "not `enabled: false`"]:
         assert phrase in text, phrase
-    assert "target=CR-839" in text and "target=PR-1839" not in text  # the chain uses the review id of the worked example
+    assert "target=PR-1839" in text and "CR-839" not in text
+    assert "**two consecutive** blocking results" in text and "for the same change" in text
     assert "two rounds at most, see Limits" in text
 
 
@@ -90,7 +91,8 @@ def test_the_examples_and_the_config_template_are_indexed():
 
 def test_the_changelog_records_it():
     text = c.read(ROOT / "CHANGELOG.md")
-    assert "## [Unreleased]" in text and "NEMESIS" in text.split("## [5.1.0]")[0]
+    unreleased = text.split("## [Unreleased]", 1)[1].split("\n## [", 1)[0]
+    assert "NEMESIS" in unreleased
 
 
 def test_the_exporter_lists_the_skill():

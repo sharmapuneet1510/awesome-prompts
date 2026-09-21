@@ -29,7 +29,8 @@ def test_the_body_sections_are_present_and_in_order(report):
 
 def test_the_header_counts_match_the_lists(report):
     _, header, findings, hypotheses = report
-    counts = {name: sum(1 for f in findings if f["severity"] == name.upper()) for name in header["findings"]}
+    counting = [f for f in findings if f["confidence"] != "DISPROVEN"]  # a disproven challenge is recorded but not counted
+    counts = {name: sum(1 for f in counting if f["severity"] == name.upper()) for name in header["findings"]}
     assert counts == header["findings"]
     assert header["hypotheses"] == len(hypotheses)
 
@@ -86,5 +87,12 @@ def test_defeated_and_challenged_reports_carry_hypotheses_of_both_layers_when_th
 
 def test_the_survived_example_lists_the_challenge_paths_and_invents_nothing():
     text, header, findings, hypotheses = report_with("SURVIVED")
-    assert header["verdict"] == "SURVIVED" and findings == []
+    assert header["verdict"] == "SURVIVED" and findings and all(f["confidence"] == "DISPROVEN" for f in findings)
+    assert "0 counting findings" in text
     assert all(h["confidence"] == "SPECULATIVE" for h in hypotheses)  # conditions, not defects
+
+
+def test_the_target_type_is_pinned_and_the_change_names_the_work_item(report):
+    header = report[1]
+    assert header["target"]["type"] in c.TARGET_TYPES and header["target"]["id"]
+    assert header["change"]

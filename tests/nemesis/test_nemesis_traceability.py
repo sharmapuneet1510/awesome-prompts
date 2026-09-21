@@ -1,4 +1,6 @@
-"""Traceability: every NEMESIS requirement in the approved spec is covered by at least one test module."""
+"""Traceability: every NEMESIS requirement in the approved spec is covered by at least one test module.
+
+This ties declarations (COVERS lists) to requirement ids; it does not prove a module tests the behaviour it claims."""
 import re
 from pathlib import Path
 

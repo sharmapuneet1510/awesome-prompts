@@ -46,7 +46,10 @@ NEMESIS receives exactly five things about the target:
 5. the **identifiers** (Jira, PR, ADR, run ids).
 
 NEMESIS does **not** receive, and must not ask for, the original agent's reasoning chain, drafts or
-scratch analysis. Reading them would repeat the original analysis and inherit its blind spots.
+scratch analysis. Reading them would repeat the original analysis and inherit its blind spots. The
+caller also hands the challenger the **report-header facts** it allocates (`nemesis_id`, the persona,
+`original_agent`, the target type, `change`, `trigger`, `depth`, `parent_nemesis`, `context_isolated`,
+`access`): bookkeeping, not the original reasoning.
 
 ## 3. Reverse hypothesis
 
@@ -210,7 +213,9 @@ challenge path that was tried and failed; it is recorded but never counts toward
 | 5 | `SURVIVED` | There are no counting findings. The report lists the challenge paths executed. |
 
 A `SPECULATIVE` finding never counts toward rules 2 and 3, which is what keeps it from raising the
-verdict above SURVIVED WITH CONDITIONS.
+verdict above SURVIVED WITH CONDITIONS. Lower findings never disappear: when a higher rule decides the
+verdict (for example `INSUFFICIENT EVIDENCE` over two `MEDIUM` findings), the report's Required actions
+still carry them.
 
 **NEMESIS never has to find a defect.** A SURVIVED result is a full, valid result:
 
@@ -270,7 +275,8 @@ plus one, five digits). YAML header, then the body in this order.
 ```yaml
 nemesis_id: NMS-2026-00982
 created: 2026-09-21
-target: {type: code_review, id: CR-839}
+target: {type: pull_request, id: PR-1839}
+change: JIRA-4821
 original_agent: CodeReviewer-04
 original_verdict: PASS
 nemesis_persona: NEMESIS_CODE_REVIEWER
@@ -284,6 +290,12 @@ trigger: manual            # manual | workflow | policy | agent
 depth: 1
 parent_nemesis: null
 ```
+
+`target.type` is one of `requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment` or `recommendation`. `change` is the stable work item the target
+belongs to (the Jira key when there is one, otherwise the PR or release id): it stays the same when the
+owner fixes the work and it is reviewed again, which is what lets the gates count consecutive results
+for the same change. The `findings` counts count only **counting** findings (not `DISPROVEN`), and the
+`hypotheses` count is the length of the hypotheses list.
 
 Body sections, in order:
 
@@ -300,8 +312,9 @@ Write the **Findings** and the **Failure-cause hypotheses** as one fenced `yaml`
 can validate them. A finding is a list item with `id`, `category`, `severity`, `confidence`,
 `traces_to` (a list), `evidence`, `counterexample` (write exactly `none` when there is none), `impact` and `required_action`. A
 hypothesis is a list item with `id`, `layer`, `statement`, `mechanism`, `explains` (a list of finding
-ids), `cause_class`, `confidence`, `rank` and `discriminating_check`. An empty section is `[]`. The
-`findings` and `hypotheses` counts in the header must equal the lists.
+ids), `cause_class`, `confidence`, `rank` and `discriminating_check`. An empty section is `[]`. A
+`DISPROVEN` finding is listed like any other, so the reader sees the path was executed, but it is not
+counted in the header.
 
 ## 13. Status vocabulary
 

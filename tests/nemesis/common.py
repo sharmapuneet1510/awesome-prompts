@@ -29,8 +29,12 @@ STATUS_STRINGS = [
     "NEMESIS ACTIVATED", "NEMESIS IS CHALLENGING THE CONCLUSION", "COUNTEREXAMPLE DETECTED",
     "CONCLUSION COMPROMISED", "NEMESIS SURVIVED", "NEMESIS DEFEATED THE CONCLUSION",
 ]
+TARGET_TYPES = [
+    "requirement", "architecture", "adr", "pull_request", "code_review", "security_review", "test_result", "release",
+    "rca", "documentation", "assessment", "recommendation",
+]
 HEADER_KEYS = [
-    "nemesis_id", "created", "target", "original_agent", "original_verdict", "nemesis_persona", "verdict", "findings",
+    "nemesis_id", "created", "target", "change", "original_agent", "original_verdict", "nemesis_persona", "verdict", "findings",
     "hypotheses", "sources", "context_isolated", "access", "trigger", "depth", "parent_nemesis",
 ]
 FINDING_KEYS = ["id", "category", "severity", "confidence", "traces_to", "evidence", "counterexample", "impact", "required_action"]
