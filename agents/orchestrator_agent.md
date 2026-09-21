@@ -1035,9 +1035,12 @@ And so on...
 7. Update CLAUDE.md + AGENTS.md
 8. Generate completion report
 
-**NEMESIS gate (optional).** Before step 1, if `docs/nemesis/nemesis.yml` exists, has `enabled: true`, and
+**NEMESIS gate (optional).** Before step 1, if `docs/nemesis/nemesis.yml` exists, is not `enabled: false`, and
 `auto_activate.production_release` matches this release, run `orchestrator:nemesis target=<release id>
-trigger=policy` and stop on a `DEFEATED` or `CHALLENGED` verdict. Without `nemesis.yml`, skip this.
+trigger=policy` and stop on a `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` verdict; on `SURVIVED WITH
+CONDITIONS`, put its conditions in the PR description. After two consecutive `DEFEATED` or `CHALLENGED`
+results for the same release, stop and hand the decision to a human. Skip this when the file is absent, and
+when you are yourself running as a NEMESIS challenger.
 
 ---
 

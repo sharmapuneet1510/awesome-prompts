@@ -120,6 +120,7 @@ Report header facts (write them exactly): nemesis_id: <NMS id>; nemesis_persona:
 trigger: <manual|workflow|policy|agent>; depth: <n>; parent_nemesis: <NMS id or null>;
 context_isolated: true; access: read_only.
 Retrieve the source evidence yourself; do not trust summaries. You have read-only access.
+Do not evaluate any NEMESIS policy gate and do not start another NEMESIS: you are the challenger.
 Write only the report file <path>. Return the verdict and the report path.
 ```
 
@@ -183,6 +184,15 @@ A NEMESIS verdict may itself be challenged (`parent=<NMS id>`). The original cha
 challenge of it is depth 2, computed as the parent's `depth` plus 1. `maximum_depth` defaults to 2. A
 request beyond it is **refused**: say in the response which limit was hit and which parent, write
 nothing, and do not run.
+
+## Loop guard
+
+A policy gate that runs again after the owner has fixed a defeated result starts a **new depth-1
+challenge**, so `maximum_depth` does not bound that loop. The gates in `quality:review`,
+`architect:adr` and `orchestrator:pr` therefore stop after **two consecutive** `DEFEATED` or
+`CHALLENGED` results for the same target and hand the decision to a human. A challenger never evaluates
+a gate: when NEMESIS composes the `quality:review` or `architect:adr` persona, the gate paragraph in
+that file does not apply to it.
 
 ## Triggers
 

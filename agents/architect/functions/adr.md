@@ -58,12 +58,13 @@ architect:adr supersede=ADR-0003 decision="drop the Redis session cache"
 
 ## NEMESIS gate (optional)
 
-If `docs/nemesis/nemesis.yml` exists, has `enabled: true`, and its `auto_activate.architecture_change`
-rule matches this decision (use `policy_match` for the project's labels and paths), run
-`orchestrator:nemesis target=<ADR id> trigger=policy` after step 7 has set `Status: Proposed` and
-**before** approval is requested. Put the verdict and the report path in the approval request. A
-`DEFEATED` or `CHALLENGED` verdict is advice for the approver: it never replaces the human approval.
-Without `nemesis.yml`, skip this section entirely.
+If `docs/nemesis/nemesis.yml` exists, is not `enabled: false`, and its `auto_activate.architecture_change`
+rule matches this decision (use the project's `policy_match` entry for it, if it has one), run
+`orchestrator:nemesis target=<ADR id> trigger=policy` between setting `Status: Proposed` and presenting the
+approval request in step 7, and put the verdict, its conditions and the report path in that request. The
+verdict is advice for the approver: even `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` never replaces
+the human approval. Skip this section when the file is absent, and when you are yourself running as a
+NEMESIS challenger.
 
 ## Refusals
 

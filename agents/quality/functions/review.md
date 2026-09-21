@@ -37,11 +37,14 @@ quality:review pr=123
 
 ## NEMESIS gate (optional)
 
-After a `PASS`, if `docs/nemesis/nemesis.yml` exists, has `enabled: true`, and an `auto_activate` rule
-matches this change (`critical_change`, `security_change` or `payment_change`; use `policy_match` for the
-project's Jira priorities, labels and paths), run `orchestrator:nemesis target=<review id> trigger=policy`
-and report its verdict beside yours. A `DEFEATED` or `CHALLENGED` verdict overrides the `PASS` until its
-findings are resolved. Without `nemesis.yml`, skip this section entirely.
+After a `PASS`, if `docs/nemesis/nemesis.yml` exists, is not `enabled: false`, and an `auto_activate` rule
+matches this change (`critical_change`, `security_change` or `payment_change`; use the project's
+`policy_match` entries, if it has them), run `orchestrator:nemesis target=<review id> trigger=policy` and
+report its verdict beside yours. `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` overrides the `PASS`
+until its findings are resolved or its missing evidence is supplied; `SURVIVED WITH CONDITIONS` keeps the
+`PASS` and copies its conditions into your report. After two consecutive `DEFEATED` or `CHALLENGED`
+results for the same change, stop and hand the decision to a human instead of re-reviewing again. Skip
+this section when the file is absent, and when you are yourself running as a NEMESIS challenger.
 
 ## Example
 

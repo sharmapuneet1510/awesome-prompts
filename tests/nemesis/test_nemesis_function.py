@@ -103,6 +103,14 @@ def test_depth_is_computed_and_a_rerun_is_a_new_challenge():
     assert "parent's `depth` plus 1" in c.flat(c.section(FUNCTION, "## Recursion"))
 
 
+def test_a_challenger_never_evaluates_a_gate_and_the_fix_loop_is_guarded():
+    block = c.fenced(c.section(FUNCTION, "### Step 3"), "text")[0]
+    assert "Do not evaluate any NEMESIS policy gate and do not start another NEMESIS" in block
+    guard = c.flat(c.section(FUNCTION, "## Loop guard"))
+    assert "new depth-1 challenge" in guard and "two consecutive" in guard and "hand the decision to a human" in guard
+    assert "A challenger never evaluates a gate" in guard
+
+
 def test_a_refusal_writes_nothing():
     recursion = c.flat(c.section(FUNCTION, "## Recursion"))
     assert "write nothing" in recursion and "refusal note" not in c.flat(FUNCTION)
