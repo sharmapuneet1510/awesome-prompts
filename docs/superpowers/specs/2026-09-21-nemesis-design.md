@@ -1,7 +1,7 @@
 # NEMESIS — Adversarial Validation Mode (Prompt Layer) — Design Specification
 
 **Date:** September 21, 2026
-**Status:** Draft for the user's review. Nothing described here is implemented. The design was agreed section by section in chat on 2026-09-21 (scope, shape, isolation, lifecycle, verdict rules, failure-cause hypotheses, report and triggers, testing); this document is the written record awaiting approval.
+**Status:** Approved 2026-09-21 (the user's "looks good" on the written spec). Implemented on branch `feat/nemesis`. Refinements made while implementing (ordered verdict rules, a refusal writes nothing, the `change` header key and target-type list, the release persona) were ruled by the controller and await the user's confirmation; they are marked in the Decisions table.
 **Version:** 1.0
 **Source requirement:** [`nemisis_requirement.md`](../../../nemisis_requirement.md) (36 sections, supplied by the user)
 
@@ -81,11 +81,11 @@ NEMESIS is a **mode**, not a new agent: `Architect + NEMESIS = NEMESIS Architect
 |---|---|
 | `skills/nemesis_skill.md` | The shared behaviour: reverse hypothesis, challenge plans by domain, requirement-by-requirement attack, counterexamples, evidence classes, false-confidence triggers, the 17 categories, severity and confidence, verdict rules, cause classes, no-fabrication rule, base persona text, status vocabulary. |
 | `agents/orchestrator/functions/nemesis.md` | `orchestrator:nemesis`: input spec, the lifecycle of §2, the domain→persona table of §3, the isolation contract, routing and recursion. |
-| `docs/nemesis/nemesis.yml` (example, shipped as a template) | The N12 keys with their defaults. |
+| `docs/04-examples/nemesis-config.example.yml` (the template for a project's `docs/nemesis/nemesis.yml`) | The N12 keys with their defaults. |
 | Report template (inside the skill) | The header and section layout of §6. |
 | `docs/04-examples/nemesis-*.md` (two) | A DEFEATED and a SURVIVED worked report. |
 | `docs/01-workflows/15-challenge-a-conclusion.md` | The user-facing workflow. |
-| `tests/test_nemesis_contract.py` | The contract tests of *Testing and Traceability*. |
+| `tests/nemesis/` (six modules: skill, function, gates, examples, registration, traceability) | The contract tests of *Testing and Traceability*. |
 
 ### 2. Lifecycle (`orchestrator:nemesis`)
 
@@ -108,7 +108,7 @@ NEMESIS is a **mode**, not a new agent: `Architect + NEMESIS = NEMESIS Architect
 | Architecture, ADR, technical, API and data design | `architect` (`design`, `adr`, `api`, `schema`) |
 | Code, PR approval, code review, security review | `quality` (`review`, `security`) |
 | API, UI and automation test results, test strategy, regression, evidence pack | `quality` (`qa`, `observe`) |
-| Release approval, deployment readiness | `implementer` (`pipeline`) |
+| Release approval, deployment readiness | `quality` (`observe`), `orchestrator` (`risk`) |
 | RCA, production incident conclusions | `quality` (`debug`, `diagnose`) |
 | Documentation | `implementer` (`doc`) |
 | Compliance, risk, performance assessment | `quality` (`security`, `perf`) |
@@ -140,12 +140,13 @@ By verdict: **DEFEATED / CHALLENGED** — required and ranked; the owning specia
 
 ### 6. Report and audit record (N11)
 
-`docs/nemesis/NMS-<year>-<seq>.md`, sequence = highest existing + 1, five digits. YAML header:
+`docs/nemesis/NMS-<year>-<seq>.md`, sequence = highest existing + 1, five digits. YAML header (`target.type` is one of `requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment`, `recommendation`; the `findings` counts count only findings that are not `DISPROVEN`):
 
 ```yaml
 nemesis_id: NMS-2026-00982
 created: 2026-09-21
-target: {type: code_review, id: CR-839}
+target: {type: pull_request, id: PR-1839}
+change: JIRA-4821          # the stable work item; stays the same across re-reviews
 original_agent: CodeReviewer-04
 original_verdict: PASS
 nemesis_persona: NEMESIS_CODE_REVIEWER
@@ -203,9 +204,9 @@ Each test module declares `COVERS = ["N…"]`, and a traceability test fails if 
 | D1 | Prompt layer only; no Python runtime, no UI. | + a reference runtime; spec-only | approved in chat, 2026-09-21 |
 | D2 | One `orchestrator:nemesis` function plus a shared skill. | `mode=nemesis` on every function (touches all five agents); `quality:nemesis` only (second-class for non-QA targets) | approved in chat, 2026-09-21 |
 | D3 | Isolate when the host can, record the truth, fall back visibly. | require isolation (unusable without sub-agents); never isolate | approved in chat, 2026-09-21 |
-| D4 | Verdict rules of §4. | none proposed by the source | **PROPOSAL** (approved in chat, tunable) |
+| D4 | Verdict rules of §4, implemented as ordered rules (first match wins) so exactly one verdict applies to any finding set; lower findings always stay in the report. | none proposed by the source; unordered rules (found not to be exclusive) | **Accepted** (approved in chat, refined during implementation — controller ruling, pending the user's confirmation) |
 | D5 | Failure-cause hypotheses, two layers, with discriminating checks. | findings only | approved in chat, 2026-09-21 |
-| D6 | Reports live downstream in `docs/nemesis/`, never in this repo. | store in this repo | PROPOSAL |
+| D6 | Reports live downstream in `docs/nemesis/`, never in this repo. | store in this repo | **Accepted** (approved with the plan, 2026-09-21) |
 | D7 | Policy activation as opt-in steps in three existing functions, driven by `nemesis.yml`. | a new event mechanism (none exists); no automation | approved in chat, 2026-09-21 |
 
 ---
