@@ -116,13 +116,17 @@ NEMESIS is a **mode**, not a new agent: `Architect + NEMESIS = NEMESIS Architect
 
 ### 4. Verdict rules (PROPOSAL — the requirement leaves them to judgement; tune on real reports)
 
-| Verdict | When |
-|---|---|
-| **DEFEATED** | At least one finding at HIGH or CRITICAL severity with CONFIRMED or HIGH_CONFIDENCE confidence, backed by a counterexample or contradictory evidence. |
-| **CHALLENGED** | A PLAUSIBLE-or-better finding at HIGH severity without a reproducible counterexample, or several MEDIUM findings. |
-| **SURVIVED WITH CONDITIONS** | Only LOW, INFORMATIONAL or SPECULATIVE findings, plus stated assumptions. |
-| **SURVIVED** | No findings; the challenge paths executed are listed. |
-| **INSUFFICIENT EVIDENCE** | Neither the conclusion nor its opposite can be supported from the evidence reachable. |
+The rules are **ordered: the first that matches decides**, so every set of findings has exactly one verdict. *Counting findings* are those whose confidence is not `DISPROVEN` (a disproven finding is a challenge path that was tried and failed; it is recorded but does not count).
+
+| Order | Verdict | When |
+|---|---|---|
+| 1 | **DEFEATED** | A counting finding at HIGH or CRITICAL severity with CONFIRMED or HIGH_CONFIDENCE confidence that is *backed*: it carries a counterexample, or its category is `CONTRADICTORY_EVIDENCE`. |
+| 2 | **INSUFFICIENT EVIDENCE** | Not defeated, and every counting non-`SPECULATIVE` HIGH or CRITICAL finding has category `EVIDENCE_GAP`: the conclusion cannot be verified either way. (If nothing could be verified, that is recorded as a HIGH `EVIDENCE_GAP` finding.) |
+| 3 | **CHALLENGED** | A counting non-`SPECULATIVE` HIGH or CRITICAL finding (for example CONFIRMED without a counterexample, or PLAUSIBLE), or two or more counting non-`SPECULATIVE` MEDIUM findings. |
+| 4 | **SURVIVED WITH CONDITIONS** | Any other counting finding (LOW or INFORMATIONAL findings, at most one non-speculative MEDIUM, any `SPECULATIVE` finding), plus stated assumptions. |
+| 5 | **SURVIVED** | No counting findings; the challenge paths executed are listed. |
+
+A `SPECULATIVE` finding never counts toward rules 2 and 3, which is how it is kept from raising the verdict above SURVIVED WITH CONDITIONS (N7). *Refinement of 2026-09-21:* the first draft of this table was not total (a CRITICAL finding without a counterexample, or a single MEDIUM finding, had no verdict) and contradicted the speculative cap; the final task review found it and the ordered form above replaces it.
 
 ### 5. Failure-cause hypotheses (N10)
 
