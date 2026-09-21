@@ -45,11 +45,23 @@ manual-only, read-only, depth 2, and nothing activates automatically. Keys and d
 `context_isolation: true`, `independent_source_validation: true`, `default_access: read_only`,
 `maximum_depth: 2`. An optional `policy_match` block (Jira priorities, labels, path globs) tells the
 policy gates what "critical", "payment" or "regulatory" means for the project. If `enabled: false`,
-refuse and say so.
+refuse every trigger, including a manual `/nemesis`, and say so.
 
 ## Process
 
 Print `NEMESIS ACTIVATED`, then run the steps in this order.
+
+**Two roles.** The **caller** is the agent that received `orchestrator:nemesis`. The **challenger** is the
+fresh sub-agent it spawns (or, when none can be spawned, the caller itself in a clean-room pass).
+
+| Steps | Who |
+|---|---|
+| 1 Resolve, 2 Select, 3 Isolate (including allocating the report id and path) | the **caller** |
+| 4 Reverse hypothesis, 5 Evidence, 6 Attack, 7 Challenge the evidence, 8 Hypotheses and verdict, and **writing the report** (the first half of step 9) | the **challenger** |
+| the routing half of step 9, and 10 Terminate | the **caller** |
+
+Only the caller knows whether a fresh sub-agent really ran, so the caller sets `context_isolated` and
+hands the fact to the challenger; the challenger writes it into the header.
 
 ### Step 1 — Resolve the target
 
@@ -85,25 +97,36 @@ Base persona + domain skills + nemesis_skill + target context + available eviden
 
 ### Step 3 — Isolate
 
-**Spawn a fresh sub-agent** for the challenge and give it only the five inputs of step 1, the
-persona and skills of step 2, and the challenge instructions below. Never pass the original agent's
-reasoning, drafts or scratch analysis. Give it read-only tools, plus permission to write only its
-report file.
+First **allocate the report**: the id `NMS-<year>-<seq>` (sequence = the highest existing in
+`docs/nemesis/` plus one, five digits; the directory may not exist yet) and the path
+`docs/nemesis/<id>.md`. Work out the **depth**: the parent's `depth` plus 1 (`parent` is the NMS id
+being challenged), or 1 when there is no parent. Refuse if that exceeds `maximum_depth` (see Recursion).
+A re-run after the owner has fixed a defeated result is a **new depth-1 challenge** of the fixed
+artefact, not a challenge of the earlier verdict.
+
+Then **spawn a fresh sub-agent** and give it only the five inputs of step 1, the persona and skills of
+step 2, and the instruction below. Never pass the original agent's reasoning, drafts or scratch
+analysis. Give it read-only tools, plus permission to write only its report file.
 
 Sub-agent instruction:
 
 ```text
-You are NEMESIS acting as <NEMESIS specialist>. Follow nemesis_skill.md.
+You are NEMESIS acting as <NEMESIS specialist>. Read and follow skills/nemesis_skill.md, including its
+report format (§12) and verdict rules (§10). You are the challenger: run steps 4 to 8 of
+agents/orchestrator/functions/nemesis.md and write the report.
 Target: <id>.  Original conclusion: <conclusion>.  Original verdict: <verdict>.
 Evidence references: <refs>.  Identifiers: <ids>.
+Report header facts (write them exactly): nemesis_id: <NMS id>; nemesis_persona: <persona>;
+trigger: <manual|workflow|policy|agent>; depth: <n>; parent_nemesis: <NMS id or null>;
+context_isolated: true; access: read_only.
 Retrieve the source evidence yourself; do not trust summaries. You have read-only access.
 Write only the report file <path>. Return the verdict and the report path.
 ```
 
 **If the host cannot spawn a sub-agent**, run a *clean-room pass* in the calling context: set the
-original agent's reasoning aside, work only from the five inputs and the sources, and state at the top
-of the report and in the verdict text that isolation was not available. Either way record
-`context_isolated: true|false` truthfully. Do not claim isolation that did not happen.
+original agent's reasoning aside, work only from the five inputs and the sources, act as the
+challenger yourself, and state at the top of the report and in the verdict text that isolation was not
+available. Record `context_isolated: false`. Do not claim isolation that did not happen.
 
 ### Step 4 — Reverse hypothesis and challenge plan
 
@@ -111,7 +134,7 @@ Write the reverse hypothesis first, then the challenge plan for the domain (see 
 
 ### Step 5 — Collect independent evidence
 
-Inspect the source systems directly, read-only. Request these MCP roles when the target needs them
+Print `NEMESIS IS CHALLENGING THE CONCLUSION`. Inspect the source systems directly, read-only. Request these MCP roles when the target needs them
 and fall back to git and files when a role is unavailable: `jira`, `git`, `ci_cd`, `test_management`,
 `evidence_store`, `confluence`, `architecture_repository`, `observability`. Record the sources used.
 A source that could not be reached is stated in the report, and anything that depends on it loses
@@ -122,7 +145,8 @@ confidence.
 One finding per issue, each traced to a requirement, acceptance criterion, design constraint, risk,
 expected behaviour, evidence item or invariant. Give every finding a category, a severity and a
 confidence (separate fields). Write counterexamples as steps and say whether each was executed or
-derived.
+derived, and print `COUNTEREXAMPLE DETECTED` when one holds (and `CONCLUSION COMPROMISED` when a
+material contradiction stands).
 
 ### Step 7 — Challenge the evidence
 
@@ -138,8 +162,9 @@ CONCLUSION`, …).
 
 ### Step 9 — Write the report and route
 
-Write `docs/nemesis/NMS-<year>-<seq>.md` (create `docs/nemesis/` if needed; sequence = highest
-existing plus one, five digits). This is the only write.
+The challenger writes the report to the path allocated in step 3 (creating `docs/nemesis/` if needed).
+This is the **only write** NEMESIS ever makes: no refusal, note or scratch file is written anywhere. The
+caller then reads the verdict and routes it:
 
 | Verdict | Route |
 |---|---|
@@ -155,8 +180,9 @@ The NEMESIS specialist exists only for the challenge. End the sub-agent and retu
 ## Recursion
 
 A NEMESIS verdict may itself be challenged (`parent=<NMS id>`). The original challenge is depth 1, a
-challenge of it is depth 2. `maximum_depth` defaults to 2. A request beyond it is **refused**: write a
-short refusal note naming the limit and the parent, and do not run.
+challenge of it is depth 2, computed as the parent's `depth` plus 1. `maximum_depth` defaults to 2. A
+request beyond it is **refused**: say in the response which limit was hit and which parent, write
+nothing, and do not run.
 
 ## Triggers
 

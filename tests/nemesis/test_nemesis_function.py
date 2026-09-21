@@ -58,13 +58,13 @@ def test_the_persona_table_covers_every_supported_target():
 def test_isolation_uses_a_fresh_sub_agent_with_a_recorded_fallback():
     step = c.flat(c.section(FUNCTION, "### Step 3"))
     assert "fresh sub-agent" in step and "only the five inputs" in step and "read-only" in step
-    assert "clean-room pass" in step and "context_isolated: true|false" in step
+    assert "clean-room pass" in step and "context_isolated: false" in step and "context_isolated: true" in step
     assert "Do not claim isolation that did not happen" in step
 
 
 def test_it_is_read_only_and_writes_one_file():
     text = c.flat(FUNCTION)
-    assert "read-only" in text and "This is the only write" in text and "NEMESIS is read-only" in text
+    assert "read-only" in text and "**only write** NEMESIS ever makes" in text and "NEMESIS is read-only" in text
 
 
 def test_the_mcp_roles_fall_back_to_git_and_files():
@@ -75,8 +75,48 @@ def test_the_mcp_roles_fall_back_to_git_and_files():
 
 def test_routing_covers_every_verdict():
     rows = c.table_rows(c.section(FUNCTION, "### Step 9"))
-    assert sorted(row[0].replace("`", "") .split(", ")[0] for row in rows) == sorted(["DEFEATED", "SURVIVED WITH CONDITIONS", "SURVIVED", "INSUFFICIENT EVIDENCE"])
+    routed = [verdict.strip().strip("`") for row in rows for verdict in row[0].split(", ")]
+    assert sorted(routed) == sorted(c.VERDICTS)  # each of the five exactly once
     assert "whole report as task context" in c.flat(rows[0][1]) and "hypotheses first" in c.flat(rows[0][1])
+
+
+def test_the_two_roles_are_split_and_every_step_has_an_owner():
+    section = c.flat(c.section(FUNCTION, "## Process").split("### Step 1")[0])
+    assert "**caller**" in section and "**challenger**" in section
+    assert "1 Resolve, 2 Select, 3 Isolate" in section and "4 Reverse hypothesis, 5 Evidence, 6 Attack, 7 Challenge the evidence, 8 Hypotheses and verdict" in section
+    assert "the caller sets `context_isolated`" in section and "**Two roles.**" in section
+    assert "8 Hypotheses and verdict, and **writing the report**" in section and "the routing half of step 9, and 10 Terminate | the **caller**" in section
+
+
+def test_the_caller_allocates_the_report_before_spawning_and_hands_the_challenger_everything_it_needs():
+    step = c.section(FUNCTION, "### Step 3")
+    assert step.index("allocate the report") < step.index("spawn a fresh sub-agent")
+    block = c.fenced(step, "text")[0]
+    for needed in ["skills/nemesis_skill.md", "nemesis_id:", "nemesis_persona:", "trigger:", "depth:", "parent_nemesis:", "context_isolated: true", "access: read_only", "<path>"]:
+        assert needed in block, needed
+    assert "context_isolated: false" in step
+
+
+def test_depth_is_computed_and_a_rerun_is_a_new_challenge():
+    step = c.flat(c.section(FUNCTION, "### Step 3"))
+    assert "parent's `depth` plus 1" in step and "new depth-1 challenge" in step
+    assert "parent's `depth` plus 1" in c.flat(c.section(FUNCTION, "## Recursion"))
+
+
+def test_a_refusal_writes_nothing():
+    recursion = c.flat(c.section(FUNCTION, "## Recursion"))
+    assert "write nothing" in recursion and "refusal note" not in c.flat(FUNCTION)
+    assert "no refusal, note or scratch file" in c.flat(c.section(FUNCTION, "### Step 9"))
+
+
+def test_disabled_config_refuses_every_trigger_including_manual():
+    assert "refuse every trigger, including a manual `/nemesis`" in c.flat(c.section(FUNCTION, "## Configuration"))
+
+
+def test_the_status_strings_are_printed_at_the_right_moments():
+    text = c.flat(FUNCTION)
+    for status in ["NEMESIS ACTIVATED", "NEMESIS IS CHALLENGING THE CONCLUSION", "COUNTEREXAMPLE DETECTED", "CONCLUSION COMPROMISED", "NEMESIS SURVIVED", "NEMESIS DEFEATED THE CONCLUSION"]:
+        assert status in text, status
 
 
 def test_recursion_is_bounded_and_refused_beyond_the_limit():
