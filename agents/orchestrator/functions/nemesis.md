@@ -1,0 +1,254 @@
+---
+name: orchestrator:nemesis Function
+version: 1.0
+description: Attack an existing conclusion before it is trusted — compose a specialist persona with NEMESIS, investigate independently, return a verdict with ranked hypotheses of why it failed
+prefix: orchestrator:nemesis
+---
+
+# Function: orchestrator:nemesis
+
+**Prefix:** `orchestrator:nemesis` (alias `/nemesis <id>`)
+
+**Purpose:** Assume a finished conclusion may be wrong and try to prove it wrong with evidence.
+NEMESIS is an **execution mode**, not an agent: it turns the specialist that fits the target into an
+opposing specialist (`Architect + NEMESIS = NEMESIS Architect`). It may just as well conclude that the
+conclusion **survived**, and it never invents a defect.
+
+**Skill:** [`nemesis_skill`](../../../skills/nemesis_skill.md) holds the behaviour, the enumerations and
+the report format. This file holds the lifecycle, the persona table and the isolation contract.
+
+## Input Specification
+
+```yaml
+# Required
+target: string             # JIRA-4821 | PR-1839 | ADR-104 | API-TEST-2291 | RELEASE-RC-32 | a path
+
+# Optional
+persona: string?           # override the persona chosen from the domain table, e.g. quality:security
+trigger: enum?             # manual (default) | workflow | policy | agent
+parent: string?            # NMS id when this run challenges an earlier NEMESIS verdict
+```
+
+Invocations:
+
+```text
+orchestrator:nemesis target=PR-1839
+/nemesis ADR-104
+/nemesis RELEASE-RC-32 persona=quality:security
+```
+
+## Configuration
+
+Read `docs/nemesis/nemesis.yml` in the project under review, if it exists. The file has one root key,
+`nemesis:`, and every key below sits under it (see the template
+`docs/04-examples/nemesis-config.example.yml`). Without the file NEMESIS is manual-only, read-only,
+`maximum_depth: 2`, and nothing activates automatically. Keys and defaults:
+`enabled: true`, `default_trigger: manual`, `auto_activate` (all rules default off),
+`context_isolation: true`, `independent_source_validation: true`, `default_access: read_only`,
+`maximum_depth: 2`. An optional `policy_match` block (Jira priorities, labels, path globs) tells the
+policy gates what "critical", "payment" or "regulatory" means for the project. If `enabled: false`,
+refuse every trigger, including a manual `/nemesis`, and say so.
+
+## Process
+
+Print `NEMESIS ACTIVATED`, then run the steps in this order.
+
+**Two roles.** The **caller** is the agent that received `orchestrator:nemesis`. The **challenger** is the
+fresh sub-agent it spawns (or, when none can be spawned, the caller itself in a clean-room pass).
+
+| Steps | Who |
+|---|---|
+| 1 Resolve, 2 Select, 3 Isolate (including allocating the report id and path) | the **caller** |
+| 4 Reverse hypothesis, 5 Evidence, 6 Attack, 7 Challenge the evidence, 8 Hypotheses and verdict, and **writing the report** (the first half of step 9) | the **challenger** |
+| the routing half of step 9, and 10 Terminate | the **caller** |
+
+Only the caller knows whether a fresh sub-agent really ran, so the caller sets `context_isolated` and
+hands the fact to the challenger; the challenger writes it into the header.
+
+### Step 1 — Resolve the target
+
+Resolve `target` to five things and nothing more: the **artefact**, the **original conclusion**, the
+**original verdict**, the **evidence references** and the **identifiers**. Also record three facts for
+the report header: `original_agent` (who produced the conclusion; a name, not the agent's reasoning),
+the **target type** (`requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment` or `recommendation`), recognised from the id prefix or the file, and the **change**: the
+stable work item the target belongs to (the Jira key when there is one, otherwise the id of the first
+target in the chain), which stays the same when the owner fixes the work and it is reviewed again; a
+re-review inherits the `change` of the report it re-challenges. If the target is
+ambiguous, ask once. If it has no conclusion to challenge (a raw artefact nobody has judged), say so
+and stop.
+
+### Step 2 — Select the persona
+
+Determine the target's domain and pick the persona and skills from this table. Use only these
+existing functions. A `persona=` override wins.
+
+| Target | Persona (`agent:function`) | Skills to attach |
+|---|---|---|
+| Requirements analysis, Jira acceptance | `ba:trace`, `ba:clarify` | `traceability_skill` |
+| Architecture, ADR, technical, API and data design | `architect:design`, `architect:adr`, `architect:api`, `architect:schema` | `adr_skill`, `oop_skill` |
+| Code, PR approval, code review, security review | `quality:review`, `quality:security` | `code_review_skill`, `security_audit_skill` |
+| API, UI and automation test results, test strategy, regression, evidence pack | `quality:qa`, `quality:observe` | `test_skill`, `traceability_skill` |
+| Release approval, deployment readiness | `quality:observe`, `orchestrator:risk` | `debugging_skill`, `opentelemetry_skill` |
+| RCA, production incident conclusions | `quality:debug`, `quality:diagnose` | `debugging_skill` |
+| Documentation | `implementer:doc` | `code_documentation_skill` |
+| Compliance, risk, performance assessment | `quality:security`, `quality:perf` | `security_audit_skill` |
+| Agent- or human-generated recommendation or decision | `orchestrator:review`, `orchestrator:tradeoff`, `orchestrator:risk` | `adr_skill` |
+
+Add the language skill that fits the code (`java_advanced_skill`, `python_advanced_skill`, …). The
+effective persona is:
+
+```text
+Base persona + domain skills + nemesis_skill + target context + available evidence
++ MCP roles + challenge plan + platform guardrails = NEMESIS <SPECIALIST>
+```
+
+### Step 3 — Isolate
+
+First **allocate the report**: the id `NMS-<year>-<seq>` (sequence = the highest existing for that
+year in `docs/nemesis/` plus one, five digits, restarting at `00001` each year; the directory may not
+exist yet) and the path
+`docs/nemesis/<id>.md`. Work out the **depth**: the parent's `depth` plus 1 (`parent` is the NMS id
+being challenged), or 1 when there is no parent. Refuse if that exceeds `maximum_depth` (see Recursion).
+A re-run after the owner has fixed a defeated result is a **new depth-1 challenge** of the fixed
+artefact, not a challenge of the earlier verdict.
+
+Then **spawn a fresh sub-agent** and give it only the five inputs of step 1, the persona and skills of
+step 2, and the instruction below. Never pass the original agent's reasoning, drafts or scratch
+analysis. Give it read-only tools, plus permission to write only its report file.
+
+Sub-agent instruction:
+
+```text
+You are NEMESIS acting as <NEMESIS specialist>. Read and follow skills/nemesis_skill.md, including its
+report format (§12) and verdict rules (§10). You are the challenger: run steps 4 to 8 of
+agents/orchestrator/functions/nemesis.md and write the report.
+Target: <id>.  Original conclusion: <conclusion>.  Original verdict: <verdict>.
+Evidence references: <refs>.  Identifiers: <ids>.
+Report header facts (write them exactly): nemesis_id: <NMS id>; nemesis_persona: <persona>;
+target: {type: <target type>, id: <id>}; change: <change>; original_agent: <name from step 1>;
+trigger: <manual|workflow|policy|agent>; depth: <n>; parent_nemesis: <NMS id or null>;
+context_isolated: true; access: read_only.
+Retrieve the source evidence yourself; do not trust summaries. You have read-only access.
+Do not evaluate any NEMESIS policy gate and do not start another NEMESIS: you are the challenger.
+Write only the report file <path>. Return the verdict and the report path.
+```
+
+**If the host cannot spawn a sub-agent**, run a *clean-room pass* in the calling context: set the
+original agent's reasoning aside, work only from the five inputs and the sources, act as the
+challenger yourself, and state at the top of the report and in the verdict text that isolation was not
+available. Record `context_isolated: false`. Do not claim isolation that did not happen.
+
+### Step 4 — Reverse hypothesis and challenge plan
+
+Write the reverse hypothesis first, then the challenge plan for the domain (see the skill, §3–§4).
+
+### Step 5 — Collect independent evidence
+
+Print `NEMESIS IS CHALLENGING THE CONCLUSION`. Inspect the source systems directly, read-only.
+Request these MCP roles when the target needs them and fall back to git and files when a role is unavailable: `jira`, `git`, `ci_cd`, `test_management`,
+`evidence_store`, `confluence`, `architecture_repository`, `observability`. Record the sources used.
+A source that could not be reached is stated in the report, and anything that depends on it loses
+confidence.
+
+### Step 6 — Attack requirement by requirement; generate counterexamples
+
+One finding per issue, each traced to a requirement, acceptance criterion, design constraint, risk,
+expected behaviour, evidence item or invariant. Give every finding a category, a severity and a
+confidence (separate fields). Write counterexamples as steps and say whether each was executed or
+derived, and print `COUNTEREXAMPLE DETECTED` when one holds (and `CONCLUSION COMPROMISED` when a
+material contradiction stands).
+
+### Step 7 — Challenge the evidence
+
+Grade each evidence item STRONG, PARTIAL, WEAK, MISSING, IRRELEVANT or CONTRADICTORY, and apply the
+false-confidence signals.
+
+### Step 8 — Failure-cause hypotheses and verdict
+
+Form ranked hypotheses of why (defect layer and miss layer), each with a cause class, mechanism,
+explained findings, confidence and a **discriminating check**. Then choose the verdict by the rules in
+the skill (§10). Print the matching status string (`NEMESIS SURVIVED`, `NEMESIS DEFEATED THE
+CONCLUSION`, …).
+
+### Step 9 — Write the report and route
+
+The challenger writes the report to the path allocated in step 3 (creating `docs/nemesis/` if needed).
+This is the **only write** NEMESIS ever makes: no refusal, note or scratch file is written anywhere. The
+caller then reads the verdict and routes it:
+
+| Verdict | Route |
+|---|---|
+| `DEFEATED`, `CHALLENGED` | Return to the specialist that owns the work, with the **whole report as task context**, hypotheses first. That specialist starts from rank 1 and runs its discriminating check, fixes, is re-reviewed, and NEMESIS runs again. |
+| `SURVIVED WITH CONDITIONS` | Continue the workflow; the conditions travel with it. |
+| `SURVIVED` | Continue the workflow. |
+| `INSUFFICIENT EVIDENCE` | Return to the owner with the list of evidence to obtain. |
+
+### Step 10 — Terminate
+
+The NEMESIS specialist exists only for the challenge. End the sub-agent and return control.
+
+## Recursion
+
+A NEMESIS verdict may itself be challenged (`parent=<NMS id>`). The original challenge is depth 1, a
+challenge of it is depth 2, computed as the parent's `depth` plus 1. `maximum_depth` defaults to 2. A
+request beyond it is **refused**: say in the response which limit was hit and which parent, write
+nothing, and do not run.
+
+## Loop guard
+
+A policy gate that runs again after the owner has fixed a defeated result starts a **new depth-1
+challenge**, so `maximum_depth` does not bound that loop. The gates in `quality:review` and
+`orchestrator:pr` therefore stop after **two consecutive blocking results** (`DEFEATED`, `CHALLENGED`
+or `INSUFFICIENT EVIDENCE`) for the same change and hand the decision to a human. They count them from
+the reports in `docs/nemesis/` whose `change` header matches; a re-review after a fix has a new review
+or PR id but the same `change`, so the count carries across rounds. (The `architect:adr` gate is
+advice-only and a human approves every ADR, so it needs no counter.) A challenger never evaluates a gate: when NEMESIS composes the `quality:review` or `architect:adr` persona, the gate paragraph in
+that file does not apply to it.
+
+## Triggers
+
+| Trigger | How |
+|---|---|
+| `manual` | The user runs `orchestrator:nemesis` or `/nemesis`. Default. |
+| `workflow` | A workflow step names it. |
+| `policy` | `quality:review`, `architect:adr` and `orchestrator:pr` each contain an opt-in gate that reads `docs/nemesis/nemesis.yml` and invokes this function when a rule matches. |
+| `agent` | Any function may request it; the depth limit still applies. |
+
+With no `docs/nemesis/nemesis.yml`, `workflow` and `agent` runs are still explicit invocations: nothing
+fires on its own.
+
+## Refusals
+
+- `enabled: false` in `docs/nemesis/nemesis.yml`.
+- A request beyond `maximum_depth`.
+- A target with no conclusion to challenge.
+- A request to write anywhere but the NEMESIS report (NEMESIS is read-only).
+
+## Example
+
+```bash
+orchestrator:nemesis target=PR-1839
+```
+
+Result: `NEMESIS DEFEATED THE CONCLUSION` — the duplicate check ignores PROCESSING transactions, so two
+concurrent requests can both pass. Ranked hypotheses point at the missing concurrent test (miss layer)
+and the read-then-write check (defect layer); the report goes back to the developer. See the worked
+examples in [`docs/04-examples/nemesis-defeated.md`](../../../docs/04-examples/nemesis-defeated.md) and
+[`nemesis-survived.md`](../../../docs/04-examples/nemesis-survived.md).
+
+## Extending
+
+- **A persona:** add a row to the table in step 2 naming existing `agent:function` entries (each must be
+  declared in that agent's dispatch table) and existing skills; `tests/nemesis/test_nemesis_function.py`
+  checks both.
+- **A gate:** add a paragraph headed "NEMESIS gate", marked optional, to the host function, an `auto_activate`
+  key and a `policy_match` entry to the template, and the host file to `GATES` in
+  `tests/nemesis/test_nemesis_gates.py`.
+- **A verdict, category or cause class:** change `skills/nemesis_skill.md`, `tests/nemesis/common.py`
+  and the spec together; the tests pin all three.
+
+## Related
+
+- Skill: `nemesis_skill`
+- Workflow: [15 — Challenge a conclusion](../../../docs/01-workflows/15-challenge-a-conclusion.md)
+- Functions: `quality:review`, `architect:adr`, `orchestrator:pr` (policy gates)

@@ -38,6 +38,7 @@ Invoke a specific function using `orchestrator:function`. When triggered this wa
 | `orchestrator:risk` | Risk assessment + failure modes + mitigation strategies | Technical Lead PHASE 4 |
 | `orchestrator:ideate` | Transform a vague idea into a validated project plan (uses ideation_engine, expert_panel_generator) | [orchestrator/functions/ideate.md](orchestrator/functions/ideate.md) |
 | `orchestrator:solve` | Solve a design bottleneck with multi-dimensional options (uses design_solver, expert_panel_generator) | [orchestrator/functions/solve.md](orchestrator/functions/solve.md) |
+| `orchestrator:nemesis` | Adversarial validation mode: attack a finished conclusion, return a verdict with ranked hypotheses of why it failed (uses nemesis_skill) | [orchestrator/functions/nemesis.md](orchestrator/functions/nemesis.md) |
 
 ### Dispatch Rules
 - **With function:** `orchestrator:function` → run only that function's steps (skip intro questions)
@@ -1033,6 +1034,14 @@ And so on...
 6. Sync task-completion.json
 7. Update CLAUDE.md + AGENTS.md
 8. Generate completion report
+
+**NEMESIS gate (optional).** Before step 1, if `docs/nemesis/nemesis.yml` exists, is not `enabled: false`, and
+`auto_activate.production_release` matches this release, run `orchestrator:nemesis target=<release tag or branch>
+trigger=policy` and stop on a `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` verdict; on `SURVIVED WITH
+CONDITIONS`, put its conditions in the PR description. After two consecutive blocking
+results (`DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE`) for the same release (count the reports in
+`docs/nemesis/` whose `change` header matches it), stop and hand the decision to a human. Skip this when the file is absent, and
+when you are yourself running as a NEMESIS challenger.
 
 ---
 

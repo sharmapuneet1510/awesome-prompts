@@ -33,7 +33,7 @@ support means adding one skill, not one agent.
 
 ```
 agent  = orchestration + dispatch    (5)
-skill  = implementation knowledge    (36)
+skill  = implementation knowledge    (37)
 ```
 
 The 13 → 5 mapping is in [../../CHANGELOG.md](../../CHANGELOG.md) under 4.0.0.
@@ -45,7 +45,7 @@ The 13 → 5 mapping is in [../../CHANGELOG.md](../../CHANGELOG.md) under 4.0.0.
 **Strategy, planning, and shipping.** The entry point for greenfield work and
 the exit point for releases.
 
-`plan` · `build` · `context` · `pr` · `review` · `tradeoff` · `risk` · `ideate` · `solve`
+`plan` · `build` · `context` · `pr` · `review` · `tradeoff` · `risk` · `ideate` · `solve` · `nemesis`
 
 Owns `project-overview.md`, `risks.md`, and `release-history.md` in the Project
 Context. Use it when the question is "what should we build and in what order",
@@ -167,6 +167,6 @@ Detail in [rules.md](rules.md).
 
 ## See also
 
-- [functions.md](functions.md) — all 42 functions
-- [skills.md](skills.md) — the 36 skills agents dispatch to
+- [functions.md](functions.md) — all 43 functions
+- [skills.md](skills.md) — the 37 skills agents dispatch to
 - [../01-workflows/](../01-workflows/) — which agent for which job

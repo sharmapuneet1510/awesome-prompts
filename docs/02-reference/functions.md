@@ -1,6 +1,6 @@
 # Function Reference
 
-**All 42 callable functions.** One source of truth — this file replaces the five
+**All 43 callable functions.** One source of truth — this file replaces the five
 overlapping documents now in [../99-archive/superseded/](../99-archive/superseded/).
 
 Invoke with `agent:function [key=value ...]`. With a function named, the agent
@@ -15,7 +15,7 @@ For stage mapping, see [../01-workflows/sdlc-playbook.md](../01-workflows/sdlc-p
 
 | Agent | Prefix | Count | Functions |
 |---|---|---|---|
-| [Orchestrator](#orchestrator) | `orchestrator` | 9 | plan, build, context, pr, review, tradeoff, risk, ideate, solve |
+| [Orchestrator](#orchestrator) | `orchestrator` | 10 | plan, build, context, pr, review, tradeoff, risk, ideate, solve, nemesis |
 | [Architect](#architect) | `architect` | 9 | design, refactor, frontend, schema, api, a11y, analyse, adr, spec |
 | [Implementer](#implementer) | `implementer` | 7 | build, test, doc, pipeline, docker, iac, full |
 | [Quality](#quality) | `quality` | 10 | review, audit, security, perf, debug, report, batch-review, diagnose, observe, qa |
@@ -38,6 +38,7 @@ Strategy, orchestration, and technical leadership.
 | `orchestrator:risk` | Risk assessment, failure modes, mitigations | — | [10](../01-workflows/10-modernise-legacy-system.md) |
 | `orchestrator:ideate` | Turn a vague idea into a validated project plan | `idea` | [01](../01-workflows/01-start-new-project.md) |
 | `orchestrator:solve` | Solve a design bottleneck with multi-dimensional options | `problem` | [10](../01-workflows/10-modernise-legacy-system.md) |
+| `orchestrator:nemesis` | Adversarial validation: attack a finished conclusion, return a verdict with ranked hypotheses of why it failed | `target` | [15](../01-workflows/15-challenge-a-conclusion.md) |
 
 `ideate` and `solve` use three shared modules: `ideation_engine`,
 `design_solver`, `expert_panel_generator` (`agents/orchestrator/modules/`).
@@ -136,9 +137,9 @@ Backlog handling, plus the BA Companion role.
 
 ## Function files vs. dispatch entries
 
-42 functions are declared in agent dispatch tables; 34 have standalone files
+43 functions are declared in agent dispatch tables; 35 have standalone files
 under `agents/<agent>/functions/`. The difference is documentation depth, not
-capability — all 42 are callable.
+capability — all 43 are callable.
 
 Without a standalone file: `orchestrator:plan`, `:build`, `:pr`, `:review`,
 `:risk`, and `ba:create`, all documented inside their parent agent file.

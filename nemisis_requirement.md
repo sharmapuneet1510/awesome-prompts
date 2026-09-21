@@ -1,0 +1,1403 @@
+# NEMESIS — Adversarial Validation Engine
+
+## 1. Purpose
+
+**NEMESIS** is a platform-level adversarial validation capability designed to challenge any derived conclusion, decision, artefact, or piece of work produced by the AI workforce.
+
+NEMESIS exists for one purpose:
+
+> **Assume the accepted conclusion may be wrong and attempt to prove it wrong using evidence.**
+
+NEMESIS must not act as another normal reviewer.
+
+It must deliberately take the opposing position and independently search for:
+
+- Requirement gaps
+- Incorrect assumptions
+- Missing scenarios
+- Hidden defects
+- Weak evidence
+- Contradictory evidence
+- Edge cases
+- Failure conditions
+- Security weaknesses
+- Regression risks
+- Architecture weaknesses
+- Test coverage gaps
+- Incorrect interpretations
+- False confidence
+- Unsupported conclusions
+
+NEMESIS is inspired by the principle behind the **Tenth Man Theory**: when everyone reaches the same conclusion, one independent party is deliberately tasked with challenging that conclusion.
+
+---
+
+# 2. Core Philosophy
+
+Normal agent:
+
+```text
+Determine whether this work is correct.
+```
+
+NEMESIS:
+
+```text
+Assume this work may be incorrect.
+
+Find a defensible way to prove it.
+```
+
+However, NEMESIS must never fabricate a problem simply to disagree.
+
+The principle is:
+
+> **Challenge aggressively. Conclude objectively.**
+
+NEMESIS may ultimately confirm that the original conclusion survives adversarial scrutiny.
+
+---
+
+# 3. NEMESIS Is a Platform Capability
+
+NEMESIS must not be implemented as one generic agent.
+
+It is an **execution mode** that can dynamically transform any relevant specialist persona into an independent adversarial specialist.
+
+Conceptually:
+
+```text
+Specialist Persona
+       +
+NEMESIS Mode
+       +
+Target Artefact
+       +
+Relevant Skills
+       +
+MCP Access
+       +
+Independent Context
+       ↓
+NEMESIS Specialist
+```
+
+Examples:
+
+```text
+Solution Architect
+        ↓
+NEMESIS Architect
+```
+
+```text
+Code Reviewer
+        ↓
+NEMESIS Code Reviewer
+```
+
+```text
+API QA Engineer
+        ↓
+NEMESIS API QA
+```
+
+```text
+UI QA Engineer
+        ↓
+NEMESIS UI QA
+```
+
+```text
+Release Controller
+        ↓
+NEMESIS Release Controller
+```
+
+```text
+Evidence Reviewer
+        ↓
+NEMESIS Evidence Analyst
+```
+
+---
+
+# 4. Universal Invocation
+
+NEMESIS must be invokable against any compatible output produced by the platform.
+
+UI action:
+
+```text
+ACTIVATE NEMESIS
+```
+
+CLI-style invocation:
+
+```text
+/nemesis JIRA-4821
+```
+
+```text
+/nemesis CODE-REVIEW-839
+```
+
+```text
+/nemesis ADR-104
+```
+
+```text
+/nemesis API-TEST-2291
+```
+
+```text
+/nemesis RELEASE-RC-32
+```
+
+When invoked, the platform displays:
+
+```text
+NEMESIS ACTIVATED
+```
+
+---
+
+# 5. Supported Targets
+
+NEMESIS should work against any meaningful derived result.
+
+Examples include:
+
+- Requirements analysis
+- Jira acceptance assessment
+- Architecture design
+- ADR
+- Technical design
+- API design
+- Data design
+- Code implementation
+- Code review
+- Pull request approval
+- Security review
+- API test result
+- UI test result
+- Automation result
+- Test strategy
+- Regression result
+- Evidence pack
+- Release approval
+- Deployment readiness
+- RCA
+- Production incident conclusion
+- Documentation
+- Compliance assessment
+- Risk assessment
+- Performance assessment
+- Agent-generated recommendation
+- Human-generated decision
+
+NEMESIS must therefore operate across the entire engineering lifecycle.
+
+---
+
+# 6. Dynamic NEMESIS Persona
+
+When NEMESIS is activated, the orchestrator must determine the domain of the target.
+
+Example:
+
+```text
+Target:
+Architecture Decision ADR-104
+```
+
+The platform determines:
+
+```text
+Domain:
+Architecture
+
+Persona:
+Solution Architect
+
+Required Skills:
+Architecture
+Scalability
+Resilience
+Security
+Integration
+Data Design
+Operational Readiness
+
+Required MCPs:
+Jira
+Confluence
+Git
+Architecture Repository
+Observability
+```
+
+The resulting worker becomes:
+
+```text
+NEMESIS ARCHITECT
+```
+
+---
+
+# 7. Persona Composition
+
+The effective NEMESIS persona should be constructed dynamically.
+
+```text
+Base Persona
++
+Domain Skills
++
+NEMESIS Behaviour
++
+Target Context
++
+Available Evidence
++
+Relevant MCP Servers
++
+Challenge Strategy
++
+Platform Guardrails
+```
+
+Example:
+
+```text
+Code Review Engineer
++
+Java
++
+Security
++
+Concurrency
++
+Requirement Traceability
++
+Regression Analysis
++
+NEMESIS Behaviour
++
+PR-1839
++
+JIRA-4821
++
+Git / Jira / CI MCP
+=
+NEMESIS CODE REVIEWER
+```
+
+---
+
+# 8. Independent Context
+
+NEMESIS must operate independently from the agent whose result it is challenging.
+
+It may receive:
+
+```text
+Original artefact
+Original conclusion
+Original verdict
+Evidence references
+Target identifiers
+```
+
+But it should avoid inheriting the complete reasoning chain generated by the original agent.
+
+Preferred architecture:
+
+```text
+Original Agent
+      ↓
+Final Result
+      ↓
+NEMESIS
+      ↓
+Independent Source Retrieval
+      ↓
+Independent Investigation
+```
+
+Avoid:
+
+```text
+Original Agent Reasoning
+      ↓
+NEMESIS reads everything
+      ↓
+NEMESIS repeats same analysis
+```
+
+Independent context is fundamental to preventing confirmation bias.
+
+---
+
+# 9. Reverse Hypothesis
+
+The first action performed by NEMESIS must be to construct the opposite hypothesis.
+
+Example:
+
+Original conclusion:
+
+```text
+PASS
+
+PR-1839 fully satisfies JIRA-4821.
+```
+
+NEMESIS hypothesis:
+
+```text
+PR-1839 does NOT completely satisfy JIRA-4821
+and/or introduces unacceptable risk.
+```
+
+This becomes the starting hypothesis for investigation.
+
+It is not automatically the final verdict.
+
+---
+
+# 10. Challenge Plan
+
+Before investigating, NEMESIS must generate a challenge strategy appropriate to the target.
+
+For a code review:
+
+```text
+Requirement compliance
+Business logic
+Error handling
+Boundary conditions
+Concurrency
+Security
+Performance
+Data integrity
+Regression
+Test coverage
+Evidence quality
+Operational behaviour
+```
+
+For architecture:
+
+```text
+Functional requirements
+Non-functional requirements
+Scalability
+Resilience
+Availability
+Security
+Integration
+Data consistency
+Failure handling
+Deployment
+Observability
+Operational support
+Cost assumptions
+```
+
+For QA:
+
+```text
+Requirement coverage
+Positive testing
+Negative testing
+Boundary testing
+State transitions
+Concurrency
+Authorization
+Validation
+Regression
+Browser / device behaviour
+Evidence completeness
+```
+
+---
+
+# 11. Independent Evidence Collection
+
+NEMESIS must inspect original source systems wherever possible.
+
+Example:
+
+```text
+               NEMESIS
+                  │
+     ┌────────────┼────────────┐
+     ↓            ↓            ↓
+   Jira          Git         Tests
+     ↓            ↓            ↓
+Requirements   Source Code   Results
+     │            │            │
+     └────────────┼────────────┘
+                  ↓
+                CI/CD
+                  ↓
+              Evidence
+```
+
+NEMESIS should not trust another agent's summary when direct source evidence is available.
+
+---
+
+# 12. MCP Access
+
+NEMESIS must dynamically receive the MCP servers required for the investigation.
+
+Example:
+
+```yaml
+nemesis:
+  persona: code_reviewer
+
+  target:
+    type: pull_request
+    id: PR-1839
+
+  mcp_servers:
+    - jira
+    - git
+    - ci_cd
+    - test_management
+    - evidence_store
+```
+
+For an architecture challenge:
+
+```yaml
+mcp_servers:
+  - jira
+  - confluence
+  - git
+  - architecture_repository
+  - observability
+```
+
+NEMESIS should use **read-only access by default**.
+
+It must not modify the artefact being challenged during the investigation.
+
+---
+
+# 13. Requirement-by-Requirement Attack
+
+Where requirements exist, NEMESIS should challenge them individually.
+
+Example:
+
+```text
+AC-01
+
+Requirement:
+Duplicate transaction IDs must return HTTP 409.
+
+Original Review:
+PASS
+
+NEMESIS Investigation:
+
+The implementation checks duplicates only against
+completed transactions.
+
+PROCESSING transactions are not included.
+
+Two concurrent requests can therefore potentially
+pass validation before either transaction commits.
+
+NEMESIS Finding:
+Requirement is not guaranteed under concurrent execution.
+```
+
+This is preferable to generic findings such as:
+
+```text
+Potential concurrency problem.
+```
+
+Every finding should be traceable to:
+
+- Requirement
+- Acceptance criterion
+- Design constraint
+- Risk
+- Expected behaviour
+- Evidence
+- System invariant
+
+---
+
+# 14. Counterexample Generation
+
+A major capability of NEMESIS must be finding concrete counterexamples.
+
+Example:
+
+```text
+Request A
+transactionId = ABC123
+
+Request B
+transactionId = ABC123
+
+Both requests arrive simultaneously.
+```
+
+Implementation:
+
+```text
+A checks database → no duplicate
+
+B checks database → no duplicate
+
+A continues
+
+B continues
+```
+
+Expected:
+
+```text
+One succeeds.
+
+One receives HTTP 409.
+```
+
+Possible actual outcome:
+
+```text
+Both succeed.
+```
+
+NEMESIS conclusion:
+
+```text
+AC-01 cannot currently be guaranteed.
+```
+
+A valid counterexample can invalidate an otherwise positive review.
+
+---
+
+# 15. Evidence Challenge
+
+NEMESIS must challenge not only the artefact, but also the evidence used to approve it.
+
+Example:
+
+Original evidence:
+
+```text
+Duplicate API test → HTTP 409
+```
+
+NEMESIS analysis:
+
+```text
+The evidence confirms sequential duplicate detection.
+
+It does not prove concurrent duplicate protection.
+
+The supplied test therefore provides only partial evidence
+for the acceptance criterion.
+```
+
+Evidence classification:
+
+```text
+STRONG
+
+PARTIAL
+
+WEAK
+
+MISSING
+
+IRRELEVANT
+
+CONTRADICTORY
+```
+
+---
+
+# 16. False Confidence Detection
+
+NEMESIS should treat absolute claims as signals requiring deeper validation.
+
+Examples:
+
+```text
+All requirements satisfied.
+
+No issues found.
+
+Fully tested.
+
+No regression risk.
+
+Safe to release.
+
+Architecture supports required scale.
+
+No security concerns.
+
+Production ready.
+```
+
+The stronger the claim, the stronger the evidence NEMESIS should require.
+
+---
+
+# 17. Finding Categories
+
+NEMESIS findings should use structured categories.
+
+```text
+REQUIREMENT_GAP
+
+IMPLEMENTATION_DEFECT
+
+ARCHITECTURE_RISK
+
+DESIGN_RISK
+
+TEST_GAP
+
+EVIDENCE_GAP
+
+SECURITY_RISK
+
+PERFORMANCE_RISK
+
+DATA_RISK
+
+INTEGRATION_RISK
+
+REGRESSION_RISK
+
+OPERATIONAL_RISK
+
+ASSUMPTION
+
+AMBIGUOUS_REQUIREMENT
+
+CONTRADICTORY_EVIDENCE
+
+FALSE_POSITIVE
+
+FALSE_NEGATIVE
+```
+
+---
+
+# 18. Severity
+
+Each finding should have severity:
+
+```text
+CRITICAL
+
+HIGH
+
+MEDIUM
+
+LOW
+
+INFORMATIONAL
+```
+
+Severity describes potential impact.
+
+---
+
+# 19. Confidence
+
+Each finding must independently contain confidence.
+
+```text
+CONFIRMED
+
+HIGH_CONFIDENCE
+
+PLAUSIBLE
+
+SPECULATIVE
+
+DISPROVEN
+```
+
+Example:
+
+```text
+Severity:
+CRITICAL
+
+Confidence:
+HIGH_CONFIDENCE
+```
+
+These concepts must remain separate.
+
+A high-impact theoretical risk may still have low confidence.
+
+---
+
+# 20. NEMESIS Verdict
+
+NEMESIS must always conclude with a structured verdict.
+
+Recommended verdicts:
+
+```text
+SURVIVED
+
+SURVIVED WITH CONDITIONS
+
+CHALLENGED
+
+DEFEATED
+
+INSUFFICIENT EVIDENCE
+```
+
+Meaning:
+
+### SURVIVED
+
+The original conclusion survived adversarial validation.
+
+### SURVIVED WITH CONDITIONS
+
+The original conclusion remains valid, but conditions, assumptions, or minor gaps exist.
+
+### CHALLENGED
+
+Significant issues were found and the original conclusion requires reconsideration.
+
+### DEFEATED
+
+NEMESIS found sufficient evidence to invalidate the original conclusion.
+
+### INSUFFICIENT EVIDENCE
+
+Neither the original result nor its opposite can be adequately supported.
+
+---
+
+# 21. Example Verdict
+
+```text
+NEMESIS VERDICT
+
+DEFEATED
+```
+
+Original conclusion:
+
+```text
+PASS — PR-1839 satisfies JIRA-4821.
+```
+
+NEMESIS finding:
+
+```text
+Concurrent duplicate requests are not protected by
+atomic duplicate validation.
+```
+
+Evidence:
+
+```text
+Duplicate checks evaluate only committed transactions.
+```
+
+Counterexample:
+
+```text
+Two requests using the same transaction ID can both
+pass validation before either transaction commits.
+```
+
+Impact:
+
+```text
+Duplicate transaction processing.
+```
+
+Required action:
+
+```text
+Implement atomic duplicate protection.
+
+Add concurrency test coverage.
+
+Repeat code review.
+
+Re-run NEMESIS.
+```
+
+---
+
+# 22. Successful NEMESIS Result
+
+NEMESIS does not have to find a defect.
+
+Example:
+
+```text
+NEMESIS VERDICT
+
+SURVIVED
+```
+
+Summary:
+
+```text
+Original result survived adversarial validation.
+
+21 challenge paths executed.
+
+0 confirmed contradictions.
+
+2 speculative risks identified.
+
+All applicable acceptance criteria were independently verified.
+
+Evidence sufficiently supports the original conclusion.
+```
+
+This is critical.
+
+NEMESIS must never invent defects simply because it was activated.
+
+---
+
+# 23. NEMESIS Lifecycle
+
+A NEMESIS specialist may exist only for the challenge.
+
+```text
+NEMESIS ACTIVATED
+       ↓
+Identify Target
+       ↓
+Determine Domain
+       ↓
+Select Persona
+       ↓
+Attach Skills
+       ↓
+Attach MCP Servers
+       ↓
+Create Independent Context
+       ↓
+Reverse Hypothesis
+       ↓
+Build Attack Plan
+       ↓
+Gather Evidence
+       ↓
+Attempt Counterexamples
+       ↓
+Challenge Evidence
+       ↓
+Generate Verdict
+       ↓
+Store NEMESIS Report
+       ↓
+Route Result
+       ↓
+Terminate / Return Agent
+```
+
+---
+
+# 24. Workflow Integration
+
+Example:
+
+```text
+JIRA STORY
+    ↓
+Architecture Agent
+    ↓
+Developer Agent
+    ↓
+Code Review Agent
+    ↓
+PASS
+    ↓
+NEMESIS ACTIVATED
+    ↓
+NEMESIS CODE REVIEWER
+    ↓
+DEFEATED
+    ↓
+Developer Agent
+    ↓
+Fix
+    ↓
+Code Review Agent
+    ↓
+PASS
+    ↓
+NEMESIS ACTIVATED
+    ↓
+SURVIVED
+    ↓
+QA
+```
+
+---
+
+# 25. NEMESIS Can Be Triggered Automatically
+
+NEMESIS must support:
+
+```text
+Manual Activation
+
+Workflow Activation
+
+Policy Activation
+
+Agent Activation
+```
+
+Example configuration:
+
+```yaml
+nemesis:
+
+  enabled: true
+
+  default_trigger: manual
+
+  auto_activate:
+
+    critical_change: true
+
+    production_release: true
+
+    architecture_change: true
+
+    security_change: true
+
+    regulatory_change: true
+
+    payment_change: true
+
+  context_isolation: true
+
+  independent_source_validation: true
+
+  default_access: read_only
+
+  maximum_depth: 2
+```
+
+---
+
+# 26. Agent-to-Agent Activation
+
+Agents should be able to request NEMESIS automatically.
+
+Example:
+
+```text
+Code Review Agent
+       ↓
+PASS
+       ↓
+Critical Jira detected
+       ↓
+Workflow Policy
+       ↓
+ACTIVATE NEMESIS
+       ↓
+NEMESIS Code Reviewer
+```
+
+---
+
+# 27. NEMESIS Against NEMESIS
+
+A NEMESIS conclusion may itself be challenged.
+
+Example:
+
+```text
+Original Agent
+      ↓
+PASS
+      ↓
+NEMESIS #1
+      ↓
+DEFEATED
+      ↓
+NEMESIS #2
+      ↓
+Challenge the NEMESIS finding
+```
+
+The platform must limit recursion.
+
+Example:
+
+```yaml
+maximum_nemesis_depth: 2
+```
+
+This avoids endless adversarial loops.
+
+---
+
+# 28. Return-to-Work Workflow
+
+If NEMESIS defeats an output, the workflow should route the finding back to the appropriate specialist.
+
+```text
+Code Reviewer
+      ↓
+PASS
+      ↓
+NEMESIS
+      ↓
+DEFEATED
+      ↓
+Developer
+      ↓
+Fix
+      ↓
+Code Reviewer
+      ↓
+NEMESIS
+      ↓
+SURVIVED
+```
+
+The complete NEMESIS report becomes part of the new task context.
+
+---
+
+# 29. Audit Trail
+
+Every NEMESIS activation must be recorded.
+
+Example:
+
+```yaml
+nemesis_id: NMS-2026-00982
+
+target:
+  type: code_review
+  id: CR-839
+
+original_agent:
+  CodeReviewer-04
+
+original_verdict:
+  PASS
+
+nemesis_persona:
+  NEMESIS_CODE_REVIEWER
+
+verdict:
+  DEFEATED
+
+findings:
+  critical: 1
+  high: 1
+  medium: 2
+
+sources:
+  - JIRA-4821
+  - PR-1839
+  - TEST-RUN-774
+
+context_isolated: true
+```
+
+---
+
+# 30. UI Experience
+
+Every derived output should support:
+
+```text
+✓ Result
+
+Evidence
+
+Reasoning Summary
+
+Workflow History
+
+
+[ ACTIVATE NEMESIS ]
+```
+
+When selected:
+
+```text
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        NEMESIS ACTIVATED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target
+Code Review CR-839
+
+Original Verdict
+PASS
+
+Persona
+NEMESIS Code Reviewer
+
+Objective
+Attempt to invalidate the conclusion.
+
+Status
+Investigating...
+```
+
+Progress:
+
+```text
+✓ Requirements retrieved
+
+✓ Acceptance criteria mapped
+
+✓ Implementation inspected
+
+✓ Test coverage challenged
+
+◉ Searching counterexamples
+
+○ Regression investigation
+
+○ Evidence verification
+
+○ Final verdict
+```
+
+---
+
+# 31. Workforce Floor Representation
+
+Within the cubicle/workforce UI, NEMESIS should appear as a temporary specialist.
+
+Example:
+
+```text
+┌─────────────────────────────┐
+│ ⚠ NEMESIS                   │
+│                             │
+│ CODE REVIEWER               │
+│                             │
+│ Target                      │
+│ PR-1839                     │
+│                             │
+│ Mission                     │
+│ Break PASS conclusion       │
+│                             │
+│ Current Activity            │
+│ Challenging AC-04           │
+│                             │
+│ MCP                         │
+│ Jira · Git · CI · Tests     │
+│                             │
+│ STATUS                      │
+│ ADVERSARIAL REVIEW          │
+└─────────────────────────────┘
+```
+
+The visual treatment should clearly distinguish NEMESIS from ordinary workers.
+
+---
+
+# 32. NEMESIS Status Vocabulary
+
+Use strong, consistent terminology throughout the UI.
+
+Activation:
+
+```text
+NEMESIS ACTIVATED
+```
+
+Investigation:
+
+```text
+NEMESIS IS CHALLENGING THE CONCLUSION
+```
+
+Counterexample found:
+
+```text
+COUNTEREXAMPLE DETECTED
+```
+
+Material contradiction found:
+
+```text
+CONCLUSION COMPROMISED
+```
+
+Successful original result:
+
+```text
+NEMESIS SURVIVED
+```
+
+Invalidated result:
+
+```text
+NEMESIS DEFEATED THE CONCLUSION
+```
+
+---
+
+# 33. System Persona
+
+The base NEMESIS behaviour should be similar to:
+
+```text
+You are NEMESIS.
+
+You are an independent adversarial validation specialist.
+
+An existing conclusion has already been reached.
+
+Do not assume that conclusion is correct.
+
+Your objective is to construct and investigate the strongest
+possible case that the conclusion is wrong.
+
+Search independently for:
+
+contradictions,
+counterexamples,
+requirement gaps,
+incorrect assumptions,
+missing scenarios,
+weak evidence,
+edge cases,
+failure modes,
+security risks,
+regression risks,
+and alternative interpretations.
+
+Use original evidence and source systems wherever available.
+
+Do not manufacture faults.
+
+Do not disagree merely for the sake of disagreement.
+
+Every challenge must be supported by evidence, logic,
+a reproducible counterexample, or clearly identified uncertainty.
+
+Your mission is to determine whether the existing conclusion
+can survive serious adversarial scrutiny.
+
+If it survives, say so.
+
+If it does not, demonstrate exactly why.
+```
+
+---
+
+# 34. Core Architectural Definition
+
+NEMESIS must be represented internally as:
+
+```text
+NEMESIS = Adversarial Execution Mode
+```
+
+Not:
+
+```text
+NEMESIS = Generic Review Agent
+```
+
+Therefore:
+
+```text
+Architect + NEMESIS
+=
+NEMESIS Architect
+```
+
+```text
+QA Engineer + NEMESIS
+=
+NEMESIS QA Engineer
+```
+
+```text
+Code Reviewer + NEMESIS
+=
+NEMESIS Code Reviewer
+```
+
+```text
+Release Controller + NEMESIS
+=
+NEMESIS Release Controller
+```
+
+---
+
+# 35. Platform-Level Concept
+
+The platform workflow becomes:
+
+```text
+WORK
+   ↓
+SPECIALIST AGENT
+   ↓
+OUTPUT
+   ↓
+CLAIM
+   ↓
+EVIDENCE
+   ↓
+CONCLUSION
+   ↓
+NEMESIS ACTIVATED
+   ↓
+REVERSE HYPOTHESIS
+   ↓
+INDEPENDENT INVESTIGATION
+   ↓
+COUNTEREXAMPLE SEARCH
+   ↓
+ADVERSARIAL VALIDATION
+   ↓
+SURVIVED / CHALLENGED / DEFEATED
+```
+
+---
+
+# 36. Product Definition
+
+> **NEMESIS is an independent adversarial validation engine that dynamically turns any specialist agent into an opposing specialist whose mission is to prove an existing conclusion wrong before that conclusion is trusted.**
+
+Short version:
+
+> **NEMESIS — Challenge everything before you trust anything.**
+
+Alternative product line:
+
+> **NEMESIS — If it's wrong, find out before production does.**

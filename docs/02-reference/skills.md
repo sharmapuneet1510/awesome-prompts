@@ -1,6 +1,6 @@
 # Skill Reference
 
-**36 skills.** Reusable implementation modules that agents dispatch to. A skill
+**37 skills.** Reusable implementation modules that agents dispatch to. A skill
 knows *how*; an [agent](agents.md) decides *what*.
 
 Skills are never invoked directly by users — agents load them. Source:
@@ -10,7 +10,7 @@ Skills are never invoked directly by users — agents load them. Source:
 
 ## Governance & knowledge
 
-These five form one system and are read together. `adr_skill` is the root —
+These five form one system and are read together (`nemesis_skill` is listed here because it challenges what they record). `adr_skill` is the root —
 everything else reads from it.
 
 | Skill | Owns |
@@ -20,6 +20,7 @@ everything else reads from it.
 | `project_context_skill` | The 14-node shared knowledge tree and its ownership matrix |
 | `traceability_skill` | The eight-hop chain and its 18 validation checks |
 | `spec_driven_development_skill` | The requirements → design → tasks gate (RULE 11) |
+| `nemesis_skill` | Adversarial validation mode: reverse hypothesis, counterexamples, evidence grading, five-way verdict, ranked failure-cause hypotheses |
 
 See [../01-workflows/05-record-a-decision.md](../01-workflows/05-record-a-decision.md).
 

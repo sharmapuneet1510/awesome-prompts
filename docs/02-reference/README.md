@@ -8,8 +8,8 @@ Reference answers *what exists*. For *what to do*, start at
 | Document | Covers |
 |---|---|
 | [agents.md](agents.md) | The 5 agents, their roles, and the 9 specialist modes that map onto them |
-| [functions.md](functions.md) | All 42 callable functions, with inputs and the workflow each belongs to |
-| [skills.md](skills.md) | The 36 skills agents dispatch to |
+| [functions.md](functions.md) | All 43 callable functions, with inputs and the workflow each belongs to |
+| [skills.md](skills.md) | The 37 skills agents dispatch to |
 | [tools.md](tools.md) | Python tools in `tools/`, plus `token_optimizer` and `parser` |
 | [rules.md](rules.md) | 4 principles, RULES 0–12, and every gate |
 | [artifacts.md](artifacts.md) | Every file the system produces, who writes it, and which must never be hand-edited |
@@ -24,8 +24,8 @@ diagrams.
 | | |
 |---|---|
 | Agents | 5 |
-| Callable functions | 42 |
-| Skills | 36 |
+| Callable functions | 43 |
+| Skills | 37 |
 | Prompt templates | 18 across 12 categories |
 | Export platforms | 8 |
 | Instruction rules | RULES 0–12, plus 4 principles |
