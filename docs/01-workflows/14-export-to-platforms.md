@@ -69,7 +69,7 @@ unpicking a bundle.
 | Hooks | varies | `hooks/` |
 | Prompts | 18 | `prompts/*/` |
 
-Function *files* number 34 while the dispatch tables declare 42 callable
+Function *files* number 35 while the dispatch tables declare 43 callable
 functions — several functions are documented inside their parent agent file
 rather than as standalone files. See
 [../02-reference/functions.md](../02-reference/functions.md).

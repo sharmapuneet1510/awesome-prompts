@@ -470,7 +470,7 @@ orchestrator:context → quality:audit → architect:analyse
 
 ## Command Index by Stage
 
-All 42 callable functions, mapped to where they belong.
+All 43 callable functions, mapped to where they belong.
 
 | Command | Stage(s) |
 |---|---|
@@ -484,6 +484,7 @@ All 42 callable functions, mapped to where they belong.
 | `ba:create` | 2 |
 | `architect:analyse` | 3, 15 |
 | `orchestrator:solve` | 3 |
+| `orchestrator:nemesis` | 4, 11, 13 |
 | `orchestrator:tradeoff` | 3, 6 |
 | `architect:adr` | 4, 15 |
 | `architect:spec` | 5, 15 |
@@ -551,5 +552,5 @@ Everything below lands in the **downstream project**, not in this repo.
 - **[Function reference](../02-reference/functions.md)** — one-page cheat sheets
 - **[Agent reference](../02-reference/agents.md)** — nine specialist role modes
 - **[agents/README.md](../../agents/README.md)** — agent descriptions and dispatch syntax
-- **[skills/README.md](../02-reference/skills.md)** — the 36 reusable skills
+- **[skills/README.md](../02-reference/skills.md)** — the 37 reusable skills
 - **[instructions/master_instruction_set.md](../02-reference/rules.md)** — RULES 0–12

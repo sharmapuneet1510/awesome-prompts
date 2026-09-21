@@ -56,13 +56,13 @@ awesome-prompts/
 │   ├── business_analyst_agent.md     ← Utility — Backlog (report, parse)
 │   ├── orchestrator/                 ← Orchestrator agent modules & functions
 │   │   ├── modules/                  ← Orchestrator modules (design_solver, expert_panel_generator, ideation_engine)
-│   │   ├── functions/                ← Orchestrator functions (ideate, solve)
+│   │   ├── functions/                ← Orchestrator functions (ideate, solve, nemesis)
 │   │   └── README.md
 │   └── README.md                     ← Agent directory (v3.0 with linear pipeline)
 │
 ├── hooks/                            ← Hook scripts for platform automation
 │
-├── skills/                           ← Reusable implementation skills (36 skills, see skills/README.md)
+├── skills/                           ← Reusable implementation skills (37 skills, see skills/README.md)
 │   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
 │   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
 │   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
@@ -90,6 +90,7 @@ awesome-prompts/
 │   ├── project_context_skill.md      ← 14-node Project Context tree + ownership matrix
 │   ├── current_tech_spec_skill.md    ← Current Technical Specification (ADR projection) + Final Impl Record
 │   ├── traceability_skill.md         ← 8-hop chain + 18 validation checks
+│   ├── nemesis_skill.md              ← Adversarial validation mode (reverse hypothesis, verdict, failure-cause hypotheses)
 │   └── README.md                     ← Skills directory (consolidated v2.0)
 │
 ├── parser/                           ← Python field derivation analysis tool
@@ -121,13 +122,13 @@ Agents are organized by responsibility using a **lean, role-based architecture**
 > the complete 16-stage lifecycle with the commands available at each stage, the
 > gate that must pass before the next one starts, and the artifacts produced.
 >
-> **Which workflow for which task?** See **[docs/01-workflows/README.md](docs/01-workflows/README.md)** — 14 use cases, each a complete path.
+> **Which workflow for which task?** See **[docs/01-workflows/README.md](docs/01-workflows/README.md)** — 15 use cases, each a complete path.
 
-**Total: 5 agents (down from 13) + 42 callable functions — zero role overlap**
+**Total: 5 agents (down from 13) + 43 callable functions — zero role overlap**
 
 | # | Role | Agent | Functions | Purpose | Tech-Agnostic |
 |---|------|-------|-----------|---------|---------------|
-| 1 | **Strategy & Orchestration** | Orchestrator | plan, build, context, pr, review, tradeoff, risk, ideate, solve | Full-stack generation + technical leadership + requirements parsing + ideation | ✅ Yes |
+| 1 | **Strategy & Orchestration** | Orchestrator | plan, build, context, pr, review, tradeoff, risk, ideate, solve, **nemesis** | Full-stack generation + technical leadership + requirements parsing + ideation | ✅ Yes |
 | 2 | **Architecture & Design** | Architect | design, refactor, frontend, schema, api, a11y, **analyse, adr, spec** | System topology, greenfield/brownfield design, API contracts, DB schema, UI architecture, accessibility + technical analysis, ADRs, Current Technical Specification | ✅ Yes |
 | 3 | **Implementation & Execution** | Implementer | build, test, doc, pipeline, docker, iac, full | Code generation, testing, documentation, CI/CD, containerization, infrastructure (key: `full` runs build+test+doc with no context loss) | ✅ Yes |
 | 4 | **QA, Security & Performance** | Quality | review, audit, security, perf, debug, report, batch-review, diagnose, **observe, qa** | PR validation, codebase audit, OWASP security scan, performance optimization, RCA, quality synthesis + conformance observation and the five reusable suites | ✅ Yes |
@@ -146,7 +147,7 @@ Agents are organized by responsibility using a **lean, role-based architecture**
 
 ### Skill-Based Architecture
 
-Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (36 total):
+Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (37 total):
 
 ```
     (specify: requirements.md → plan: design.md → tasks: tasks.md, each Approved — RULE 11)
@@ -183,8 +184,8 @@ orchestrator:pr (open GitHub PR)
 - ✅ **Fewer agents** (5 vs 13) = lower token cost
 - ✅ **Linear pipeline** = explicit handoffs with full context
 - ✅ **implementer:full** = no state transfer loss between build/test/doc
-- ✅ **36 reusable skills** = no duplication across agents
-- ✅ **42 callable functions** = fine-grained control via `agent:function` syntax
+- ✅ **37 reusable skills** = no duplication across agents
+- ✅ **43 callable functions** = fine-grained control via `agent:function` syntax
 - ✅ Clear separation: agent = orchestration + dispatch, skill = implementation
 
 ## Skills

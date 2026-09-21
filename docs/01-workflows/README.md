@@ -27,6 +27,7 @@ rarely need all 16 stages at once.
 | …turn a backlog into something readable | [12 — Manage a backlog](12-manage-backlog.md) |
 | …ship a release | [13 — Ship a release](13-ship-a-release.md) |
 | …use these agents in Cursor, Copilot, or elsewhere | [14 — Export to platforms](14-export-to-platforms.md) |
+| …attack a finished conclusion before anyone trusts it | [15 — Challenge a conclusion](15-challenge-a-conclusion.md) |
 
 ---
 
@@ -98,5 +99,5 @@ than linking to nothing.
 ## Reference
 
 - [sdlc-playbook.md](sdlc-playbook.md) — the 16-stage spine, with every command mapped to its stage
-- [../02-reference/functions.md](../02-reference/functions.md) — all 42 functions
+- [../02-reference/functions.md](../02-reference/functions.md) — all 43 functions
 - [../02-reference/artifacts.md](../02-reference/artifacts.md) — every artifact and the stage that produces it

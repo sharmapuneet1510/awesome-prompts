@@ -1,6 +1,6 @@
 # 🛠️ Skills Directory (v2.1 — Consolidated)
 
-> Reusable, tech-specific implementation modules used by agents. 36 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 37 skills, zero orphans.
 
 ## Quick Navigation (36 Skills)
 
@@ -41,6 +41,7 @@
 | 33 | [Project Context](project_context_skill.md) | 14-node shared knowledge tree + ownership matrix (who writes what, when) | Language-agnostic | All agents |
 | 34 | [Current Technical Specification](current_tech_spec_skill.md) | Latest-approved-design-only spec, projected from Accepted ADRs + Final Implementation Record | Language-agnostic | Architect |
 | 35 | [Traceability](traceability_skill.md) | 8-hop chain (requirement → release) + 18 validation checks | Language-agnostic | Business Analyst, Quality |
+| 37 | [NEMESIS](nemesis_skill.md) | Adversarial validation mode: reverse hypothesis, counterexamples, evidence grading, five-way verdict, ranked failure-cause hypotheses | Language-agnostic | Orchestrator, Quality |
 | 36 | [MCP Server Builder](mcp_server_builder_skill.md) | Build an MCP server: SDK pinning, stdio vs HTTP, Python/TS examples, 3-layer testing, Claude Code registration | Python/TypeScript (Java: pointers) | Implementer, Architect |
 
 ---
@@ -87,6 +88,7 @@ everything else reads from it.
 - `project_context_skill` — the 14-node shared knowledge tree and its ownership matrix
 - `traceability_skill` — the 8-hop chain and its 18 validation checks
 - `spec_driven_development_skill` — the requirements → design → tasks gate they build on
+- `nemesis_skill` — adversarial validation: attacks a finished conclusion and returns a verdict with failure-cause hypotheses
 
 ---
 

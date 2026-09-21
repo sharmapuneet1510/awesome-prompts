@@ -6,8 +6,8 @@
 Your assistant stops and asks before it builds the wrong thing — then leaves a record of why.
 
 [![5 agents](https://img.shields.io/badge/agents-5-0969da?style=flat-square)](docs/02-reference/agents.md)
-[![42 functions](https://img.shields.io/badge/functions-42-0969da?style=flat-square)](docs/02-reference/functions.md)
-[![36 skills](https://img.shields.io/badge/skills-36-0969da?style=flat-square)](docs/02-reference/skills.md)
+[![43 functions](https://img.shields.io/badge/functions-43-0969da?style=flat-square)](docs/02-reference/functions.md)
+[![37 skills](https://img.shields.io/badge/skills-37-0969da?style=flat-square)](docs/02-reference/skills.md)
 [![8 platforms](https://img.shields.io/badge/platforms-8-0969da?style=flat-square)](docs/01-workflows/14-export-to-platforms.md)
 [![MIT license](https://img.shields.io/badge/license-MIT-0969da?style=flat-square)](LICENSE)
 
@@ -94,7 +94,7 @@ Full setup: [docs/00-getting-started/](docs/00-getting-started/).
 | 💡 | **Understand the design** | [docs/00-getting-started/concepts.md](docs/00-getting-started/concepts.md) |
 
 <details open>
-<summary><b>The 14 workflows</b> — each names its prerequisites, command chain, the gates you will hit, and the artifacts you end up with</summary>
+<summary><b>The 15 workflows</b> — each names its prerequisites, command chain, the gates you will hit, and the artifacts you end up with</summary>
 
 <br/>
 
@@ -111,6 +111,7 @@ Full setup: [docs/00-getting-started/](docs/00-getting-started/).
 | | [07 Fix a production incident](docs/01-workflows/07-fix-production-incident.md) | Something is broken now |
 | | [08 Audit security](docs/01-workflows/08-audit-security.md) | Finding abuse paths |
 | | [09 Optimise performance](docs/01-workflows/09-optimise-performance.md) | Making it faster |
+| | [15 Challenge a conclusion](docs/01-workflows/15-challenge-a-conclusion.md) | Attack a finished conclusion before anyone trusts it |
 | **Ship & adopt** | [11 Set up CI/CD](docs/01-workflows/11-set-up-cicd.md) | Getting it deployed |
 | | [13 Ship a release](docs/01-workflows/13-ship-a-release.md) | Proving the chain holds |
 | | [14 Export to platforms](docs/01-workflows/14-export-to-platforms.md) | Using this in Cursor, Copilot, elsewhere |
@@ -214,7 +215,7 @@ More: [docs/00-getting-started/concepts.md](docs/00-getting-started/concepts.md)
 ├── parser/          Java field-derivation analysis
 └── docs/
     ├── 00-getting-started/
-    ├── 01-workflows/      ← 14 use cases
+    ├── 01-workflows/      ← 15 use cases
     ├── 02-reference/      ← agents, functions, skills, tools, rules, artifacts
     ├── 03-guides/
     ├── 04-examples/
