@@ -24,8 +24,8 @@ diagrams.
 | | |
 |---|---|
 | Agents | 5 |
-| Callable functions | 42 |
-| Skills | 36 |
+| Callable functions | 43 |
+| Skills | 37 |
 | Prompt templates | 18 across 12 categories |
 | Export platforms | 8 |
 | Instruction rules | RULES 0–12, plus 4 principles |

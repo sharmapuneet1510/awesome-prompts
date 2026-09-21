@@ -2,7 +2,7 @@
 
 > Reusable, tech-specific implementation modules used by agents. 37 skills, zero orphans.
 
-## Quick Navigation (36 Skills)
+## Quick Navigation (37 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -41,8 +41,8 @@
 | 33 | [Project Context](project_context_skill.md) | 14-node shared knowledge tree + ownership matrix (who writes what, when) | Language-agnostic | All agents |
 | 34 | [Current Technical Specification](current_tech_spec_skill.md) | Latest-approved-design-only spec, projected from Accepted ADRs + Final Implementation Record | Language-agnostic | Architect |
 | 35 | [Traceability](traceability_skill.md) | 8-hop chain (requirement → release) + 18 validation checks | Language-agnostic | Business Analyst, Quality |
-| 37 | [NEMESIS](nemesis_skill.md) | Adversarial validation mode: reverse hypothesis, counterexamples, evidence grading, five-way verdict, ranked failure-cause hypotheses | Language-agnostic | Orchestrator, Quality |
 | 36 | [MCP Server Builder](mcp_server_builder_skill.md) | Build an MCP server: SDK pinning, stdio vs HTTP, Python/TS examples, 3-layer testing, Claude Code registration | Python/TypeScript (Java: pointers) | Implementer, Architect |
+| 37 | [NEMESIS](nemesis_skill.md) | Adversarial validation mode: reverse hypothesis, counterexamples, evidence grading, five-way verdict, ranked failure-cause hypotheses | Language-agnostic | Orchestrator, Quality |
 
 ---
 
@@ -80,7 +80,7 @@
 - `multi_review_html_skill` — Batch PR review HTML with sidebar tabs, summary dashboard, export options
 
 ### Spec-Driven Platform Skills (Governance & Knowledge)
-These four form one system and are read together. `adr_skill` is the root —
+These five form one system and are read together (`nemesis_skill` is listed with them because it challenges what they record). `adr_skill` is the root —
 everything else reads from it.
 
 - `adr_skill` — Engineering Decision Records; the only source of recorded decisions

@@ -33,7 +33,7 @@ support means adding one skill, not one agent.
 
 ```
 agent  = orchestration + dispatch    (5)
-skill  = implementation knowledge    (36)
+skill  = implementation knowledge    (37)
 ```
 
 The 13 → 5 mapping is in [../../CHANGELOG.md](../../CHANGELOG.md) under 4.0.0.

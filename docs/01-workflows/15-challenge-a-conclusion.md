@@ -33,7 +33,7 @@ Not for: a first review (use [06](06-review-a-pull-request.md)), or anything wit
 ```
 quality:review pr=1839            → PASS
     ↓
-orchestrator:nemesis target=CR-839      (or /nemesis CR-839)
+orchestrator:nemesis target=PR-1839     (or /nemesis PR-1839)
     ↓  NEMESIS ACTIVATED
     ↓  fresh sub-agent, read-only, five inputs only
     ↓
@@ -58,24 +58,36 @@ the required actions. Worked examples:
 | Verdict | Meaning |
 |---|---|
 | `SURVIVED` | No findings. The conclusion held up. |
-| `SURVIVED WITH CONDITIONS` | Only minor or speculative findings, plus stated assumptions. |
-| `CHALLENGED` | Significant issues; reconsider the conclusion. |
-| `DEFEATED` | A high-impact, high-confidence finding backed by a counterexample. |
+| `SURVIVED WITH CONDITIONS` | Only minor or speculative findings (at most one non-speculative medium one), plus stated assumptions. |
+| `CHALLENGED` | A significant finding that is not backed by a counterexample, or several medium ones: reconsider the conclusion. |
+| `DEFEATED` | A high-impact, high-confidence finding backed by a counterexample or by contradictory evidence. |
 | `INSUFFICIENT EVIDENCE` | Neither the conclusion nor its opposite can be supported. |
 
 NEMESIS never has to find a defect, and does not invent one.
 
 ## Automatic activation (optional)
 
-With a `docs/nemesis/nemesis.yml` whose `auto_activate` rules are on, `quality:review`,
-`architect:adr` and `orchestrator:pr` invoke NEMESIS after a PASS when a rule matches. Without the
-file nothing runs by itself.
+With a `docs/nemesis/nemesis.yml` (not `enabled: false`) whose `auto_activate` rules are on, three
+functions run NEMESIS when a rule matches, each at its own point:
+
+| Function | When | What the verdict does |
+|---|---|---|
+| `quality:review` | after a `PASS` (critical, security or payment change) | `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` overrides the `PASS`; `SURVIVED WITH CONDITIONS` keeps it and copies the conditions |
+| `architect:adr` | between `Status: Proposed` and the approval request (architecture change) | advice to the approver; a human still approves |
+| `orchestrator:pr` | before the release PR (production release) | `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` stops it |
+
+Without the file nothing runs by itself.
 
 ## Limits
 
 A prompt cannot technically enforce isolation or read-only access. The function instructs both and the
 report records what actually happened (`context_isolated`, `access`, `sources`); a run that could not
 spawn a fresh sub-agent says so in its verdict.
+
+Two guards keep it from looping. After **two consecutive** `DEFEATED` or `CHALLENGED` results for the
+same target the gates stop and hand the decision to a human, and a challenge of a NEMESIS verdict
+stops at `maximum_depth` (default 2; a third is refused, and writes nothing). A challenger never
+evaluates a gate itself, and `enabled: false` refuses every trigger, even a manual `/nemesis`.
 
 ## Related
 

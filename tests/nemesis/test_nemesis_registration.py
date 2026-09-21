@@ -16,10 +16,11 @@ def dispatch_functions():
     return names
 
 
-def test_the_function_and_skill_counts_are_real():
-    assert len(dispatch_functions()) == 43
-    assert len(list((ROOT / "skills").glob("*_skill.md"))) == 37
-    assert len(list((ROOT / "agents").glob("*/functions/*.md"))) == 35
+def test_the_counts_include_nemesis():
+    # A lower bound, not an exact tripwire: adding a function or skill later must not force an edit here.
+    assert "orchestrator:nemesis" in dispatch_functions() and len(dispatch_functions()) >= 43
+    assert (ROOT / "skills" / "nemesis_skill.md").exists() and len(list((ROOT / "skills").glob("*_skill.md"))) >= 37
+    assert (ROOT / "agents" / "orchestrator" / "functions" / "nemesis.md").exists() and len(list((ROOT / "agents").glob("*/functions/*.md"))) >= 35
 
 
 def test_the_documents_state_the_real_counts():
@@ -32,6 +33,14 @@ def test_the_documents_state_the_real_counts():
     assert "**%d skills.**" % skills in c.read(ROOT / "docs" / "02-reference" / "skills.md")
     assert "%d functions, %d skills" % (functions, skills) in c.read(ROOT / "docs" / "README.md")
     assert "%d skills, zero orphans" % skills in c.read(ROOT / "skills" / "README.md")
+    assert "Quick Navigation (%d Skills)" % skills in c.read(ROOT / "skills" / "README.md")
+    functions_files = len(list((ROOT / "agents").glob("*/functions/*.md")))
+    assert "| Skills | %d | `skills/*.md` |" % skills in c.read(ROOT / "docs" / "01-workflows" / "14-export-to-platforms.md")
+    assert "| Functions | %d | `agents/*/functions/*.md` |" % functions_files in c.read(ROOT / "docs" / "01-workflows" / "14-export-to-platforms.md")
+    assert "| Callable functions | %d |" % functions in c.read(ROOT / "docs" / "02-reference" / "README.md") and "| Skills | %d |" % skills in c.read(ROOT / "docs" / "02-reference" / "README.md")
+    concepts = c.read(ROOT / "docs" / "00-getting-started" / "concepts.md")
+    assert "| One callable capability of an agent | %d |" % functions in concepts and "| Implementation knowledge a function loads | %d |" % skills in concepts
+    assert "implementation knowledge    (%d)" % skills in c.read(ROOT / "docs" / "02-reference" / "agents.md")
 
 
 def test_the_workflow_count_matches_the_workflow_files():
@@ -44,7 +53,7 @@ def test_the_function_and_skill_are_listed_in_the_reference_docs():
     assert "`orchestrator:nemesis`" in c.read(ROOT / "docs" / "02-reference" / "functions.md")
     assert "`nemesis_skill`" in c.read(ROOT / "docs" / "02-reference" / "skills.md")
     assert "nemesis_skill.md" in c.read(ROOT / "skills" / "README.md")
-    assert "nemesis" in c.read(ROOT / "docs" / "02-reference" / "agents.md")
+    assert "· `nemesis`" in c.read(ROOT / "docs" / "02-reference" / "agents.md")
     assert "| `orchestrator:nemesis` |" in c.read(ROOT / "docs" / "01-workflows" / "sdlc-playbook.md")
 
 
@@ -59,6 +68,18 @@ def test_every_relative_link_in_the_new_documents_resolves():
         for target in re.findall(r"\]\(([^)\s#]+)", c.read(path)):
             if not target.startswith(("http://", "https://", "mailto:")):
                 assert (path.parent / target).exists(), "%s -> %s" % (path.name, target)
+
+
+def test_the_skills_index_lists_the_new_skill_in_order():
+    rows = re.findall(r"^\| (\d+) \| \[", c.read(ROOT / "skills" / "README.md"), re.M)
+    assert [int(n) for n in rows] == sorted(int(n) for n in rows) and rows[-1] == str(len(list((ROOT / "skills").glob("*_skill.md"))))
+
+
+def test_the_workflow_doc_states_each_trigger_point_and_the_guards():
+    text = c.flat(c.read(ROOT / "docs" / "01-workflows" / "15-challenge-a-conclusion.md"))
+    for phrase in ["after a `PASS`", "between `Status: Proposed` and the approval request", "before the release PR", "**two consecutive**", "`maximum_depth`", "A challenger never evaluates a gate", "even a manual `/nemesis`", "not `enabled: false`"]:
+        assert phrase in text, phrase
+    assert "target=CR-839" not in text  # one id for the one change
 
 
 def test_the_examples_and_the_config_template_are_indexed():
