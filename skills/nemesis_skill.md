@@ -270,7 +270,7 @@ hypothesis you can test with a discriminating check over one that is only a stor
 ## 12. Report
 
 Written to `docs/nemesis/NMS-<year>-<seq>.md` in the project under review (highest existing sequence
-plus one, five digits). YAML header, then the body in this order.
+for that year plus one, five digits, restarting at `00001` each year). YAML header, then the body in this order.
 
 ```yaml
 nemesis_id: NMS-2026-00982
@@ -292,7 +292,8 @@ parent_nemesis: null
 ```
 
 `target.type` is one of `requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment` or `recommendation`. `change` is the stable work item the target
-belongs to (the Jira key when there is one, otherwise the PR or release id): it stays the same when the
+belongs to (the Jira key when there is one, otherwise the id of the first target in the chain; a
+re-review inherits the `change` of the report it re-challenges): it stays the same when the
 owner fixes the work and it is reviewed again, which is what lets the gates count consecutive results
 for the same change. The `findings` counts count only **counting** findings (not `DISPROVEN`), and the
 `hypotheses` count is the length of the hypotheses list.

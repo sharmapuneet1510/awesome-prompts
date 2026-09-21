@@ -34,6 +34,7 @@ def test_the_documents_state_the_real_counts():
     assert "%d functions, %d skills" % (functions, skills) in c.read(ROOT / "docs" / "README.md")
     assert "%d skills, zero orphans" % skills in c.read(ROOT / "skills" / "README.md")
     assert "Quick Navigation (%d Skills)" % skills in c.read(ROOT / "skills" / "README.md")
+    assert "**5 agents, %d functions, %d skills**" % (functions, skills) in c.read(ROOT / "docs" / "99-archive" / "README.md")
     functions_files = len(list((ROOT / "agents").glob("*/functions/*.md")))
     assert "| Skills | %d | `skills/*.md` |" % skills in c.read(ROOT / "docs" / "01-workflows" / "14-export-to-platforms.md")
     assert "| Functions | %d | `agents/*/functions/*.md` |" % functions_files in c.read(ROOT / "docs" / "01-workflows" / "14-export-to-platforms.md")

@@ -1,7 +1,7 @@
 # NEMESIS — Adversarial Validation Mode (Prompt Layer) — Design Specification
 
 **Date:** September 21, 2026
-**Status:** Approved 2026-09-21 (the user's "looks good" on the written spec). Implemented on branch `feat/nemesis`. Refinements made while implementing (ordered verdict rules, a refusal writes nothing, the `change` header key and target-type list, the release persona) were ruled by the controller and await the user's confirmation; they are marked in the Decisions table.
+**Status:** Approved 2026-09-21 (the user's "looks good" on the written spec). Implemented on branch `feat/nemesis`. Refinements made while implementing (ordered verdict rules, a refusal writes nothing, the `change` header key and target-type list, the release persona) were ruled by the controller and await the user's confirmation; D4 and D8-D10 in the Decisions table record them.
 **Version:** 1.0
 **Source requirement:** [`nemisis_requirement.md`](../../../nemisis_requirement.md) (36 sections, supplied by the user)
 
@@ -140,7 +140,7 @@ By verdict: **DEFEATED / CHALLENGED** — required and ranked; the owning specia
 
 ### 6. Report and audit record (N11)
 
-`docs/nemesis/NMS-<year>-<seq>.md`, sequence = highest existing + 1, five digits. YAML header (`target.type` is one of `requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment`, `recommendation`; the `findings` counts count only findings that are not `DISPROVEN`):
+`docs/nemesis/NMS-<year>-<seq>.md`, sequence = highest existing for that year + 1, five digits, restarting each year. YAML header (`target.type` is one of `requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment`, `recommendation`; the `findings` counts count only findings that are not `DISPROVEN`):
 
 ```yaml
 nemesis_id: NMS-2026-00982
@@ -206,6 +206,9 @@ Each test module declares `COVERS = ["N…"]`, and a traceability test fails if 
 | D3 | Isolate when the host can, record the truth, fall back visibly. | require isolation (unusable without sub-agents); never isolate | approved in chat, 2026-09-21 |
 | D4 | Verdict rules of §4, implemented as ordered rules (first match wins) so exactly one verdict applies to any finding set; lower findings always stay in the report. | none proposed by the source; unordered rules (found not to be exclusive) | **Accepted** (approved in chat, refined during implementation — controller ruling, pending the user's confirmation) |
 | D5 | Failure-cause hypotheses, two layers, with discriminating checks. | findings only | approved in chat, 2026-09-21 |
+| D8 | A refusal (depth limit, disabled config) writes nothing; the report is the only write. | a refusal note file | controller ruling, pending the user's confirmation |
+| D9 | Reports carry a stable `change` header key (Jira key, else the first target's id; a re-review inherits it) and a pinned `target.type` list; gates count blocking results by `change`. | counting by `target` (changes every re-review, so the guard never fires) | controller ruling, pending the user's confirmation |
+| D10 | The release persona is `quality:observe` plus `orchestrator:risk`. | `implementer:pipeline` (builds pipelines, does not assess readiness) | controller ruling, pending the user's confirmation |
 | D6 | Reports live downstream in `docs/nemesis/`, never in this repo. | store in this repo | **Accepted** (approved with the plan, 2026-09-21) |
 | D7 | Policy activation as opt-in steps in three existing functions, driven by `nemesis.yml`. | a new event mechanism (none exists); no automation | approved in chat, 2026-09-21 |
 

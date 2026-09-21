@@ -71,8 +71,9 @@ Resolve `target` to five things and nothing more: the **artefact**, the **origin
 **original verdict**, the **evidence references** and the **identifiers**. Also record three facts for
 the report header: `original_agent` (who produced the conclusion; a name, not the agent's reasoning),
 the **target type** (`requirement`, `architecture`, `adr`, `pull_request`, `code_review`, `security_review`, `test_result`, `release`, `rca`, `documentation`, `assessment` or `recommendation`), recognised from the id prefix or the file, and the **change**: the
-stable work item the target belongs to (the Jira key when there is one, otherwise the PR or release id),
-which stays the same when the owner fixes the work and it is reviewed again. If the target is
+stable work item the target belongs to (the Jira key when there is one, otherwise the id of the first
+target in the chain), which stays the same when the owner fixes the work and it is reviewed again; a
+re-review inherits the `change` of the report it re-challenges. If the target is
 ambiguous, ask once. If it has no conclusion to challenge (a raw artefact nobody has judged), say so
 and stop.
 

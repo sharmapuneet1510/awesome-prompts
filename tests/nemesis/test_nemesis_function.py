@@ -176,7 +176,7 @@ def test_the_loop_guard_counts_by_change_and_blocking_results():
         assert verdict in guard
 
 
-def test_the_configuration_has_one_root_key_and_the_release_persona_is_an_existing_function():
+def test_the_configuration_has_one_root_key_and_the_release_persona_row():
     assert "one root key, `nemesis:`" in c.flat(c.section(FUNCTION, "## Configuration"))
     assert "| Release approval, deployment readiness | `quality:observe`, `orchestrator:risk` |" in c.flat(c.section(FUNCTION, "### Step 2"))
 
