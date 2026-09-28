@@ -63,7 +63,7 @@ Documentation = "https://github.com/sharmapuneet1510/awesome-prompts/blob/main/R
 archify = "archify.bin.archify:main"
 
 [tool.setuptools]
-packages = ["parser", "tools"]
+packages = ["tools"]
 
 [tool.setuptools.package-data]
 token_optimizer = ["py.typed"]
