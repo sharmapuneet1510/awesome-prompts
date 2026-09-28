@@ -117,6 +117,7 @@ jobs:
       - name: Upload trivy results
         uses: github/codeql-action/upload-sarif@v2
         if: always()
+        continue-on-error: true
         with:
           sarif_file: 'trivy-results.sarif'
 
