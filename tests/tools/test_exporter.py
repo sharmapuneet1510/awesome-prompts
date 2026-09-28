@@ -257,7 +257,7 @@ def test_platform_exporter_export_writes_skill_file(tmp_path):
     from tools.exporter import ClaudeExporter
     skill = make_skill(tmp_path)
     exporter = ClaudeExporter(repo_root=tmp_path)
-    exporter.export(skills=[skill], agents=[], hooks=[], dry_run=False)
+    exporter.export(skills=[skill], agents=[], modules=[], functions=[], instructions=[], hooks=[], dry_run=False)
     out = tmp_path / ".claude" / "skills" / "java_advanced_skill.md"
     assert out.exists()
     assert "Java Advanced" in out.read_text()
@@ -267,7 +267,7 @@ def test_platform_exporter_export_writes_agent_file(tmp_path):
     from tools.exporter import ClaudeExporter
     agent = make_agent(tmp_path)
     exporter = ClaudeExporter(repo_root=tmp_path)
-    exporter.export(skills=[], agents=[agent], hooks=[], dry_run=False)
+    exporter.export(skills=[], agents=[agent], modules=[], functions=[], instructions=[], hooks=[], dry_run=False)
     out = tmp_path / ".claude" / "agents" / "java_advanced_agent.md"
     assert out.exists()
 
@@ -276,7 +276,7 @@ def test_platform_exporter_dry_run_does_not_write(tmp_path):
     from tools.exporter import ClaudeExporter
     skill = make_skill(tmp_path)
     exporter = ClaudeExporter(repo_root=tmp_path)
-    result = exporter.export(skills=[skill], agents=[], hooks=[], dry_run=True)
+    result = exporter.export(skills=[skill], agents=[], modules=[], functions=[], instructions=[], hooks=[], dry_run=True)
     out = tmp_path / ".claude" / "skills" / "java_advanced_skill.md"
     assert not out.exists()
     assert result.dry_run is True
@@ -287,7 +287,7 @@ def test_platform_exporter_returns_correct_file_paths(tmp_path):
     skill = make_skill(tmp_path)
     agent = make_agent(tmp_path)
     exporter = ClaudeExporter(repo_root=tmp_path)
-    result = exporter.export(skills=[skill], agents=[agent], hooks=[], dry_run=True)
+    result = exporter.export(skills=[skill], agents=[agent], modules=[], functions=[], instructions=[], hooks=[], dry_run=True)
     assert any("java_advanced_skill" in str(p) for p in result.skill_files)
     assert any("java_advanced_agent" in str(p) for p in result.agent_files)
 
