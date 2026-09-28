@@ -29,6 +29,16 @@ This repository gives an assistant two things it lacks:
 
 It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and Aider.
 
+## ✨ What's New (v1.0.0)
+
+- **Archify** — Diagram-as-code system with 5 types (Architecture, Workflow, Sequence, DataFlow, Lifecycle)
+- **CI/CD** — GitHub Actions with multi-version testing (Python 3.11-3.12, Node 20-22)
+- **Python Packaging** — Install via `pip install awesome-prompts`
+- **Contributing Guide** — Onboarding for developers
+- **P0 Fixes** — Security fixes for prompt hook and exporter settings
+
+See [CHANGELOG.md](CHANGELOG.md) for full details.
+
 ## How it works
 
 ```mermaid
