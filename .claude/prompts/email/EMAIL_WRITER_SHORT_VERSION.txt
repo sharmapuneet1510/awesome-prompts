@@ -1,0 +1,20 @@
+⚡ SHORT VERSION (Daily Use / Fast Checks)
+
+Best for quick rewrites before sending emails.
+
+Review and rewrite the following email so it is polite, professional, politically neutral, and non-attributive.
+
+Rules:
+	•	No apologies or admissions of fault
+	•	No blaming or targeting individuals or teams
+	•	No emotional or harsh language
+	•	Acknowledge issues impersonally
+	•	Focus on investigation and resolution
+
+Output:
+	1.	Refined Email
+	2.	What was wrong with the original email (tone issues)
+	3.	Tone Risk Score: Low / Medium / High
+
+Email:
+{EMAIL_TEXT}

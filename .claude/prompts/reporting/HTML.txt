@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ComplianceIQ — AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #0b0f14;
+    --surface:   #111820;
+    --surface2:  #18222e;
+    --border:    #1e2d3d;
+    --accent:    #00c896;
+    --accent2:   #0096ff;
+    --warn:      #f5a623;
+    --danger:    #ff4d6d;
+    --text:      #e8edf2;
+    --muted:     #5a7080;
+    --tag-bg:    #0d2236;
+  }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Instrument Sans’, sans-serif;
+height: 100vh;
+display: flex;
+overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+width: 260px;
+min-width: 260px;
+background: var(–surface);
+border-right: 1px solid var(–border);
+display: flex;
+flex-direction: column;
+padding: 0;
+animation: slideIn .4s ease;
+}
+
+@keyframes slideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
+
+.sidebar-logo {
+padding: 24px 20px 20px;
+border-bottom: 1px solid var(–border);
+}
+.logo-badge {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+.logo-icon {
+width: 34px; height: 34px;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+font-size: 16px;
+}
+.logo-text {
+font-family: ‘DM Serif Display’, serif;
+font-size: 18px;
+letter-spacing: -.3px;
+}
+.logo-text span { color: var(–accent); }
+.logo-sub {
+font-size: 10px;
+color: var(–muted);
+letter-spacing: 1.5px;
+text-transform: uppercase;
+margin-top: 2px;
+font-family: ‘DM Mono’, monospace;
+}
+
+.sidebar-section {
+padding: 16px 14px 8px;
+}
+.sidebar-label {
+font-size: 10px;
+letter-spacing: 1.8px;
+text-transform: uppercase;
+color: var(–muted);
+font-family: ‘DM Mono’, monospace;
+padding: 0 6px;
+margin-bottom: 8px;
+}
+
+.new-chat-btn {
+width: 100%;
+background: transparent;
+border: 1px solid var(–border);
+color: var(–text);
+padding: 9px 14px;
+border-radius: 8px;
+cursor: pointer;
+font-family: ‘Instrument Sans’, sans-serif;
+font-size: 13px;
+display: flex; align-items: center; gap: 8px;
+transition: all .2s;
+margin-bottom: 4px;
+}
+.new-chat-btn:hover { background: var(–surface2); border-color: var(–accent); color: var(–accent); }
+.new-chat-btn .plus { font-size: 16px; line-height: 1; }
+
+.history-item {
+padding: 8px 12px;
+border-radius: 7px;
+cursor: pointer;
+font-size: 12.5px;
+color: var(–muted);
+transition: all .15s;
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+display: flex; align-items: center; gap: 8px;
+}
+.history-item:hover { background: var(–surface2); color: var(–text); }
+.history-item.active { background: var(–tag-bg); color: var(–accent); }
+.history-dot { width: 5px; height: 5px; background: var(–border); border-radius: 50%; flex-shrink: 0; }
+.history-item.active .history-dot { background: var(–accent); }
+
+.sidebar-domains {
+padding: 0 14px 12px;
+flex: 1;
+overflow-y: auto;
+}
+.domain-chip {
+display: inline-flex; align-items: center; gap: 5px;
+background: var(–tag-bg);
+border: 1px solid var(–border);
+border-radius: 20px;
+padding: 4px 10px;
+font-size: 11px;
+color: var(–muted);
+margin: 3px 3px 3px 0;
+cursor: pointer;
+transition: all .15s;
+font-family: ‘DM Mono’, monospace;
+}
+.domain-chip:hover { border-color: var(–accent); color: var(–accent); }
+.domain-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(–accent); }
+
+.sidebar-footer {
+padding: 14px 20px;
+border-top: 1px solid var(–border);
+display: flex; align-items: center; gap: 10px;
+}
+.user-avatar {
+width: 30px; height: 30px; border-radius: 50%;
+background: linear-gradient(135deg, #1a3a5c, #0096ff);
+display: flex; align-items: center; justify-content: center;
+font-size: 11px; font-weight: 600; color: #fff;
+}
+.user-info { flex: 1; }
+.user-name { font-size: 12px; font-weight: 600; }
+.user-role { font-size: 10px; color: var(–muted); font-family: ‘DM Mono’, monospace; }
+.status-dot {
+width: 8px; height: 8px; border-radius: 50%;
+background: var(–accent);
+box-shadow: 0 0 6px var(–accent);
+}
+
+/* ── Main Chat ── */
+.main {
+flex: 1;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+position: relative;
+}
+
+/* grid overlay */
+.main::before {
+content: ‘’;
+position: absolute; inset: 0; pointer-events: none;
+background-image:
+linear-gradient(var(–border) 1px, transparent 1px),
+linear-gradient(90deg, var(–border) 1px, transparent 1px);
+background-size: 40px 40px;
+opacity: .18;
+mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 100%);
+}
+
+.topbar {
+padding: 16px 28px;
+border-bottom: 1px solid var(–border);
+display: flex; align-items: center; justify-content: space-between;
+background: rgba(11,15,20,.85);
+backdrop-filter: blur(12px);
+position: relative; z-index: 2;
+}
+.topbar-title {
+font-family: ‘DM Serif Display’, serif;
+font-size: 17px;
+display: flex; align-items: center; gap: 10px;
+}
+.topbar-badge {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+background: var(–tag-bg);
+border: 1px solid var(–accent);
+color: var(–accent);
+padding: 2px 8px;
+border-radius: 4px;
+letter-spacing: 1px;
+}
+.topbar-actions { display: flex; gap: 10px; }
+.icon-btn {
+background: transparent; border: 1px solid var(–border);
+color: var(–muted); padding: 6px 12px; border-radius: 7px;
+cursor: pointer; font-size: 12px; font-family: ‘Instrument Sans’, sans-serif;
+transition: all .15s; display: flex; align-items: center; gap: 5px;
+}
+.icon-btn:hover { border-color: var(–accent2); color: var(–accent2); }
+
+/* ── Messages ── */
+.messages {
+flex: 1;
+overflow-y: auto;
+padding: 32px 0;
+display: flex;
+flex-direction: column;
+gap: 0;
+position: relative; z-index: 1;
+scroll-behavior: smooth;
+}
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: var(–border); border-radius: 4px; }
+
+.msg-row {
+display: flex;
+padding: 14px 28px;
+gap: 14px;
+animation: fadeUp .3s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+.msg-row:hover { background: rgba(255,255,255,.012); }
+
+.msg-avatar {
+width: 32px; height: 32px; border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0; margin-top: 2px; font-size: 14px;
+}
+.msg-avatar.ai { background: linear-gradient(135deg, #0b3d2e, var(–accent)); }
+.msg-avatar.user { background: linear-gradient(135deg, #0a2540, var(–accent2)); font-size: 11px; font-weight: 700; color: #fff; }
+
+.msg-body { flex: 1; max-width: 720px; }
+.msg-name {
+font-size: 12px; font-weight: 600;
+margin-bottom: 6px;
+display: flex; align-items: center; gap: 8px;
+color: var(–muted);
+}
+.msg-name .tag {
+font-family: ‘DM Mono’, monospace;
+font-size: 9px;
+padding: 1px 6px;
+border-radius: 3px;
+letter-spacing: .8px;
+}
+.tag-ai { background: rgba(0,200,150,.15); color: var(–accent); border: 1px solid rgba(0,200,150,.3); }
+.tag-user { background: rgba(0,150,255,.15); color: var(–accent2); border: 1px solid rgba(0,150,255,.3); }
+
+.msg-text {
+font-size: 14px;
+line-height: 1.75;
+color: var(–text);
+}
+.msg-text p { margin-bottom: 10px; }
+.msg-text p:last-child { margin-bottom: 0; }
+
+/* Compliance cards inside messages */
+.reg-card {
+margin: 12px 0;
+border: 1px solid var(–border);
+border-radius: 10px;
+overflow: hidden;
+background: var(–surface);
+}
+.reg-card-header {
+padding: 10px 14px;
+background: var(–surface2);
+display: flex; align-items: center; gap: 10px;
+border-bottom: 1px solid var(–border);
+}
+.reg-icon { font-size: 16px; }
+.reg-name { font-weight: 600; font-size: 13px; }
+.severity {
+margin-left: auto;
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+padding: 2px 8px; border-radius: 3px;
+letter-spacing: .5px;
+}
+.sev-high { background: rgba(255,77,109,.15); color: var(–danger); border: 1px solid rgba(255,77,109,.3); }
+.sev-med  { background: rgba(245,166,35,.15); color: var(–warn); border: 1px solid rgba(245,166,35,.3); }
+.sev-low  { background: rgba(0,200,150,.15); color: var(–accent); border: 1px solid rgba(0,200,150,.3); }
+.reg-card-body { padding: 12px 14px; font-size: 13px; line-height: 1.65; color: #9ab0c0; }
+
+.inline-code {
+font-family: ‘DM Mono’, monospace;
+font-size: 12px;
+background: var(–tag-bg);
+border: 1px solid var(–border);
+padding: 1px 6px;
+border-radius: 4px;
+color: var(–accent);
+}
+
+.checklist { margin: 10px 0; list-style: none; }
+.checklist li {
+display: flex; align-items: flex-start; gap: 8px;
+font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+color: #9ab0c0;
+}
+.checklist li:last-child { border-bottom: none; }
+.check-icon { flex-shrink: 0; margin-top: 2px; }
+.check-yes { color: var(–accent); }
+.check-no  { color: var(–danger); }
+.check-warn{ color: var(–warn); }
+
+.citation {
+display: inline-flex; align-items: center; gap: 4px;
+background: rgba(0,150,255,.1);
+border: 1px solid rgba(0,150,255,.25);
+color: var(–accent2);
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+padding: 1px 7px; border-radius: 3px;
+cursor: pointer; transition: all .15s;
+}
+.citation:hover { background: rgba(0,150,255,.2); }
+
+/* divider */
+.divider { padding: 0 28px 8px; }
+.divider-line {
+display: flex; align-items: center; gap: 10px;
+font-size: 11px; color: var(–muted);
+font-family: ‘DM Mono’, monospace;
+letter-spacing: .8px;
+}
+.divider-line::before, .divider-line::after {
+content: ‘’; flex: 1; height: 1px; background: var(–border);
+}
+
+/* Suggested questions */
+.suggestions {
+padding: 0 28px 16px 74px;
+display: flex; flex-wrap: wrap; gap: 8px;
+}
+.suggest-btn {
+background: var(–surface);
+border: 1px solid var(–border);
+color: var(–muted);
+padding: 7px 14px;
+border-radius: 20px;
+cursor: pointer;
+font-size: 12px;
+font-family: ‘Instrument Sans’, sans-serif;
+transition: all .2s;
+display: flex; align-items: center; gap: 6px;
+}
+.suggest-btn:hover { border-color: var(–accent); color: var(–accent); background: var(–tag-bg); }
+.suggest-icon { font-size: 13px; }
+
+/* ── Input ── */
+.input-area {
+padding: 16px 28px 20px;
+border-top: 1px solid var(–border);
+background: rgba(11,15,20,.9);
+backdrop-filter: blur(12px);
+position: relative; z-index: 2;
+}
+.input-wrapper {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 12px;
+overflow: hidden;
+transition: border-color .2s;
+}
+.input-wrapper:focus-within { border-color: var(–accent); box-shadow: 0 0 0 3px rgba(0,200,150,.08); }
+
+.input-toolbar {
+padding: 10px 14px 0;
+display: flex; gap: 6px;
+}
+.tool-tag {
+background: var(–tag-bg);
+border: 1px solid var(–border);
+color: var(–muted);
+padding: 3px 10px;
+border-radius: 4px;
+font-size: 11px;
+cursor: pointer;
+font-family: ‘DM Mono’, monospace;
+transition: all .15s;
+display: flex; align-items: center; gap: 4px;
+}
+.tool-tag:hover { border-color: var(–accent2); color: var(–accent2); }
+.tool-tag.active { border-color: var(–accent); color: var(–accent); background: rgba(0,200,150,.08); }
+
+textarea {
+width: 100%;
+background: transparent;
+border: none;
+outline: none;
+color: var(–text);
+font-family: ‘Instrument Sans’, sans-serif;
+font-size: 14px;
+line-height: 1.6;
+padding: 12px 14px;
+resize: none;
+min-height: 52px;
+max-height: 180px;
+overflow-y: auto;
+}
+textarea::placeholder { color: var(–muted); }
+
+.input-footer {
+padding: 8px 14px 12px;
+display: flex; align-items: center; justify-content: space-between;
+}
+.input-hint { font-size: 11px; color: var(–muted); font-family: ‘DM Mono’, monospace; }
+.input-hint span { color: var(–accent); }
+
+.send-btn {
+background: linear-gradient(135deg, var(–accent), #00a878);
+border: none;
+color: #000;
+padding: 8px 18px;
+border-radius: 8px;
+cursor: pointer;
+font-family: ‘Instrument Sans’, sans-serif;
+font-size: 13px;
+font-weight: 600;
+display: flex; align-items: center; gap: 6px;
+transition: all .2s;
+}
+.send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,200,150,.35); }
+.send-btn:active { transform: translateY(0); }
+.send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* typing indicator */
+.typing-indicator {
+display: flex; align-items: center; gap: 5px;
+padding: 14px 28px;
+animation: fadeUp .3s ease;
+}
+.typing-dots {
+display: flex; gap: 4px; margin-left: 46px;
+}
+.typing-dots span {
+width: 6px; height: 6px; border-radius: 50%;
+background: var(–muted);
+animation: bounce .9s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: .15s; }
+.typing-dots span:nth-child(3) { animation-delay: .30s; }
+@keyframes bounce {
+0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* scrollbar body */
+body::-webkit-scrollbar { display: none; }
+</style>
+
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <div class="logo-icon">⚖️</div>
+      <div>
+        <div class="logo-text">Compliance<span>IQ</span></div>
+        <div class="logo-sub">AI Assistant · v2.4</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <button class="new-chat-btn" onclick="newChat()">
+      <span class="plus">＋</span> New Compliance Chat
+    </button>
+  </div>
+
+  <div class="sidebar-section" style="padding-top:4px;">
+    <div class="sidebar-label">Recent Sessions</div>
+    <div class="history-item active">
+      <span class="history-dot"></span> GDPR Data Retention Policy
+    </div>
+    <div class="history-item">
+      <span class="history-dot"></span> SOC 2 Type II Readiness
+    </div>
+    <div class="history-item">
+      <span class="history-dot"></span> HIPAA PHI Handling Rules
+    </div>
+    <div class="history-item">
+      <span class="history-dot"></span> PCI-DSS Scope Assessment
+    </div>
+    <div class="history-item">
+      <span class="history-dot"></span> ISO 27001 Gap Analysis
+    </div>
+  </div>
+
+  <div class="sidebar-domains">
+    <div class="sidebar-label" style="padding: 0 6px; margin-bottom: 8px;">Domains Loaded</div>
+    <div>
+      <span class="domain-chip"><span class="dot"></span>GDPR</span>
+      <span class="domain-chip"><span class="dot"></span>HIPAA</span>
+      <span class="domain-chip"><span class="dot"></span>SOC 2</span>
+      <span class="domain-chip"><span class="dot"></span>PCI-DSS</span>
+      <span class="domain-chip"><span class="dot"></span>ISO 27001</span>
+      <span class="domain-chip"><span class="dot"></span>CCPA</span>
+      <span class="domain-chip"><span class="dot"></span>NIST</span>
+      <span class="domain-chip"><span class="dot"></span>FedRAMP</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-avatar">PS</div>
+    <div class="user-info">
+      <div class="user-name">Puneet S.</div>
+      <div class="user-role">Compliance Lead</div>
+    </div>
+    <div class="status-dot"></div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">
+      GDPR Data Retention
+      <span class="topbar-badge">LIVE SESSION</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn">📋 Export</button>
+      <button class="icon-btn">📎 Attach Policy</button>
+      <button class="icon-btn">🔗 Share</button>
+    </div>
+  </div>
+
+  <div class="messages" id="messages">
+
+```
+<!-- AI greeting -->
+<div class="msg-row">
+  <div class="msg-avatar ai">⚖️</div>
+  <div class="msg-body">
+    <div class="msg-name">ComplianceIQ <span class="tag tag-ai">AI</span></div>
+    <div class="msg-text">
+      <p>Good morning. I'm your Compliance AI Assistant, trained on GDPR, HIPAA, SOC 2, PCI-DSS, ISO 27001, CCPA, and NIST frameworks.</p>
+      <p>I can help you interpret regulations, assess gaps, draft policies, and answer specific compliance questions. All responses include regulatory citations. What would you like to explore today?</p>
+    </div>
+  </div>
+</div>
+
+<div class="suggestions">
+  <button class="suggest-btn" onclick="insertQuestion('What are the GDPR requirements for data retention periods?')">
+    <span class="suggest-icon">📅</span> GDPR data retention rules
+  </button>
+  <button class="suggest-btn" onclick="insertQuestion('How do I achieve SOC 2 Type II compliance?')">
+    <span class="suggest-icon">🛡️</span> SOC 2 readiness checklist
+  </button>
+  <button class="suggest-btn" onclick="insertQuestion('What constitutes a HIPAA breach and what are the notification requirements?')">
+    <span class="suggest-icon">🏥</span> HIPAA breach notification
+  </button>
+  <button class="suggest-btn" onclick="insertQuestion('What is the penalty structure under GDPR for non-compliance?')">
+    <span class="suggest-icon">⚠️</span> GDPR penalty tiers
+  </button>
+</div>
+
+<!-- User message -->
+<div class="divider">
+  <div class="divider-line">Today · 09:42 AM</div>
+</div>
+
+<div class="msg-row">
+  <div class="msg-avatar user">PS</div>
+  <div class="msg-body">
+    <div class="msg-name">Puneet S. <span class="tag tag-user">USER</span></div>
+    <div class="msg-text">
+      <p>What are the key GDPR obligations when we collect personal data from EU citizens for our SaaS platform? We store emails, usage logs, and IP addresses.</p>
+    </div>
+  </div>
+</div>
+
+<!-- AI response -->
+<div class="msg-row">
+  <div class="msg-avatar ai">⚖️</div>
+  <div class="msg-body">
+    <div class="msg-name">ComplianceIQ <span class="tag tag-ai">AI</span></div>
+    <div class="msg-text">
+      <p>For your SaaS platform collecting EU citizen data, here are the core GDPR obligations — specifically covering emails, usage logs, and IP addresses (all classified as personal data under <span class="citation">Art. 4(1) GDPR</span>):</p>
+
+      <div class="reg-card">
+        <div class="reg-card-header">
+          <span class="reg-icon">📋</span>
+          <span class="reg-name">Lawful Basis for Processing</span>
+          <span class="severity sev-high">REQUIRED</span>
+        </div>
+        <div class="reg-card-body">
+          You must establish one of six lawful bases under <span class="inline-code">Art. 6 GDPR</span> before collecting any data. For SaaS, the most applicable are <strong>contractual necessity</strong> (processing needed to provide the service) or <strong>legitimate interests</strong>. Consent is valid but creates ongoing management burden.
+        </div>
+      </div>
+
+      <div class="reg-card">
+        <div class="reg-card-header">
+          <span class="reg-icon">🔏</span>
+          <span class="reg-name">Privacy Notice Requirements</span>
+          <span class="severity sev-high">REQUIRED</span>
+        </div>
+        <div class="reg-card-body">
+          Under <span class="inline-code">Art. 13 GDPR</span>, at point of collection you must disclose: identity of controller, purposes and legal basis, retention periods, data subject rights, and any third-party transfers. Your privacy policy must be clear, accessible, and layered.
+        </div>
+      </div>
+
+      <div class="reg-card">
+        <div class="reg-card-header">
+          <span class="reg-icon">🗓️</span>
+          <span class="reg-name">Retention Limits</span>
+          <span class="severity sev-med">MODERATE</span>
+        </div>
+        <div class="reg-card-body">
+          No prescribed periods exist, but <span class="inline-code">Art. 5(1)(e)</span> requires data be kept no longer than necessary for the stated purpose. Usage logs: typically 90–365 days; IP addresses: 30–90 days is standard; emails: duration of account + reasonable post-deletion window.
+        </div>
+      </div>
+
+      <p>Your immediate action checklist:</p>
+      <ul class="checklist">
+        <li><span class="check-icon check-yes">✓</span> Document lawful basis for each data category in your Records of Processing (<span class="citation">Art. 30 GDPR</span>)</li>
+        <li><span class="check-icon check-no">✗</span> Implement automated data deletion for IP logs after 90 days</li>
+        <li><span class="check-icon check-warn">⚠</span> Review privacy notice — ensure retention periods are explicitly stated</li>
+        <li><span class="check-icon check-no">✗</span> Appoint a Data Protection Officer if processing is large-scale (<span class="citation">Art. 37 GDPR</span>)</li>
+        <li><span class="check-icon check-yes">✓</span> Ensure data processor agreements with all SaaS sub-processors (<span class="citation">Art. 28 GDPR</span>)</li>
+      </ul>
+
+      <p>Would you like me to draft a compliant retention policy for these specific data types, or assess your current privacy notice against Article 13 requirements?</p>
+    </div>
+  </div>
+</div>
+
+<!-- User followup -->
+<div class="msg-row">
+  <div class="msg-avatar user">PS</div>
+  <div class="msg-body">
+    <div class="msg-name">Puneet S. <span class="tag tag-user">USER</span></div>
+    <div class="msg-text">
+      <p>What are the fines if we get this wrong? And is there a difference between a data breach and non-compliance fine?</p>
+    </div>
+  </div>
+</div>
+
+<!-- AI penalty response -->
+<div class="msg-row">
+  <div class="msg-avatar ai">⚖️</div>
+  <div class="msg-body">
+    <div class="msg-name">ComplianceIQ <span class="tag tag-ai">AI</span></div>
+    <div class="msg-text">
+      <p>Yes — GDPR has a two-tier penalty structure, and the distinction between a breach fine and non-compliance fine matters significantly for risk modeling:</p>
+
+      <div class="reg-card">
+        <div class="reg-card-header">
+          <span class="reg-icon">🔴</span>
+          <span class="reg-name">Tier 1 — Lower Maximum</span>
+          <span class="severity sev-med">UP TO €10M / 2% GLOBAL TURNOVER</span>
+        </div>
+        <div class="reg-card-body">
+          Applies to: failure to implement privacy-by-design (<span class="inline-code">Art. 25</span>), missing Records of Processing (<span class="inline-code">Art. 30</span>), failure to notify supervisory authority of a breach within 72 hours (<span class="inline-code">Art. 33</span>), inadequate processor contracts (<span class="inline-code">Art. 28</span>). These are <strong>process violations</strong> — your retention policy gaps would fall here.
+        </div>
+      </div>
+
+      <div class="reg-card">
+        <div class="reg-card-header">
+          <span class="reg-icon">🚨</span>
+          <span class="reg-name">Tier 2 — Upper Maximum</span>
+          <span class="severity sev-high">UP TO €20M / 4% GLOBAL TURNOVER</span>
+        </div>
+        <div class="reg-card-body">
+          Applies to: violations of core principles (<span class="inline-code">Art. 5</span>), unlawful processing without legal basis (<span class="inline-code">Art. 6</span>), violating data subject rights (<span class="inline-code">Art. 17, 21</span>), and unlawful international transfers (<span class="inline-code">Art. 46</span>). These are <strong>rights and principles violations</strong> — more severe because they directly harm data subjects.
+        </div>
+      </div>
+
+      <p>Real-world calibration: fines are proportionate. A startup won't receive the same fine as Meta. Regulators assess: severity, duration, cooperation, and remediation steps taken. <span class="citation">Recital 148 GDPR</span> explicitly provides for reduced fines where prompt corrective action is demonstrated.</p>
+
+      <p>The most important distinction for your situation: <strong>a data breach that results from poor retention practices</strong> can trigger both a breach notification requirement (Art. 33/34) <em>and</em> a separate fine for the underlying compliance failure — effectively double exposure.</p>
+    </div>
+  </div>
+</div>
+
+<div class="suggestions" id="bottom-suggestions">
+  <button class="suggest-btn" onclick="insertQuestion('Draft a GDPR-compliant data retention policy for a SaaS company')">
+    <span class="suggest-icon">📝</span> Draft retention policy
+  </button>
+  <button class="suggest-btn" onclick="insertQuestion('What is the 72-hour breach notification process under GDPR?')">
+    <span class="suggest-icon">🚨</span> Breach notification process
+  </button>
+  <button class="suggest-btn" onclick="insertQuestion('How do we handle a Data Subject Access Request (DSAR)?')">
+    <span class="suggest-icon">👤</span> DSAR handling guide
+  </button>
+</div>
+```
+
+  </div><!-- /messages -->
+
+  <!-- Typing indicator (hidden by default) -->
+
+  <div class="typing-indicator" id="typing" style="display:none;">
+    <div class="typing-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- Input -->
+
+  <div class="input-area">
+    <div class="input-wrapper">
+      <div class="input-toolbar">
+        <span class="tool-tag active">⚖️ GDPR</span>
+        <span class="tool-tag">🏥 HIPAA</span>
+        <span class="tool-tag">🛡️ SOC 2</span>
+        <span class="tool-tag">💳 PCI-DSS</span>
+        <span class="tool-tag" onclick="toggleCitation(this)">📎 Cite</span>
+      </div>
+      <textarea
+        id="userInput"
+        placeholder="Ask a compliance question — e.g. 'Do we need a DPA with our AWS sub-processors?'"
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <div class="input-footer">
+        <span class="input-hint">Press <span>Enter</span> to send · <span>Shift+Enter</span> for new line</span>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          Send ↑
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── Demo AI responses ──
+const responses = [
+  {
+    keywords: ['retention', 'keep', 'store', 'how long'],
+    reply: `<p>Data retention under GDPR is governed by the <strong>storage limitation principle</strong> in <span class="citation">Art. 5(1)(e) GDPR</span>. There are no fixed statutory periods — instead, you must define and justify your own retention schedule.</p>
+    <div class="reg-card">
+      <div class="reg-card-header"><span class="reg-icon">📅</span><span class="reg-name">Recommended Retention Windows (SaaS)</span><span class="severity sev-med">GUIDANCE</span></div>
+      <div class="reg-card-body">
+        IP Addresses: 30–90 days · Usage Logs: 90–365 days · Account Data: Duration of contract + 30 days · Billing Records: 7 years (tax obligation) · Support Tickets: 2 years
+      </div>
+    </div>
+    <p>You must document these periods in your Records of Processing Activities (RoPA) and implement automated deletion. Manual deletion processes are not considered adequate by most DPAs. Would you like a RoPA template?</p>`
+  },
+  {
+    keywords: ['dpa', 'processor', 'sub-processor', 'aws', 'vendor'],
+    reply: `<p>Yes — a Data Processing Agreement (DPA) is mandatory under <span class="citation">Art. 28(3) GDPR</span> with every processor that handles personal data on your behalf. This includes AWS, your analytics tools, email providers, and support platforms.</p>
+    <ul class="checklist">
+      <li><span class="check-icon check-yes">✓</span> AWS, GCP, Azure all offer pre-signed DPAs — download and countersign from their compliance portals</li>
+      <li><span class="check-icon check-warn">⚠</span> Sub-processor lists must be maintained and customers notified of changes</li>
+      <li><span class="check-icon check-no">✗</span> US-based processors require a valid transfer mechanism (SCCs or adequacy decision) since Schrems II</li>
+    </ul>
+    <p>Missing DPAs are a Tier 1 violation — up to €10M fine. Most enterprise customers will also audit your processor list during vendor due diligence.</p>`
+  },
+  {
+    keywords: ['breach', 'notify', 'notification', '72 hour', 'incident'],
+    reply: `<p>GDPR breach notification is a dual obligation: you must notify both the <strong>supervisory authority</strong> and potentially <strong>affected data subjects</strong>.</p>
+    <div class="reg-card">
+      <div class="reg-card-header"><span class="reg-icon">⏱️</span><span class="reg-name">72-Hour Authority Notification</span><span class="severity sev-high">MANDATORY</span></div>
+      <div class="reg-card-body">
+        Required under <span class="inline-code">Art. 33 GDPR</span> from the moment you become "aware" of a breach. Must include: nature of breach, categories and number of data subjects affected, likely consequences, and measures taken. "Without undue delay" — the clock starts at awareness, not discovery by IT.</div>
+    </div>
+    <div class="reg-card">
+      <div class="reg-card-header"><span class="reg-icon">📢</span><span class="reg-name">Data Subject Notification</span><span class="severity sev-med">CONDITIONAL</span></div>
+      <div class="reg-card-body">Required under <span class="inline-code">Art. 34 GDPR</span> only when the breach is "likely to result in a high risk" to individuals. Examples: unencrypted medical data, financial credentials, sensitive categories. Must be in plain language, without undue delay.</div>
+    </div>
+    <p>Pro tip: document every breach in your internal breach register even if below the notification threshold — this demonstrates accountability during audits.</p>`
+  },
+  {
+    keywords: ['dsar', 'access request', 'subject access', 'right to access'],
+    reply: `<p>A Data Subject Access Request (DSAR) must be fulfilled within <strong>30 days</strong> under <span class="citation">Art. 12(3) GDPR</span>, extendable by 60 days for complex requests (with notification to the requester).</p>
+    <ul class="checklist">
+      <li><span class="check-icon check-yes">✓</span> Verify identity of requester before responding</li>
+      <li><span class="check-icon check-yes">✓</span> Provide all personal data held — including logs, emails, support tickets, analytics profiles</li>
+      <li><span class="check-icon check-warn">⚠</span> You may redact third-party personal data included in the response</li>
+      <li><span class="check-icon check-no">✗</span> Charging a fee is only permitted for "manifestly unfounded or excessive" requests</li>
+      <li><span class="check-icon check-yes">✓</span> Response must be in a portable, machine-readable format if requested (Art. 20 — right to portability)</li>
+    </ul>
+    <p>Build an internal DSAR workflow now — regulators treat response time violations seriously and they're easily auditable.</p>`
+  },
+  {
+    keywords: ['penalty', 'fine', 'sanction', 'punishment'],
+    reply: `<p>Already covered the two-tier structure above — but to expand: fines are assessed against <strong>annual global turnover</strong>, not just local revenue. For a US company operating in the EU, that means your entire global revenue is the denominator.</p>
+    <p>Beyond fines, supervisory authorities can also issue: temporary or permanent bans on processing, mandatory audits, and public reprimands — which are often more damaging to enterprise B2B trust than the financial penalty itself. <span class="citation">Art. 58(2) GDPR</span> enumerates the full corrective powers.</p>`
+  },
+  {
+    keywords: ['default', 'hello', 'help', 'what can'],
+    reply: `<p>I can assist with a broad range of compliance topics across GDPR, HIPAA, SOC 2, PCI-DSS, ISO 27001, CCPA, and NIST frameworks. Some common areas:</p>
+    <ul class="checklist">
+      <li><span class="check-icon check-yes">⚖️</span> Regulatory interpretation and obligation mapping</li>
+      <li><span class="check-icon check-yes">📋</span> Policy drafting and review (privacy notices, DPAs, incident response plans)</li>
+      <li><span class="check-icon check-yes">🔍</span> Gap analysis against specific frameworks</li>
+      <li><span class="check-icon check-yes">🚨</span> Breach response guidance and notification templates</li>
+      <li><span class="check-icon check-yes">📊</span> Audit readiness and evidence collection checklists</li>
+    </ul>
+    <p>What compliance challenge can I help you tackle?</p>`
+  }
+];
+
+function getResponse(text) {
+  const lower = text.toLowerCase();
+  for (const r of responses) {
+    if (r.keywords.some(k => lower.includes(k))) return r.reply;
+  }
+  return `<p>That's a specific compliance question worth unpacking carefully. Based on the applicable frameworks in my knowledge base, here's my initial assessment:</p>
+  <div class="reg-card">
+    <div class="reg-card-header"><span class="reg-icon">📌</span><span class="reg-name">General Compliance Principle</span><span class="severity sev-med">ANALYSIS</span></div>
+    <div class="reg-card-body">The core obligation here relates to accountability and documentation — regardless of the specific framework, regulators consistently expect you to demonstrate that you assessed the risk, made an informed decision, and documented your rationale. That paper trail is often more important than the decision itself.</div>
+  </div>
+  <p>Could you provide more context about your specific environment or the framework you're working within? I can give a more targeted answer with precise article references.</p>`;
+}
+
+function createAIMessage(html) {
+  return `<div class="msg-row" style="animation: fadeUp .3s ease;">
+    <div class="msg-avatar ai">⚖️</div>
+    <div class="msg-body">
+      <div class="msg-name">ComplianceIQ <span class="tag tag-ai">AI</span></div>
+      <div class="msg-text">${html}</div>
+    </div>
+  </div>`;
+}
+
+function createUserMessage(text) {
+  return `<div class="msg-row" style="animation: fadeUp .3s ease;">
+    <div class="msg-avatar user">PS</div>
+    <div class="msg-body">
+      <div class="msg-name">Puneet S. <span class="tag tag-user">USER</span></div>
+      <div class="msg-text"><p>${text}</p></div>
+    </div>
+  </div>`;
+}
+
+function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const messages = document.getElementById('messages');
+  const bottomSuggestions = document.getElementById('bottom-suggestions');
+  if (bottomSuggestions) bottomSuggestions.remove();
+
+  // Add user message
+  messages.insertAdjacentHTML('beforeend', createUserMessage(text));
+  input.value = '';
+  input.style.height = 'auto';
+
+  // Show typing
+  const typing = document.getElementById('typing');
+  typing.style.display = 'flex';
+  document.getElementById('sendBtn').disabled = true;
+
+  messages.scrollTop = messages.scrollHeight;
+
+  setTimeout(() => {
+    typing.style.display = 'none';
+    const reply = getResponse(text);
+    messages.insertAdjacentHTML('beforeend', createAIMessage(reply));
+    document.getElementById('sendBtn').disabled = false;
+    messages.scrollTop = messages.scrollHeight;
+  }, 1200 + Math.random() * 600);
+}
+
+function insertQuestion(text) {
+  const input = document.getElementById('userInput');
+  input.value = text;
+  autoResize(input);
+  input.focus();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+}
+
+function newChat() {
+  const messages = document.getElementById('messages');
+  messages.innerHTML = `<div class="msg-row">
+    <div class="msg-avatar ai">⚖️</div>
+    <div class="msg-body">
+      <div class="msg-name">ComplianceIQ <span class="tag tag-ai">AI</span></div>
+      <div class="msg-text">
+        <p>New session started. Which compliance framework or topic would you like to explore?</p>
+      </div>
+    </div>
+  </div>
+  <div class="suggestions">
+    <button class="suggest-btn" onclick="insertQuestion('What are the GDPR requirements for data retention periods?')"><span class="suggest-icon">📅</span> GDPR retention</button>
+    <button class="suggest-btn" onclick="insertQuestion('How do I achieve SOC 2 Type II compliance?')"><span class="suggest-icon">🛡️</span> SOC 2 checklist</button>
+    <button class="suggest-btn" onclick="insertQuestion('What constitutes a HIPAA breach?')"><span class="suggest-icon">🏥</span> HIPAA breach rules</button>
+  </div>`;
+}
+
+function toggleCitation(el) {
+  el.classList.toggle('active');
+}
+</script>
+
+</body>
+</html>
