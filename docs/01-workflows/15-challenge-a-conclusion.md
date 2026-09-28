@@ -94,4 +94,4 @@ evaluates a gate itself, and `enabled: false` refuses every trigger, even a manu
 
 - Skill: [`nemesis_skill`](../../skills/nemesis_skill.md)
 - Function: [`orchestrator:nemesis`](../../agents/orchestrator/functions/nemesis.md)
-- Requirement: [`nemisis_requirement.md`](../../nemisis_requirement.md)
+- Requirement: [`nemisis_requirement.md`](../../.deprecated/nemisis_requirement.md)
