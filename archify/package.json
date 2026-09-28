@@ -1,0 +1,51 @@
+{
+  "name": "archify",
+  "version": "1.0.0",
+  "description": "Production-grade diagram-as-code system: Architecture, Workflow, Sequence, DataFlow, Lifecycle",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "archify": "bin/archify.mjs"
+  },
+  "scripts": {
+    "validate": "node bin/archify.mjs validate",
+    "deliver": "node bin/archify.mjs deliver",
+    "preview": "node bin/archify.mjs preview",
+    "test": "node tests/validator.test.ts",
+    "build": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "docs": "cat SKILL.md"
+  },
+  "keywords": [
+    "diagram",
+    "architecture",
+    "visualization",
+    "workflow",
+    "sequence",
+    "dataflow",
+    "lifecycle",
+    "diagram-as-code",
+    "svg",
+    "agent-skill"
+  ],
+  "author": "awesome-prompts contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sharmapuneet1510/awesome-prompts"
+  },
+  "dependencies": {
+    "zod": "^1.0.0",
+    "simple-icons": "^16.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
