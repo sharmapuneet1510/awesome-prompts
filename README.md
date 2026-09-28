@@ -29,15 +29,17 @@ This repository gives an assistant two things it lacks:
 
 It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and Aider.
 
-## ✨ What's New (v1.0.0)
+## ✨ What's New (v5.0.0)
 
-- **Archify** — Diagram-as-code system with 5 types (Architecture, Workflow, Sequence, DataFlow, Lifecycle)
-- **CI/CD** — GitHub Actions with multi-version testing (Python 3.11-3.12, Node 20-22)
-- **Python Packaging** — Install via `pip install awesome-prompts`
-- **Contributing Guide** — Onboarding for developers
-- **P0 Fixes** — Security fixes for prompt hook and exporter settings
+**Production Stability Release** — All systems verified, zero breaking issues.
 
-See [CHANGELOG.md](CHANGELOG.md) for full details.
+- **✅ 751 Passing Tests** — Complete test coverage with fresh clone validation
+- **✅ Fixed Critical Bugs** — 6 mutable defaults + 809 test collection errors resolved
+- **✅ Updated Exports** — `.claude/` configuration current with all 38 skills, 5 agents, 35 functions
+- **✅ Production Demo** — Comprehensive proof of functionality (`docs/04-examples/DEMO.md`)
+- **✅ Code Quality** — Ruff B006 check active, zero mutable default arguments
+
+See [CHANGELOG.md](CHANGELOG.md) for full details or [Release Notes](https://github.com/sharmapuneet1510/awesome-prompts/releases/tag/v5.0.0).
 
 ## How it works
 
