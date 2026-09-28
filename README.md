@@ -12,7 +12,7 @@ Your assistant stops and asks before it builds the wrong thing — then leaves a
 [![8 platforms](https://img.shields.io/badge/platforms-8-0969da?style=flat-square)](docs/01-workflows/14-export-to-platforms.md)
 [![MIT license](https://img.shields.io/badge/license-MIT-0969da?style=flat-square)](LICENSE)
 
-[**Get started**](#quick-start) · [Workflows](docs/01-workflows/) · [Concepts](docs/00-getting-started/concepts.md) · [Reference](docs/02-reference/) · [Examples](docs/04-examples/)
+[**⚡ 5-min quick start**](docs/00-getting-started/quickstart-5min.md) · [Get started](#quick-start) · [Workflows](docs/01-workflows/) · [Concepts](docs/00-getting-started/concepts.md) · [Reference](docs/02-reference/) · [Examples](docs/04-examples/)
 
 </div>
 
