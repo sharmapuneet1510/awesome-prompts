@@ -748,7 +748,7 @@ class PlatformExporter(ABC):
 
     def _save_manifest(self, skills: list[Path], agents: list[Path], modules: list[Path],
                        functions: list[Path], instructions: list[Path], hooks: list[Path],
-                       prompts: list[Path] = []) -> None:
+                       prompts: list[Path] | None = None) -> None:
         """Save export manifest for this platform.
 
         Args:
@@ -760,6 +760,7 @@ class PlatformExporter(ABC):
             hooks:        List of exported hook file paths.
             prompts:      List of exported prompt file paths.
         """
+        prompts = prompts or []
         manifest_file = self._manifest_path()
         manifest_file.parent.mkdir(parents=True, exist_ok=True)
         manifest = {
@@ -776,7 +777,7 @@ class PlatformExporter(ABC):
     def _cleanup_old_exports(self, current_skills: list[Path], current_agents: list[Path],
                              current_modules: list[Path], current_functions: list[Path],
                              current_instructions: list[Path], current_hooks: list[Path],
-                             dry_run: bool = False, current_prompts: list[Path] = []) -> list[Path]:
+                             dry_run: bool = False, current_prompts: list[Path] | None = None) -> list[Path]:
         """Remove old exported files not in current export.
 
         Args:
@@ -792,6 +793,7 @@ class PlatformExporter(ABC):
         Returns:
             List of removed file paths.
         """
+        current_prompts = current_prompts or []
         manifest = self._load_manifest()
         removed: list[Path] = []
 
@@ -875,7 +877,7 @@ class PlatformExporter(ABC):
         instructions: list[InstructionFile],
         hooks: list[HookFile],
         dry_run: bool = False,
-        prompts: list[PromptFile] = [],
+        prompts: list[PromptFile] | None = None,
     ) -> ExportResult:
         """Writes one file per skill, agent, module, function, instruction, hook, and prompt. Removes old versions not in current export.
 
@@ -887,11 +889,12 @@ class PlatformExporter(ABC):
             instructions: Instruction files to export.
             hooks:        Hook files to export.
             dry_run:      If True, generate paths but do not write files.
-            prompts:      Prompt files to export.
+            prompts:      Prompt files to export (default: empty list).
 
         Returns:
             ExportResult with all written (or planned) file paths and removed old files.
         """
+        prompts = prompts or []
         skill_paths: list[Path] = []
         agent_paths: list[Path] = []
         module_paths: list[Path] = []
@@ -1726,13 +1729,18 @@ class ExportOrchestrator:
         targets: list[str],
         skill_filter: list[str],
         agent_filter: list[str],
-        module_filter: list[str] = [],
-        function_filter: list[str] = [],
-        instruction_filter: list[str] = [],
-        hook_filter: list[str] = [],
+        module_filter: list[str] | None = None,
+        function_filter: list[str] | None = None,
+        instruction_filter: list[str] | None = None,
+        hook_filter: list[str] | None = None,
         dry_run: bool = False,
-        prompt_filter: list[str] = [],
+        prompt_filter: list[str] | None = None,
     ) -> list[ExportResult]:
+        module_filter = module_filter or []
+        function_filter = function_filter or []
+        instruction_filter = instruction_filter or []
+        hook_filter = hook_filter or []
+        prompt_filter = prompt_filter or []
         all_skills = self.discover_skills()
         all_agents = self.discover_agents()
         all_modules = self.discover_modules()
@@ -1916,7 +1924,7 @@ def copy_to_target_project(
     hooks: list[HookFile],
     target_project: Path,
     platforms: list[str],
-    prompts: list[PromptFile] = [],
+    prompts: list[PromptFile] | None = None,
 ) -> None:
     """Copy exported files to a target project directory.
 
@@ -1931,8 +1939,9 @@ def copy_to_target_project(
         hooks: List of hook files to copy
         target_project: Path to target project directory
         platforms: List of platform targets (determines folder structure)
-        prompts: List of prompt files to copy
+        prompts: List of prompt files to copy (default: empty list)
     """
+    prompts = prompts or []
     target_project = target_project.resolve()
     target_project.mkdir(parents=True, exist_ok=True)
 
