@@ -31,13 +31,16 @@ It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and A
 
 ## ✨ What's New (v5.0.0)
 
-**Production Stability Release** — All systems verified, zero breaking issues.
+**Production Stability Release** — All 37 skills enhanced as "super skills" with 25-30% token savings, advanced patterns, and beautiful HTML outputs.
 
 - **✅ 751 Passing Tests** — Complete test coverage with fresh clone validation
 - **✅ Fixed Critical Bugs** — 6 mutable defaults + 809 test collection errors resolved
-- **✅ Updated Exports** — `.claude/` configuration current with all 38 skills, 5 agents, 35 functions
+- **✅ Super Skills Enhancement** — All 37 skills: token-efficient, pattern-rich, HTML-beautified
+- **✅ Master Workflow** — Complete end-to-end guide (requirement → production) using all skills
 - **✅ Production Demo** — Comprehensive proof of functionality (`docs/04-examples/DEMO.md`)
 - **✅ Code Quality** — Ruff B006 check active, zero mutable default arguments
+
+📖 **[Read Super Skills Enhancement →](docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md)** | 🚀 **[Master Workflow →](docs/01-workflows/16-master-workflow-all-skills.md)**
 
 See [CHANGELOG.md](CHANGELOG.md) for full details or [Release Notes](https://github.com/sharmapuneet1510/awesome-prompts/releases/tag/v5.0.0).
 

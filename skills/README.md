@@ -1,6 +1,8 @@
-# 🛠️ Skills Directory (v2.1 — Consolidated)
+# 🛠️ Skills Directory (v5.0.0 — Super Skills)
 
-> Reusable, tech-specific implementation modules used by agents. 37 skills, zero orphans.
+> **ALL 37 SKILLS ENHANCED:** Reusable, tech-specific implementation modules with 25-30% token savings, advanced patterns, and beautiful HTML outputs.
+>
+> 📖 **[Read: Super Skills Enhancement v5.0.0](../docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md)** | 🚀 **[Master Workflow: All Skills Integrated](../docs/01-workflows/16-master-workflow-all-skills.md)**
 
 ## Quick Navigation (37 Skills)
 
