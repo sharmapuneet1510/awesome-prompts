@@ -758,13 +758,15 @@ echo "test"
     config_gen = ConfigGenerator(repo_root)
     settings = config_gen.generate_claude_settings([hook])
 
-    # Verify structure
-    assert settings["model"] == "haiku"
+    # Verify structure (P0 #21 fix: removed model, enabledPlugins, and invalid PreCommit)
+    # Settings should only contain "hooks"
+    assert "model" not in settings
+    assert "enabledPlugins" not in settings
     assert "hooks" in settings
-    assert "enabledPlugins" in settings
-    assert "PreCommit" in settings["hooks"]
-    assert len(settings["hooks"]["PreCommit"]) > 0
-    assert settings["hooks"]["PreCommit"][0]["type"] == "command"
+    # PreCommit is a git event, not a Claude Code event, so it should be skipped
+    assert "PreCommit" not in settings["hooks"]
+    # Settings should be minimal (just hooks)
+    assert settings == {"hooks": {}}
 
 
 def test_generate_copilot_config(tmp_path):
