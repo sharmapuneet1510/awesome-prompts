@@ -43,11 +43,14 @@ def fix_skill_file(filepath: str) -> dict:
     changes_made = 0
     changed_lines = []
 
+    in_block = False
     while i < len(lines):
         line = lines[i]
 
-        # Match opening fence without language tag: ``` followed by newline or whitespace (no word chars)
-        if re.match(r'^```\s*$', line):
+        if re.match(r'^```', line):
+            in_block = not in_block
+        # Only an opening fence takes a tag; a tagged closing fence no longer closes the block.
+        if in_block and re.match(r'^```\s*$', line):
             # Look ahead to determine what language this block contains
             inferred_lang = primary_lang
 

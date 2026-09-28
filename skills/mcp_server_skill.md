@@ -1,6 +1,6 @@
 ---
 name: MCP Server & Tool Design Skill
-version: 1.0
+version: 1.1
 description: >
   Design guidance for Model Context Protocol servers and agent tool schemas —
   tool minimization, least-privilege scoping, and schema clarity for reliable
@@ -9,7 +9,25 @@ applies_to: [mcp, agent-tools, api-design]
 tags: [mcp, tool-design, agents, schema]
 ---
 
-# MCP Server & Tool Design Skill — v1.0
+# MCP Server & Tool Design Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Designing which tools an MCP server or agent exposes, and their schemas |
+| **Skip when** | Building and wiring the server — `mcp_server_builder_skill` |
+| **Inputs** | The workflows the agent must perform |
+| **Produces** | Tool list with names, descriptions, parameter schemas, error shapes |
+| **Steps** | 1. Minimise the tool set → 2. Scope each to least privilege → 3. Write schema + description (does / does not) → 4. Design structured, retryable-aware errors |
+| **Done when** | §5 checklist passes |
+| **Load on demand** | §1 minimisation · §2 least privilege · §3 schema clarity · §4 errors |
+| **Run report** | `html_report_skill` — adds: Tool inventory (read-only / mutating / destructive) |
+| **Pairs with** | `mcp_server_builder_skill` |
+
+---
 
 ## 1. Tool Minimization
 
@@ -47,4 +65,4 @@ The tool's JSON schema is the only contract the agent sees — treat it like a p
 ✅ Errors are structured and distinguish retryable from non-retryable
 
 ---
-> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `CREDITS.md`.
+> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `docs/reference/credits.md`.

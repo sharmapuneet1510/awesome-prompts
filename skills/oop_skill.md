@@ -1,6 +1,6 @@
 ---
 name: Object-Oriented Programming (OOP) Skill
-version: 1.0
+version: 1.1
 description: >
   Deep dive into all four OOP pillars: Encapsulation, Abstraction, Inheritance,
   and Polymorphism. Covers design patterns, SOLID principles, real-world examples
@@ -9,7 +9,24 @@ applies_to: [java, python, javascript, oop, design-patterns, solid]
 tags: [oop, encapsulation, abstraction, inheritance, polymorphism, design-patterns]
 ---
 
-# Object-Oriented Programming (OOP) Skill — v1.0
+# Object-Oriented Programming (OOP) Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Designing classes and their relationships in any OO language |
+| **Skip when** | Pure data and pipelines — functions and records are simpler than a class hierarchy |
+| **Inputs** | The domain concepts and how they vary |
+| **Produces** | Classes, interfaces, and patterns with clear responsibilities |
+| **Steps** | 1. Name responsibilities → 2. Encapsulate state → 3. Abstract behind interfaces → 4. Prefer composition; inherit only for true is-a → 5. Check SOLID → 6. Apply a pattern only when the problem appears |
+| **Done when** | §7 checklist holds; each class has one reason to change |
+| **Senior defaults** | Composition over inheritance — hierarchies at most two levels deep · depend on interfaces you own (DIP) · polymorphism over type-switches · no pattern without the problem it solves · immutable value objects by default · test behaviour through public API, not internals |
+| **Load on demand** | §1 encapsulation · §2 abstraction · §3 inheritance · §4 polymorphism · §5 SOLID · §6 patterns |
+| **Run report** | `html_report_skill` — adds: Class responsibilities |
+| **Pairs with** | `java_advanced_skill`, `python_advanced_skill`, `refactoring_skill` |
 
 ---
 

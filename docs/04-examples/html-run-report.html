@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Super skills — all 38 skills upgraded</title>
+<style>
+:root{--bg:#fff;--fg:#1f2328;--muted:#59636e;--line:#d1d9e0;--card:#f6f8fa;
+--accent:#0969da;--ok:#1a7f37;--warn:#9a6700;--bad:#cf222e}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;
+--line:#3d444d;--card:#151b23;--accent:#4493f8;--ok:#3fb950;--warn:#d29922;--bad:#f85149}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:960px;margin:0 auto;padding:24px 16px 64px}
+header{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px}
+h1{font-size:1.6rem;margin:0 0 6px}
+.meta{color:var(--muted);font-size:.9rem;display:flex;flex-wrap:wrap;gap:6px 16px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);
+padding:8px 0;margin-bottom:16px;font-size:.9rem;display:flex;flex-wrap:wrap;gap:4px 14px;z-index:1}
+nav a{color:var(--accent);text-decoration:none}
+details{border:1px solid var(--line);border-radius:8px;margin:12px 0;background:var(--card)}
+summary{cursor:pointer;padding:10px 14px;font-weight:600}
+details>div{padding:0 14px 12px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+code{font:.88em ui-monospace,SFMono-Regular,Menlo,monospace}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.8rem;font-weight:600;border:1px solid currentColor}
+.done,.pass,.created{color:var(--ok)}.partial,.skipped,.modified{color:var(--warn)}
+.blocked,.failed,.fail,.deleted{color:var(--bad)}
+.label{font:600 .75rem ui-monospace,monospace;padding:1px 6px;border-radius:4px;background:var(--line)}
+ol.steps{margin:0;padding-left:1.4em}ol.steps li{margin:4px 0}
+@media print{nav{display:none}details{break-inside:avoid}details:not([open])>div{display:block}}
+</style>
+</head>
+<body><main>
+<header>
+  <h1>Super skills — all 38 skills upgraded <span class="pill done">Done</span></h1>
+  <div class="meta"><span><code>html_report_skill v1.0</code></span>
+  <span><code>Option A: enhance every skill, update docs, push to main</code></span><span>2026-09-28</span></div>
+</header>
+<nav><a href="#summary">Summary</a><a href="#steps">What was done</a><a href="#artifacts">Artifacts</a>
+<a href="#claims">Decisions</a><a href="#measure">Token budget</a><a href="#gates">Gates</a><a href="#open">Open items</a></nav>
+
+<details id="summary" open><summary>Summary</summary><div><p>Asked to turn every skill into a super skill with low token cost, advanced coding guidance, and HTML output that outlines what was done. Added a Quick Card to all 38 skills, a shared HTML run-report skill, and a skills playbook; fixed defects found in eight skills and two tools; replaced two documents from commit 214803b that made unmeasured claims. 751 tests pass; the validator passes all 38 skills.</p></div></details>
+
+<details id="steps" open><summary>What was done (9 steps)</summary><div><ol class="steps">
+<li><span class="pill done">done</span> Audit the previous commit — 214803b claimed 37 skills enhanced; none changed; CI red on 2 tests</li>
+<li><span class="pill done">done</span> Define the standard — Quick Card spec in agent_skill_design_skill §3a</li>
+<li><span class="pill done">done</span> Add html_report_skill — One run-report contract; skills 37 → 38</li>
+<li><span class="pill done">done</span> Fix broken code fences — 115 tagged closers in 11 skills; root cause in two tools</li>
+<li><span class="pill done">done</span> Fix skill defects — backend, OpenTelemetry, Lombok, test, Spring, context builder, two HTML skills</li>
+<li><span class="pill done">done</span> Write 35 Quick Cards — Dry-run on a copy first; no body lines lost</li>
+<li><span class="pill done">done</span> Replace the fabricated docs — Skills playbook on real functions; measured SUPER_SKILLS_ENHANCEMENT</li>
+<li><span class="pill done">done</span> Update counts and indexes — 37 → 38 in the 13 places the tests check</li>
+<li><span class="pill done">done</span> Verify — pytest, validator, exporter, link check, runnable examples</li>
+</ol></div></details>
+
+<details id="artifacts" open><summary>Artifacts (12)</summary><div>
+<table><tr><th>Path</th><th>Action</th><th>Purpose</th></tr>
+<tr><td><code>skills/html_report_skill.md</code></td><td class="created">created</td><td>Shared HTML run-report contract</td></tr>
+<tr><td><code>docs/01-workflows/skills-playbook.md</code></td><td class="created">created</td><td>Skills loaded per SDLC stage</td></tr>
+<tr><td><code>docs/01-workflows/16-master-workflow-all-skills.md</code></td><td class="deleted">deleted</td><td>Cited commands that do not exist</td></tr>
+<tr><td><code>docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md</code></td><td class="modified">modified</td><td>Rewritten with measured numbers</td></tr>
+<tr><td><code>skills/*_skill.md (37 files)</code></td><td class="modified">modified</td><td>Quick Card, version bump; 14 gained applies_to</td></tr>
+<tr><td><code>skills/backend_skill.md</code></td><td class="modified">modified</td><td>Event-loop, timing-leak, library, Pydantic v2 fixes</td></tr>
+<tr><td><code>skills/opentelemetry_skill.md</code></td><td class="modified">modified</td><td>Unresolvable Jaeger exporter → OTLP + BOM</td></tr>
+<tr><td><code>skills/lombok_skill.md</code></td><td class="modified">modified</td><td>Entity equality, enum mapping, @With</td></tr>
+<tr><td><code>skills/test_skill.md</code></td><td class="modified">modified</td><td>Rewritten to v2.0</td></tr>
+<tr><td><code>tools/skill_validator.py</code></td><td class="modified">modified</td><td>Checks opening fences only; flags tagged closers</td></tr>
+<tr><td><code>tools/fix_code_blocks.py</code></td><td class="modified">modified</td><td>Tags opening fences only</td></tr>
+<tr><td><code>README.md, CLAUDE.md, CHANGELOG.md, 11 docs</code></td><td class="modified">modified</td><td>Counts, links, What&#x27;s New</td></tr>
+</table></div></details>
+
+<details id="claims" open><summary>Decisions &amp; claims</summary><div>
+<p><span class="label">FACT</span> opentelemetry-exporter-jaeger-thrift ends at 1.34.1 <code>Maven Central metadata</code></p>
+<p><span class="label">FACT</span> The fixed login takes 33.2 ms for a known email and 33.1 ms for an unknown one <code>scratchpad timing.py</code></p>
+<p><span class="label">FACT</span> All 38 Quick Cards total ~11,700 tokens vs ~143,800 for the full skills <code>chars ÷ 4</code></p>
+<p><span class="label">INFERENCE</span> Savings depend on agents stopping at the card; not measured <code>—</code></p>
+<p><span class="label">PROPOSAL</span> Fix the dangling architecture_skill reference in orchestrator_agent.md <code>—</code></p>
+</div></details>
+
+<details id="measure"><summary>Token budget (skill-specific)</summary><div>
+<table><tr><th></th><th>Tokens (≈ chars ÷ 4)</th></tr>
+<tr><td>All 38 skill files</td><td>143,800</td></tr>
+<tr><td>All 38 Quick Cards</td><td>11,700 (8.2%)</td></tr>
+<tr><td>Median skill / median card</td><td>4,150 / 290</td></tr></table></div></details>
+
+<details id="gates" open><summary>Gates &amp; checks</summary><div>
+<table><tr><th>Check</th><th>Result</th><th>Evidence</th></tr>
+<tr><td>CI regression from 214803b</td><td class="pass">2 failing tests → 0</td><td><code>pytest: 751 passed</code></td></tr>
+<tr><td>Skill frontmatter</td><td class="pass">15 invalid → 0</td><td><code>tools/skill_validator.py: 38 valid</code></td></tr>
+<tr><td>Exporter</td><td class="pass">lists 38 skills incl. html_report_skill</td><td><code>exporter.py --list</code></td></tr>
+<tr><td>Backend example</td><td class="pass">201 / 409 / 400 / 200 / 401 / 401</td><td><code>FastAPI TestClient</code></td></tr>
+<tr><td>Lombok example</td><td class="pass">hash stable after id assigned</td><td><code>javac + Lombok 1.18.34</code></td></tr>
+<tr><td>test_skill examples</td><td class="pass">8 passed, random order</td><td><code>pytest -p randomly</code></td></tr>
+<tr><td>Relative links in touched docs</td><td class="pass">0 broken</td><td><code>link check script</code></td></tr>
+</table></div></details>
+
+<details id="open" open><summary>Open items</summary><div><ul>
+<li>55 opening code fences still lack a language tag (they render correctly)</li>
+<li>orchestrator_agent.md refers to a non-existent architecture_skill</li>
+<li>CHANGELOG.md has two [5.0.0] sections and a [1.0.0] above [Unreleased]</li>
+</ul></div></details>
+</main></body></html>

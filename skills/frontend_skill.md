@@ -1,10 +1,30 @@
 ---
 name: Frontend UI Generation Skill
-version: 1.0
+version: 1.1
 description: Define the frontend skill that wraps react_advanced_skill and frontend-design skill for creating production-grade React components with TypeScript and Tailwind CSS.
+applies_to: [react, typescript, tailwindcss, frontend]
 ---
 
-# Frontend UI Generation Skill
+# Frontend UI Generation Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Generating React + TypeScript components and pages — `implementer:build`, `architect:frontend` |
+| **Skip when** | React idioms alone — `react_advanced_skill` |
+| **Inputs** | Component spec, design system, API contract, accessibility level |
+| **Produces** | Components, pages, hooks, Tailwind styles, tests |
+| **Steps** | 1. Analyse requirements → 2. Design prop interfaces → 3. Build presentational then container components → 4. Wire data via TanStack Query → 5. Accessibility pass → 6. Tests |
+| **Done when** | §Validation Checklist passes; loading, error, and empty states rendered and tested |
+| **Senior defaults** | Server state in TanStack Query, never copied into local state · every async view renders loading / error / empty · forms: react-hook-form + Zod schema shared with the API types · semantic HTML first, ARIA only to fill gaps · no `any`; props typed from the API contract |
+| **Load on demand** | §Input · §Output · §Process · §Code Example · §Validation Checklist |
+| **Run report** | `html_report_skill` — adds: Component tree · Accessibility checks |
+| **Pairs with** | `react_advanced_skill`, `test_skill` §4 |
+
+---
 
 ## Purpose
 

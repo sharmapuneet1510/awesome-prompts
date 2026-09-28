@@ -8,7 +8,7 @@ Your assistant stops and asks before it builds the wrong thing — then leaves a
 [![CI](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml/badge.svg)](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml)
 [![5 agents](https://img.shields.io/badge/agents-5-0969da?style=flat-square)](docs/02-reference/agents.md)
 [![43 functions](https://img.shields.io/badge/functions-43-0969da?style=flat-square)](docs/02-reference/functions.md)
-[![37 skills](https://img.shields.io/badge/skills-37-0969da?style=flat-square)](docs/02-reference/skills.md)
+[![38 skills](https://img.shields.io/badge/skills-38-0969da?style=flat-square)](docs/02-reference/skills.md)
 [![8 platforms](https://img.shields.io/badge/platforms-8-0969da?style=flat-square)](docs/01-workflows/14-export-to-platforms.md)
 [![MIT license](https://img.shields.io/badge/license-MIT-0969da?style=flat-square)](LICENSE)
 
@@ -29,20 +29,18 @@ This repository gives an assistant two things it lacks:
 
 It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and Aider.
 
-## ✨ What's New (v5.0.0)
+## ✨ What's New
 
-**Production Stability Release** — All 37 skills enhanced as "super skills" with 25-30% token savings, advanced patterns, and beautiful HTML outputs.
+**Super skills (unreleased).** Every one of the 38 skills now opens with a **Quick Card** — use when, inputs, outputs, steps, done when, and which section to load on demand. The 38 cards together are about 8% of the full skill text, so an assistant reads the card and loads the body only when it needs it.
 
-- **✅ 751 Passing Tests** — Complete test coverage with fresh clone validation
-- **✅ Fixed Critical Bugs** — 6 mutable defaults + 809 test collection errors resolved
-- **✅ Super Skills Enhancement** — All 37 skills: token-efficient, pattern-rich, HTML-beautified
-- **✅ Master Workflow** — Complete end-to-end guide (requirement → production) using all skills
-- **✅ Production Demo** — Comprehensive proof of functionality (`docs/04-examples/DEMO.md`)
-- **✅ Code Quality** — Ruff B006 check active, zero mutable default arguments
+- **HTML run reports** — a run that changes files leaves one self-contained page: what was asked, each step, every file touched, labelled claims, gates, open items ([`html_report_skill`](skills/html_report_skill.md))
+- **Senior defaults** — the advanced rules that matter most, on each of the 18 coding skills
+- **Corrected skills** — examples that now run: a backend login that no longer leaks which emails exist, an OpenTelemetry setup that resolves, a Lombok entity that stays in its `HashSet`, and 115 code fences that now close
+- **[Skills playbook](docs/01-workflows/skills-playbook.md)** — which skills each SDLC stage loads, requirement to release
 
-📖 **[Read Super Skills Enhancement →](docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md)** | 🚀 **[Master Workflow →](docs/01-workflows/16-master-workflow-all-skills.md)**
+Details, measurements, and what was not done: [docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md](docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md).
 
-See [CHANGELOG.md](CHANGELOG.md) for full details or [Release Notes](https://github.com/sharmapuneet1510/awesome-prompts/releases/tag/v5.0.0).
+**v5.0.0** — stability release: the test suite runs on a fresh clone, six mutable default arguments fixed and guarded by ruff B006, `.claude/` exports regenerated, and a production demo (`docs/04-examples/DEMO.md`). See [CHANGELOG.md](CHANGELOG.md) or the [release notes](https://github.com/sharmapuneet1510/awesome-prompts/releases/tag/v5.0.0).
 
 ## How it works
 
@@ -233,7 +231,7 @@ More: [docs/00-getting-started/concepts.md](docs/00-getting-started/concepts.md)
 <br/>
 
 ```text
-├── README.md · CHANGELOG.md · CLAUDE.md · CREDITS.md
+├── README.md · CHANGELOG.md · CLAUDE.md
 ├── agents/          agent definitions + function files
 ├── skills/          reusable skills
 ├── prompts/         prompt templates by category
@@ -275,7 +273,7 @@ Substantive changes to agent, skill, or instruction files are feature work under
 
 ## Credits
 
-Prompt templates and several skills draw on [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts). The four behavioural principles follow Andrej Karpathy's observations on LLM coding pitfalls. See [CREDITS.md](CREDITS.md).
+Prompt templates and several skills draw on [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts). The four behavioural principles follow Andrej Karpathy's observations on LLM coding pitfalls. See [docs/reference/credits.md](docs/reference/credits.md).
 
 ## License
 

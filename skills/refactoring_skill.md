@@ -1,6 +1,6 @@
 ---
 name: Refactoring Skill
-version: 1.0
+version: 1.1
 description: >
   Safe refactoring discipline — characterize existing behavior before changing
   structure, move in small reversible steps, never mix refactoring with feature work.
@@ -8,7 +8,25 @@ applies_to: [java, python, javascript, react, refactoring]
 tags: [refactoring, code-quality, technical-debt]
 ---
 
-# Refactoring Skill — v1.0
+# Refactoring Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Restructuring code without changing behaviour — `architect:refactor`, or before a feature that the current shape blocks |
+| **Skip when** | The change also alters behaviour — split it: refactor commit, then behaviour commit |
+| **Inputs** | The code, a concrete trigger, characterization tests |
+| **Produces** | Smaller, reviewable refactor commits with tests green after each |
+| **Steps** | 1. Characterize behaviour with tests → 2. Confirm the trigger → 3. Bound the scope → 4. Small moves, tests after each → 5. Commit separately from behaviour changes |
+| **Done when** | §5 checklist passes; public contracts unchanged unless that was the goal |
+| **Load on demand** | §2 before you start · §3 safe moves · §4 never mix |
+| **Run report** | `html_report_skill` — adds: Moves applied, in order |
+| **Pairs with** | `test_skill`, `oop_skill`, `adr_skill` (Refactoring type) |
+
+---
 
 ## 1. Definition
 
@@ -50,4 +68,4 @@ The #1 way refactors go wrong: "while I'm in here, let me also fix this bug / ad
 ✅ Public interfaces/contracts unchanged unless that was the explicit goal
 
 ---
-> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `CREDITS.md`.
+> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `docs/reference/credits.md`.

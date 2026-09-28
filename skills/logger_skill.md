@@ -1,6 +1,6 @@
 ---
 name: Logging Best Practices & Implementation
-version: 1.0
+version: 1.1
 description: >
   Complete logging strategy guide covering SLF4J, Log4j2, Logback, Java Util Logging,
   structured logging, log levels, appenders, configurations, performance optimization,
@@ -9,7 +9,24 @@ applies_to: [java, logging, slf4j, log4j2, logback, spring-boot]
 tags: [logging, slf4j, log4j2, logback, structured-logging, observability]
 ---
 
-# Logging Best Practices & Implementation — v1.0
+# Logging Best Practices & Implementation — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Adding or configuring logging in Java: SLF4J, Logback, Log4j2 |
+| **Skip when** | Metrics and traces — `opentelemetry_skill` |
+| **Inputs** | Framework, deployment target, log aggregation stack |
+| **Produces** | Logger usage, `logback.xml` / `log4j2.xml`, JSON layout, MDC setup |
+| **Steps** | 1. SLF4J facade + one backend → 2. Levels per package → 3. JSON structured output in prod → 4. MDC correlation IDs → 5. Async appenders → 6. Retention |
+| **Done when** | §10 checklist passes; no secrets or PII in any log line |
+| **Senior defaults** | Parameterised messages (`log.info("id={}", id)`), never concatenation · exception as the last argument so the stack trace is kept · MDC carries correlation/trace IDs, cleared in `finally` · JSON logs in prod, human pattern locally · INFO = business events, DEBUG = diagnostics |
+| **Load on demand** | §2 SLF4J · §3 levels · §4 Logback · §5 structured JSON · §6 async · §7 Log4j2 · §8 patterns |
+| **Run report** | `html_report_skill` — adds: Log config changes |
+| **Pairs with** | `opentelemetry_skill`, `error_handling_skill`, `lombok_skill` (`@Slf4j`) |
 
 ---
 

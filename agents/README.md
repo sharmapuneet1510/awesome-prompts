@@ -1,6 +1,6 @@
 # 🤖 AI Agents Directory (v3.0 — 4-Role Architecture)
 
-> Lean, role-based AI agents with function dispatch. **5 agents, 37 skills, 43 callable functions.**  
+> Lean, role-based AI agents with function dispatch. **5 agents, 38 skills, 43 callable functions.**  
 > **New in v3.0:** Consolidated 13 specialized agents into 4 primary roles + 1 utility agent. Linear execution pipeline prevents context loss.
 
 ## 🎯 Foundational Principles (Guide All Agents)
@@ -207,7 +207,7 @@ Role-Based Agent (Orchestrator, Architect, Implementer, Quality)
     ├─ Apply skill(s)
     └─ Generate + validate + document
     ↓
-Reusable Skills Layer (37 skills)
+Reusable Skills Layer (38 skills)
     ├─ Code Documentation (Javadoc, docstrings, JSDoc)
     ├─ Database (DDL, migrations, schema design)
     ├─ Backend API (REST, OpenAPI)
@@ -305,7 +305,7 @@ this way, see [../docs/02-reference/agents.md](../docs/02-reference/agents.md).
 
 ## 🔗 Links
 
-- **[Skills Directory](../skills/README.md)** — Reusable skill modules (31 total)
+- **[Skills Directory](../skills/README.md)** — Reusable skill modules (38 total)
 - **[Tools Documentation](../tools/README.md)** — Utility scripts
 - **[Master Rules](../instructions/master_instruction_set.md)** — Non-negotiable standards
 - **[Main README](../README.md)** — Project overview
@@ -313,4 +313,4 @@ this way, see [../docs/02-reference/agents.md](../docs/02-reference/agents.md).
 
 ---
 
-**Last Updated:** June 3, 2026 | **Version:** 2.0.0 (Consolidated) | **Agents:** 5 | **Skills:** 31
+**Last Updated:** June 3, 2026 | **Version:** 2.0.0 (Consolidated) | **Agents:** 5 | **Skills:** 38

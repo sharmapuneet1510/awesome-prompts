@@ -1,11 +1,30 @@
 ---
 name: JIRA Incremental Specification Generator
 description: Read JIRA tickets incrementally by prefix, aggregate requirements, generate comprehensive application specification document in book-like structure
-version: 1.0
+version: 1.1
 tags: [jira, requirements, specification, documentation, book-format]
+applies_to: [jira, specification, documentation, language-agnostic]
 ---
 
-# JIRA Incremental Specification Generator Skill
+# JIRA Incremental Specification Generator Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Building one specification from a whole Jira project by reading tickets in sequence |
+| **Skip when** | A single ticket — `architect:analyse jira=…` |
+| **Inputs** | `jira_prefix`, `start_number`, `max_consecutive_misses` (default 10), output format |
+| **Produces** | Book-format specification: chapters, TOC, AC cross-references, appendices |
+| **Steps** | 1. Read PROJ-n upward until 10 consecutive misses → 2. Aggregate → 3. Group into chapters → 4. Cross-reference ACs and dependencies → 5. Write the book |
+| **Done when** | Every fetched ticket appears in exactly one chapter and in Appendix A |
+| **Load on demand** | §Input Parameters · §Algorithm · §Workflow (7 phases) · §Output Structure |
+| **Run report** | `html_report_skill` — adds: Tickets read / missing / skipped |
+| **Pairs with** | `current_tech_spec_skill`, `traceability_skill` |
+
+---
 
 ## Overview
 

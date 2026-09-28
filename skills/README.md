@@ -1,10 +1,12 @@
-# 🛠️ Skills Directory (v5.0.0 — Super Skills)
+# 🛠️ Skills Directory (v5.1 — Super Skills)
 
-> **ALL 37 SKILLS ENHANCED:** Reusable, tech-specific implementation modules with 25-30% token savings, advanced patterns, and beautiful HTML outputs.
+> Reusable, tech-specific implementation modules used by agents. 38 skills, zero orphans.
 >
-> 📖 **[Read: Super Skills Enhancement v5.0.0](../docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md)** | 🚀 **[Master Workflow: All Skills Integrated](../docs/01-workflows/16-master-workflow-all-skills.md)**
+> Every skill opens with a **Quick Card** — use-when, inputs, outputs, steps, done-when, and which section to load on demand — so an agent reads the card and loads the body only when a step needs it. Runs that change files write one HTML report per [`html_report_skill`](html_report_skill.md).
+>
+> 📖 [The super-skill standard](../docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md) · 🧭 [Skills playbook — which skill loads at each SDLC stage](../docs/01-workflows/skills-playbook.md)
 
-## Quick Navigation (37 Skills)
+## Quick Navigation (38 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -45,6 +47,7 @@
 | 35 | [Traceability](traceability_skill.md) | 8-hop chain (requirement → release) + 18 validation checks | Language-agnostic | Business Analyst, Quality |
 | 36 | [MCP Server Builder](mcp_server_builder_skill.md) | Build an MCP server: SDK pinning, stdio vs HTTP, Python/TS examples, 3-layer testing, Claude Code registration | Python/TypeScript (Java: pointers) | Implementer, Architect |
 | 37 | [NEMESIS](nemesis_skill.md) | Adversarial validation mode: reverse hypothesis, counterexamples, evidence grading, five-way verdict, ranked failure-cause hypotheses | Language-agnostic | Orchestrator, Quality |
+| 38 | [HTML Run Report](html_report_skill.md) | One shared contract for the self-contained HTML report a run writes: what was done, artifacts, claims, gates, open items | Language-agnostic | All agents |
 
 ---
 
@@ -80,6 +83,9 @@
 
 ### Quality Agent Skills (Batch Review)
 - `multi_review_html_skill` — Batch PR review HTML with sidebar tabs, summary dashboard, export options
+
+### Reporting (All Agents)
+- `html_report_skill` — the run report every skill writes when it changes files; its `<head>` tokens are shared by every HTML deliverable
 
 ### Spec-Driven Platform Skills (Governance & Knowledge)
 These five form one system and are read together (`nemesis_skill` is listed with them because it challenges what they record). `adr_skill` is the root —
@@ -192,4 +198,4 @@ Generate complete code
 
 ---
 
-**Last Updated:** June 4, 2026 | **Version:** 2.0.0 (Consolidated) | **Skills:** 24 | **Agents:** 5
+**Last Updated:** September 28, 2026 | **Version:** 5.1 (Super Skills) | **Skills:** 38 | **Agents:** 5

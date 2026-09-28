@@ -1,6 +1,6 @@
 ---
 name: Spring Framework Advanced Skill
-version: 1.0
+version: 1.1
 description: >
   Deep Spring Framework knowledge beyond Spring Boot basics. Covers IoC container
   internals, AOP, WebFlux/reactive, Spring Batch, Spring Cloud, Security, Events,
@@ -9,7 +9,24 @@ applies_to: [java, spring, spring-boot, spring-webflux, spring-batch, spring-clo
 tags: [spring, aop, webflux, reactive, batch, cloud, security, ioc]
 ---
 
-# Spring Framework Advanced Skill — v1.0
+# Spring Framework Advanced Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Spring internals: IoC, AOP, WebFlux, Batch, Cloud, events, or a Spring behaviour that makes no sense |
+| **Skip when** | Plain Spring Boot CRUD — `java_advanced_skill` §4 |
+| **Inputs** | Spring Boot version, the misbehaving bean or config |
+| **Produces** | Correct bean wiring, aspects, reactive pipelines, batch jobs, event flows |
+| **Steps** | 1. Identify the mechanism (proxy, scope, context) → 2. Load the matching section → 3. Apply → 4. Verify with a slice or context test |
+| **Done when** | Behaviour explained by mechanism, not by trial and error; test covers it |
+| **Senior defaults** | Proxies explain most surprises — self-invocation skips `@Transactional`/`@Async`; `private`/`final` methods are never advised · `@TransactionalEventListener(AFTER_COMMIT)` for side effects · never block on a reactive thread · prefer `@ConfigurationProperties` records over `@Value` scatter |
+| **Load on demand** | §1 IoC · §2 AOP · §3 WebFlux · §4 Batch · §5 Cloud · §6 events · §7 debugging · §8 quick reference |
+| **Run report** | `html_report_skill` — adds: Mechanism identified |
+| **Pairs with** | `java_advanced_skill`, `lombok_skill`, `opentelemetry_skill` |
 
 ---
 
@@ -30,7 +47,7 @@ Application starts
 Application shuts down
   → Calls @PreDestroy methods
   → Destroys singletons in reverse creation order
-```java
+```
 
 ### Bean Scopes
 
@@ -51,7 +68,7 @@ public class RequestContext { }   // new instance per HTTP request
 @Component
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class UserSession { }      // one instance per HTTP session
-```java
+```
 
 ### Conditional Beans
 
@@ -88,7 +105,7 @@ public class NotificationConfig {
         };
     }
 }
-```java
+```
 
 ---
 
@@ -107,7 +124,7 @@ methods without modifying those methods.
 @After      — runs after the method (whether it succeeds or fails)
 @AfterReturning — runs after the method returns successfully
 @AfterThrowing  — runs when the method throws an exception
-```java
+```
 
 ### Execution Timing Aspect (Practical Example)
 
@@ -151,7 +168,7 @@ public class ExecutionTimingAspect {
         }
     }
 }
-```java
+```
 
 ### Retry Aspect
 
@@ -194,7 +211,7 @@ public class RetryAspect {
         throw lastException;
     }
 }
-```java
+```
 
 ---
 
@@ -216,7 +233,7 @@ Spring WebFlux (reactive, non-blocking)  → Use when:
   - Composing multiple async I/O calls (microservice fan-out)
   - Using reactive DB drivers (R2DBC, MongoDB reactive)
   - Streaming responses (SSE, websockets)
-```java
+```
 
 ### Reactive REST Controller
 
@@ -256,7 +273,7 @@ public class OrderController {
         return orderService.streamOrdersForCustomer(customerId);
     }
 }
-```java
+```
 
 ### Composing Multiple Async Calls
 
@@ -280,7 +297,7 @@ public Mono<OrderSummary> getOrderSummary(Long orderId) {
                    .inventory(tuple.getT3())
                    .build());
 }
-```java
+```
 
 ### Error Handling in Reactive Chains
 
@@ -293,7 +310,7 @@ return orderService.findById(orderId)
                    ex -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage())))
     // Log and re-throw unexpected errors
     .doOnError(ex -> log.error("Unexpected error for order {}: {}", orderId, ex.getMessage()));
-```java
+```
 
 ---
 
@@ -308,7 +325,7 @@ ItemReader → reads records one at a time from a source (DB, file, queue)
 ItemProcessor → transforms or filters one record (optional)
 ItemWriter → writes a chunk of records to a destination
 Chunk      → a batch of N records processed in a single transaction
-```java
+```
 
 ### Typical Batch Job
 
@@ -358,7 +375,7 @@ public class OrderProcessingJobConfig {
             .build();
     }
 }
-```java
+```
 
 ---
 
@@ -397,7 +414,7 @@ private CompletableFuture<Integer> inventoryFallback(Long productId, Exception e
              productId, ex.getMessage());
     return CompletableFuture.completedFuture(0);
 }
-```java
+```
 
 ### application.yml for Resilience4j
 
@@ -415,7 +432,7 @@ resilience4j:
     instances:
       inventory-service:
         timeout-duration: 2s             # fail fast after 2 seconds
-```java
+```
 
 ---
 
@@ -441,7 +458,9 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse createOrder(CreateOrderRequest request) {
         Order saved = orderRepository.save(buildOrder(request));
 
-        // Publish the event AFTER commit — listeners see committed data
+        // Published now, inside the transaction; the listener's AFTER_COMMIT
+        // phase is what defers delivery until the commit succeeds
+        // (and drops it if the transaction rolls back).
         eventPublisher.publishEvent(new OrderCreatedEvent(
             saved.getId(), saved.getCustomerId(), saved.getTotalAmount()
         ));
@@ -470,7 +489,7 @@ public class OrderConfirmationEmailListener {
         emailService.sendOrderConfirmation(event.customerId(), event.orderId());
     }
 }
-```java
+```
 
 ---
 
@@ -489,7 +508,7 @@ logging.level.org.springframework.beans=DEBUG
 // Fix: extract the shared logic into a third bean, or use @Lazy on one injection point.
 @Lazy  // Spring will inject a proxy and only create the bean when first used
 private final ServiceB serviceB;
-```java
+```
 
 ### Transaction Debugging
 
@@ -503,7 +522,7 @@ logging.level.org.springframework.orm.jpa=DEBUG
 // Fix: Call via the injected Spring bean, not via 'this.methodName()'
 // Cause 2: @Transactional on a private method (AOP can't proxy private methods)
 // Fix: Make the method protected or public
-```java
+```
 
 ### Startup Performance
 
@@ -514,7 +533,7 @@ logging.level.org.springframework.boot=DEBUG
 // Or add to main class:
 SpringApplication app = new SpringApplication(MyApp.class);
 app.setLazyInitialization(true);  // beans created on first use, not at startup
-```java
+```
 
 ---
 

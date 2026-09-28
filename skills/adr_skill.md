@@ -1,15 +1,34 @@
 ---
 name: ADR Skill
-version: 1.0
+version: 1.1
 description: >
   Reusable skill for Engineering Decision Records. Defines the ADR record,
   its seven-state lifecycle, the ten decision types, ID allocation, and the
   supersede chain. Owned by architect:adr; read by current_tech_spec_skill,
   traceability_skill, and quality:observe. Enforced by RULE 11 in
   instructions/master_instruction_set.md.
+applies_to: [architecture, decisions, governance, all-languages]
 ---
 
-# ADR Skill — v1.0
+# ADR Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | A change alters a contract, data shape, dependency, or failure mode (RULE 11a), or `architect:adr` runs |
+| **Skip when** | Column order, local renames, patch bumps, log lines — see §When a Decision Earns an ADR |
+| **Inputs** | Jira item, `docs/project-context/`, existing `docs/adr/` |
+| **Produces** | `docs/adr/ADR-<NNNN>-<slug>.md` at `Proposed`, then `Accepted` on human approval |
+| **Steps** | 1. Check the trigger rule → 2. Allocate next ID → 3. Draft with ≥ 2 real options → 4. Label claims (RULE 12) → 5. Present at Proposed → 6. On approval: Accepted + supersede edits → 7. Hand off to `architect:spec` |
+| **Done when** | ADR at `Accepted` by explicit human approval; reciprocal `Superseded By` written; tech debt mirrored |
+| **Load on demand** | §Record Template · §Decision Types · §Lifecycle · §Supersede Chain · §Workflow |
+| **Run report** | `html_report_skill` — adds: Options compared · Lifecycle transition · Supersede edits |
+| **Pairs with** | `current_tech_spec_skill`, `traceability_skill`, `project_context_skill` |
+
+---
 
 ## Purpose
 

@@ -1,14 +1,33 @@
 ---
 name: Project Context Skill
-version: 1.0
+version: 1.1
 description: >
   Reusable skill for the Central Project Context — the shared, persistent
   knowledge base all companions read before acting and write after deciding.
   Defines the 14-node tree, a template per node, and the ownership matrix
   saying which agent writes what and when.
+applies_to: [governance, knowledge-base, all-languages]
 ---
 
-# Project Context Skill — v1.0
+# Project Context Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Any companion is about to act (read) or has had a decision approved (write) — every BA, architect, quality function |
+| **Skip when** | Nothing — read-before-act is universal; writes follow the ownership matrix |
+| **Inputs** | `docs/project-context/` (bootstrap it if missing) |
+| **Produces** | The 14-node tree under `docs/project-context/` |
+| **Steps** | 1. Read `README.md` + relevant nodes → 2. Act → 3. Owner updates its node after approval → 4. Non-owners raise gaps in `open-questions.md` |
+| **Done when** | Node updated only by its owner, only after a decision; `Last updated` set |
+| **Load on demand** | §Artifact Location · §Ownership Matrix · §Node Templates · §Bootstrapping · §Staleness |
+| **Run report** | `html_report_skill` — adds: Nodes read · Nodes updated |
+| **Pairs with** | `adr_skill`, `traceability_skill`, `context_builder_skill` |
+
+---
 
 ## Purpose
 

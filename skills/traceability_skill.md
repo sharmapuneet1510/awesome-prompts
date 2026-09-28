@@ -1,14 +1,33 @@
 ---
 name: Traceability Skill
-version: 1.0
+version: 1.1
 description: >
   Reusable skill defining the eight-hop traceability chain (Requirement → Jira
   → ADR → Technical Specification → Implementation → Tests → PR → Release),
   the link fields each artifact must carry, and the validation checks that
   detect breaks. Owned by ba:trace; read by quality:observe.
+applies_to: [governance, traceability, all-languages]
 ---
 
-# Traceability Skill — v1.0
+# Traceability Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Before `implementer:build` (gate checks), after `architect:spec`, inside `quality:observe`, before a release — `ba:trace` |
+| **Skip when** | Nothing to link yet — no requirements exist |
+| **Inputs** | `specs/`, `docs/adr/`, the spec, tests, PRs, `release-history.md` |
+| **Produces** | `docs/traceability-report-<date>.md` — chain coverage + findings |
+| **Steps** | 1. Pick scope → 2. Run the checks for that trigger → 3. Report coverage per hop → 4. Findings as FACT + PROPOSAL, never auto-fixed |
+| **Done when** | No High findings — they block the RULE 11 gate |
+| **Load on demand** | §The Chain · §ID Conventions · §Validation Checks · §Report Format · §When to Run |
+| **Run report** | `html_report_skill` — adds: Chain coverage per hop · Findings T-1…T-18 |
+| **Pairs with** | `adr_skill`, `current_tech_spec_skill`, `spec_driven_development_skill` |
+
+---
 
 ## Purpose
 

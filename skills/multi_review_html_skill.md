@@ -1,13 +1,32 @@
 ---
 name: Multi-Review HTML Skill
-version: 1.0
+version: 1.1
 description: >
   Generate self-contained HTML reports for batch PR reviews with fixed left sidebar tabs,
   summary dashboard, and per-PR detailed review panels. All CSS/JS inline, zero external dependencies.
   Supports tabbed navigation, filtering, and PDF/JSON export.
+applies_to: [code-review, reporting, html, language-agnostic]
 ---
 
-# Multi-Review HTML Skill — v1.0
+# Multi-Review HTML Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Several PR reviews must become one HTML report — `quality:batch-review` |
+| **Skip when** | One PR — `code_review_skill`'s own report |
+| **Inputs** | Review results per PR + aggregate summary data |
+| **Produces** | Single HTML file: sidebar tabs, summary dashboard, per-PR panels, JSON/PDF export |
+| **Steps** | 1. Collect review JSON → 2. Compute summary → 3. Embed as escaped JSON → 4. Render via `textContent` → 5. Verify print + export |
+| **Done when** | §Acceptance Criteria pass, including literal display of `</script>` and `List<String>` in snippets |
+| **Load on demand** | §Technical Spec · §Layout Design · §Summary Tab · §Per-PR Tab · §Data Injection Format |
+| **Run report** | own HTML — reuses `html_report_skill` §3 `<head>` tokens |
+| **Pairs with** | `code_review_skill`, `html_report_skill` |
+
+---
 
 ## Purpose
 
@@ -634,11 +653,13 @@ function exportJSON() {
 
 ## Data Injection Format
 
-The HTML expects two JavaScript objects injected before the main script:
+Review data is full of code — `List<String>`, HTML, a diff that contains
+`</script>`. Embed it as JSON data, never as a JavaScript literal, and never
+render it with `innerHTML`:
 
 ```html
-<script>
-  const reviewData = [
+<script type="application/json" id="review-data">
+  [
     {
       pr: 456,
       ticket: "PROJ-123",
@@ -652,9 +673,10 @@ The HTML expects two JavaScript objects injected before the main script:
       issues: [...]
     },
     // ... more reviews
-  ];
-  
-  const summaryData = {
+  ]
+</script>
+<script type="application/json" id="summary-data">
+  {
     total_reviews: 3,
     total_blockers: 5,
     avg_score: 78,
@@ -663,9 +685,25 @@ The HTML expects two JavaScript objects injected before the main script:
     priority_matrix: {...},
     score_comparison: [...],
     worst_issues: [...]
-  };
+  }
+</script>
+<script>
+  const reviewData  = JSON.parse(document.getElementById('review-data').textContent);
+  const summaryData = JSON.parse(document.getElementById('summary-data').textContent);
 </script>
 ```
+
+(Keys are shown unquoted for readability; the real blocks are strict JSON.)
+
+**Escaping rules:**
+
+1. Serialise with every `<` replaced by `\u003c` — Python:
+   `json.dumps(data).replace("<", "\\u003c")` — so a `</script>` inside a code
+   snippet cannot end the block. `JSON.parse` turns it back into `<`.
+2. Render every data string with `textContent`, or build markup through one
+   `esc()` helper (`& < > " '` → entities). Never assign data to `innerHTML`.
+3. Code before/after blocks: set `pre.textContent = snippet`, so
+   `List<String>` shows as written instead of being parsed as a tag.
 
 ## Acceptance Criteria
 
@@ -682,6 +720,7 @@ The HTML expects two JavaScript objects injected before the main script:
 ✓ Renders correctly in all modern browsers (Chrome, Firefox, Safari, Edge)  
 ✓ All CSS and JavaScript are inline (no external files)  
 ✓ No console errors or broken references
+✓ A snippet containing `</script>` or `List<String>` displays literally — data is JSON-embedded and rendered via `textContent`
 
 ---
 

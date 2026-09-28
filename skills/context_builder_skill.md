@@ -1,13 +1,34 @@
 ---
 name: Context Builder Skill
-version: 1.0
+version: 1.1
 description: >
   Reusable skill for scanning projects and building architecture context.
   Generates context.json, architecture.md, tech-stack.md, and design.html.
-  Used internally by developer_agent and context_builder_agent.
+  Used by orchestrator:context and architect:analyse. The agent performs the
+  scan; tools/context_builder.py only builds a context.json skeleton from
+  parsed requirement data (greenfield).
+applies_to: [all-stacks, architecture, analysis]
 ---
 
-# Context Builder Skill — v1.0
+# Context Builder Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | A project has no `docs/context/`, or its structure changed — `orchestrator:context`, `architect:analyse` |
+| **Skip when** | `docs/context/` is current — read it instead of re-scanning |
+| **Inputs** | Project root: manifests, source tree, config |
+| **Produces** | `docs/context/` — `context.json`, `architecture.md`, `tech-stack.md`, `design.html` |
+| **Steps** | 1. Discovery — reuse existing context if fresh → 2. Deep scan → 3. Confirm with the user → 4. Write the four files → 5. Return context |
+| **Done when** | Tech stack matches the manifests, endpoints and models detected, `design.html` opens offline |
+| **Load on demand** | §5-Phase Workflow · §Dependency File Parsing · §Pattern Detection |
+| **Run report** | own HTML — `design.html` |
+| **Pairs with** | `project_context_skill` (bootstraps from this output); `tools/context_builder.py` seeds greenfield `context.json` |
+
+---
 
 ## Purpose
 
@@ -387,8 +408,9 @@ def find_components(project_path):
 ## When This Skill Is Used
 
 Called automatically by:
-- **developer_agent** — STEP 0 (Context Discovery)
-- **context_builder_agent** — Phase 4 (Generate Output)
+- **`orchestrator:context`** — builds `docs/context/` and bootstraps Project Context
+- **`architect:analyse`** — when `docs/context/` is missing
+- **`implementer:build`** — context discovery before generating code
 
 Can be called by:
 - Any agent that needs to understand project architecture
@@ -413,18 +435,17 @@ Context is complete when:
 ## Example Usage (Internal)
 
 ```python
-# In developer_agent.py, STEP 0:
-from skills.context_builder_skill import ContextBuilder
+# Greenfield: no code to scan yet, so seed context.json from the parsed
+# requirement. Brownfield scanning (Phases 1–3) is done by the agent itself.
+from tools.context_builder import ContextBuilder
 
-builder = ContextBuilder(project_path='.')
-result = builder.build_context()
+context = ContextBuilder({
+    "project_name": "orders",
+    "tech_stack": {"backend": "Java/Spring Boot", "database": "PostgreSQL"},
+}).build()
 
-if result['success']:
-    tech_stack = result['context']['tech_stack']
-    # Continue with STEP 1 using full context
-else:
-    # Ask user for manual input
-    ...
+context["tech_stack"]      # frontend/backend/database/auth, defaults filled in
+context["file_structure"]  # expected layout for the detected backend
 ```
 
 ---

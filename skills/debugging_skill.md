@@ -1,6 +1,6 @@
 ---
 name: Debugging Skill
-version: 1.0
+version: 1.1
 description: >
   Systematic root-cause debugging methodology — reproduce, isolate, form and test
   hypotheses, fix, and verify with a regression test. Language-agnostic.
@@ -8,7 +8,25 @@ applies_to: [java, python, javascript, react, debugging]
 tags: [debugging, root-cause-analysis, troubleshooting]
 ---
 
-# Debugging Skill — v1.0
+# Debugging Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | A bug, failing test, or incident needs a root cause — `quality:debug`, `quality:diagnose` |
+| **Skip when** | Cause already known and fix trivial — just fix it with a regression test |
+| **Inputs** | Symptom, stack trace or logs, the smallest repro you can get |
+| **Produces** | Root cause, minimal fix, regression test |
+| **Steps** | 1. Reproduce → 2. Isolate → 3. One falsifiable hypothesis → 4. Test it before fixing → 5. Fix the cause → 6. Regression test that fails first |
+| **Done when** | Regression test fails before the fix and passes after; no unrelated changes bundled |
+| **Load on demand** | §1 the loop · §3 isolation techniques · §4 hypothesis discipline |
+| **Run report** | `html_report_skill` — adds: Hypotheses tried (confirmed / discarded) · Root cause |
+| **Pairs with** | `test_skill`, `logger_skill`, `opentelemetry_skill` |
+
+---
 
 ## 1. The Loop
 
@@ -54,4 +72,4 @@ If the evidence doesn't match the hypothesis, discard it completely — don't be
 ✅ No unrelated changes bundled into the fix
 
 ---
-> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `CREDITS.md`.
+> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `docs/reference/credits.md`.

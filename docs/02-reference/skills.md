@@ -1,10 +1,15 @@
 # Skill Reference
 
-**37 skills.** Reusable implementation modules that agents dispatch to. A skill
+**38 skills.** Reusable implementation modules that agents dispatch to. A skill
 knows *how*; an [agent](agents.md) decides *what*.
 
 Skills are never invoked directly by users — agents load them. Source:
 `skills/*.md`.
+
+Every skill opens with a **Quick Card**: use when, skip when, inputs, produces,
+steps, done when, and which section to load on demand — plus *senior defaults*
+for coding skills. An agent reads the card and loads the body only when a step
+needs it. See [SUPER_SKILLS_ENHANCEMENT.md](SUPER_SKILLS_ENHANCEMENT.md).
 
 ---
 
@@ -71,6 +76,14 @@ See [../01-workflows/05-record-a-decision.md](../01-workflows/05-record-a-decisi
 
 ---
 
+## Reporting
+
+| Skill | Covers |
+|---|---|
+| `html_report_skill` | The self-contained HTML run report: what was done, artifacts, claims, gates, open items. Written only when a run changes files |
+
+---
+
 ## Context & requirements
 
 | Skill | Covers |
@@ -116,9 +129,11 @@ Adding a language means adding a skill, not an agent.
 ## Writing a new skill
 
 Read `skills/agent_skill_design_skill.md` first. In short: YAML frontmatter with
-`name`, `version`, and `description`; state what the skill owns and what it
-refuses; embed templates inline rather than in a separate directory; register it
-in `skills/README.md`.
+`name`, `version`, `description`, and `applies_to`; a Quick Card under the H1
+(`agent_skill_design_skill` §3a); state what the skill owns and what it refuses;
+embed templates inline rather than in a separate directory; register it in
+`skills/README.md`. `python3 tools/skill_validator.py` checks the frontmatter
+and code fences.
 
 Skills export to all eight platforms automatically — see
 [../01-workflows/14-export-to-platforms.md](../01-workflows/14-export-to-platforms.md).

@@ -5,7 +5,8 @@
 Every workflow below is a complete path: prerequisites, the command chain,
 the gates you must pass, and the artifacts you end up with. They all draw on
 the same 16-stage spine — see [sdlc-playbook.md](sdlc-playbook.md) — but you
-rarely need all 16 stages at once.
+rarely need all 16 stages at once. For which skills each stage loads, see
+[skills-playbook.md](skills-playbook.md).
 
 ---
 

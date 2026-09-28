@@ -13,6 +13,7 @@ run in detail, including the output.
 | [quality.md](quality.md) | PR review · Codebase audit · Security audit · Performance analysis · Bug RCA · Batch review |
 | [general.md](general.md) | Assorted shorter examples across the system |
 | [nemesis-defeated.md](nemesis-defeated.md) · [nemesis-survived.md](nemesis-survived.md) | NEMESIS worked reports: a `PASS` that is defeated, and one that survives · config template: [nemesis-config.example.yml](nemesis-config.example.yml) |
+| [html-run-report.html](html-run-report.html) | A filled `html_report_skill` run report — the super-skills upgrade itself: steps, artifacts, labelled claims, gates, open items |
 
 ---
 

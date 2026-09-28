@@ -1,457 +1,117 @@
-# Super Skills Enhancement v5.0.0
+# Super Skills
 
-**Date:** 2026-09-28 | **Version:** 5.0.0 | **Total Skills:** 37 Enhanced
+**What makes a skill a "super skill" in this repository, and what changed to
+get all 38 there.** Updated 2026-09-28.
+
+> **Correction.** An earlier version of this page (commit `214803b`) claimed
+> per-skill token savings of 18–32% and marked all 37 skills enhanced. None of
+> that had been measured or done. This page replaces it; the numbers below are
+> measured, and the method is stated.
 
 ---
 
-## 🚀 Enhancement Summary
+## The standard
 
-All 37 skills have been elevated to **"super skills"** with:
+A super skill has four properties. Each is checkable by reading the file.
 
-### **1. Token Efficiency Optimizations**
-| Optimization | Impact | Example |
+| Property | What it means | Where it is defined |
 |---|---|---|
-| **Skip narrative preamble** | -20% tokens | Skip "This skill helps you..." — jump to templates |
-| **Bulleted lists, not prose** | -15% tokens | Use • instead of paragraph descriptions |
-| **Reference existing artifacts** | -25% tokens | Link to design.md, don't re-explain |
-| **Templated outputs** | -30% tokens | Pre-structured YAML/JSON, no freestyle |
-| **Cached intermediate results** | -40% tokens | Reuse context builder output, don't re-analyze |
-| **Pattern library references** | -35% tokens | "Apply OOP_skill patterns" vs re-explain SOLID |
+| **Quick Card** | A table directly under the H1: use when, skip when, inputs, produces, steps, done when, load on demand, run report, pairs with | `agent_skill_design_skill` §3a |
+| **Senior defaults** | For coding skills: the 4–6 advanced rules that matter most for that stack, each consistent with the body | same |
+| **Progressive disclosure** | The card names section numbers, so an agent loads one section, not the file | same |
+| **Run report** | A run that changes files writes one self-contained HTML report: what was asked, what was done step by step, every artifact, labelled claims, gates, open items | `html_report_skill` |
 
-**Total Token Savings Across All Skills:** ~25-30% per execution
+Plus hygiene the validator enforces: frontmatter with `name`, `version`,
+`description`, `applies_to`; code fences that actually close.
 
-### **2. Advanced Coding Patterns**
-Every skill now references and applies:
-- **SOLID Principles** (Single Responsibility, Open/Closed, Liskov, Interface Segregation, Dependency Inversion)
-- **Design Patterns** (Factory, Strategy, Decorator, Observer, Command, State)
-- **Domain-Driven Design** (Aggregate Roots, Entities, Value Objects, Bounded Contexts)
-- **Error Handling** (Exception hierarchies, retries with exponential backoff, circuit breakers)
-- **Async/Reactive** (Promise chains, async/await, Observables for applicable languages)
-- **Type Safety** (TypeScript strict mode, Java generics with wildcards, Python type hints with `typing` module)
-- **Security-First** (Input validation at boundaries, parameterized queries, secrets management)
+```bash
+python3 tools/skill_validator.py      # 38 valid; README.md is not a skill
+```
 
-### **3. Enhanced Documentation Structure**
+---
 
-Each skill now follows this structure (reduced from verbose to scannable):
+## Token budget — measured
 
-```markdown
-# Skill Name — v5.0.0 [SUPER SKILL]
+Estimated as characters ÷ 4 over `skills/*_skill.md`.
 
-## Quick Reference
-**Input:** X → **Output:** Y → **Token Budget:** N tokens
+| | Tokens (≈) |
+|---|---|
+| All 38 skill files, in full | 143,800 |
+| All 38 Quick Cards | 11,700 — 8.2% of the full set |
+| Median skill file | 4,150 |
+| Median Quick Card | 290 |
+| Largest file — `code_review_skill` | 9,540; its card 250 |
 
-## When to Use
-One sentence trigger
+**What this does and does not show.** An agent that reads only the cards of
+the skills it might need, then loads one section, reads a fraction of the file.
+An agent that loads whole files anyway pays about 290 tokens *more* per skill
+for the card. The saving comes from following the card's **Load on demand** row;
+it is not automatic, and agent behaviour was not measured here.
 
-## Execution (3-5 steps max)
-- Step 1: What to do
-- Step 2: Expected output
-- Step 3: Gate (what's checked)
+---
 
-## Patterns Applied
-- Pattern 1 (link to oop_skill)
-- Pattern 2 (link to error_handling_skill)
+## The HTML run report
 
-## Token Efficiency Tips
-- Tip 1: Save ~N% by doing X
-- Tip 2: Reuse output from Y skill
+One contract, defined once in `html_report_skill`, instead of a report format
+per skill. Each skill's card names only the sections it adds.
 
-## Examples
-### Example 1: Common Case
-Input → Output (code/YAML/JSON)
-
-### Example 2: Edge Case
-Input → Output
-
-## Failures & Fixes
-| Symptom | Root Cause | Fix |
+| # | Section | Rule |
 |---|---|---|
-| X | Y | Z |
+| 1 | Header | Skill + version, invocation, date, outcome: `Done` · `Partial` · `Blocked` |
+| 2 | Summary | ≤ 4 sentences |
+| 3 | What was done | Ordered steps, each `done` / `skipped` / `failed` with one line of detail |
+| 4 | Artifacts | Every touched path, linked, with action and purpose |
+| 5 | Decisions & claims | RULE 12 labels; every `FACT` cites file:line |
+| — | Skill-specific | e.g. `test_skill` adds AC → test map, coverage, mutation score |
+| 6 | Gates & checks | Only checks that actually ran, each with evidence |
+| 7 | Open items | Follow-ups, risks, questions for a human |
 
-## Related Skills
-- [[related_skill_1]]
-- [[related_skill_2]]
-```
-
-### **4. Beautiful HTML Output**
-
-For all documentation-generating skills, the HTML includes:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width">
-  <style>
-    /* Inline CSS (no external dependencies) */
-    :root {
-      --bg: #f5f5f5;
-      --bg-dark: #1e1e1e;
-      --text: #333;
-      --text-dark: #e0e0e0;
-      --accent: #0969da;
-      --success: #1a7f0e;
-      --warning: #9e6a03;
-      --error: #cb2431;
-    }
-    
-    @media (prefers-color-scheme: dark) {
-      :root { --bg: var(--bg-dark); --text: var(--text-dark); }
-    }
-    
-    body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 20px; }
-    h1 { border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
-    .collapsible { cursor: pointer; padding: 10px; background: #f0f0f0; border-radius: 4px; }
-    .collapsible::before { content: "▶ "; }
-    .collapsible.open::before { content: "▼ "; }
-    .collapse-content { display: none; margin-top: 10px; padding-left: 20px; }
-    .collapse-content.open { display: block; }
-    .success { color: var(--success); }
-    .warning { color: var(--warning); }
-    .error { color: var(--error); }
-    code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
-    pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; }
-    .metadata { font-size: 0.9em; color: #666; }
-    .breadcrumb { margin-bottom: 20px; font-size: 0.9em; }
-    .breadcrumb a { margin: 0 5px; color: var(--accent); text-decoration: none; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-    th { background: var(--accent); color: white; }
-  </style>
-</head>
-<body>
-  <div class="breadcrumb">
-    <a href="/">Home</a> / <a href="/docs">Docs</a> / <span>Report</span>
-  </div>
-  
-  <h1>📊 Report Title</h1>
-  <div class="metadata">
-    Generated: <span id="timestamp"></span> | 
-    Skill: <code>skill_name v5.0.0</code> | 
-    Duration: <span id="duration"></span>
-  </div>
-  
-  <div class="collapsible" onclick="toggleCollapse(this)">
-    Section 1: Summary
-  </div>
-  <div class="collapse-content">
-    <!-- Content auto-expands first section -->
-  </div>
-  
-  <script>
-    document.getElementById('timestamp').textContent = new Date().toISOString();
-    document.querySelector('.collapse-content').classList.add('open');
-    function toggleCollapse(el) {
-      el.classList.toggle('open');
-      el.nextElementSibling.classList.toggle('open');
-    }
-  </script>
-</body>
-</html>
-```
-
-**Features:**
-- ✅ Dark mode auto-detect (prefers-color-scheme)
-- ✅ Collapsible sections (expand/collapse)
-- ✅ Syntax highlighting (via `<code>` + `<pre>`)
-- ✅ Responsive mobile-friendly design
-- ✅ No external dependencies (inline CSS/JS only)
-- ✅ Breadcrumb navigation
-- ✅ Metadata footer (generated time, skill version)
-- ✅ Link validation (check all hrefs)
-- ✅ Search-friendly (semantic HTML5)
+The page is self-contained — inline CSS, no scripts, no external requests —
+with light and dark themes, a sticky section nav, collapsible sections built on
+`<details>`, and print styles. Every interpolated value is HTML-escaped. It is
+written only when a run changes files, or on `report=html`.
 
 ---
 
-## 📚 All 37 Skills: Enhancement Status
+## What changed in v5.1
 
-### **Phase 1: Core Skills (COMPLETE)**
+### Added
 
-| # | Skill | Status | Token Savings | Pattern Library | HTML Output |
-|---|---|---|---|---|---|
-| 1 | `adr_skill` | ✅ | 25% | SOLID, DDD | ✅ Collapsible ADR cards |
-| 2 | `spec_driven_development_skill` | ✅ | 20% | Gates + pipelines | ✅ Stage timeline |
-| 3 | `current_tech_spec_skill` | ✅ | 30% | OOP, Design Patterns | ✅ Spec dashboard |
-| 4 | `project_context_skill` | ✅ | 28% | DDD, Pattern refs | ✅ Context tree viz |
-| 5 | `traceability_skill` | ✅ | 22% | Chain validation | ✅ Flow diagram |
+- `html_report_skill` — the shared run-report contract (skill 38).
+- A Quick Card on all 38 skills; senior defaults on the 18 coding skills.
+- `applies_to` frontmatter on the 14 skills that lacked it — the validator now passes all 38.
+- `agent_skill_design_skill` §3a — the Quick Card specification.
+- [Skills playbook](../01-workflows/skills-playbook.md) — which skills each of the 16 SDLC stages loads.
 
-### **Phase 2: Architecture Skills (COMPLETE)**
+### Fixed — defects in the skills themselves
 
-| # | Skill | Status | Token Savings | Pattern Library | HTML Output |
-|---|---|---|---|---|---|
-| 6 | `oop_skill` | ✅ | 32% | Pillars + patterns | ✅ Pattern reference |
-| 7 | `code_review_skill` | ✅ | 26% | Quality gates | ✅ Review report card |
-| 8 | `code_health_skill` | ✅ | 24% | Issue taxonomy | ✅ Health dashboard |
-| 9 | `code_formatting_skill` | ✅ | 18% | Style standards | ✅ Format report |
-| 10 | `security_audit_skill` | ✅ | 29% | OWASP top 10 | ✅ Threat matrix |
-
-### **Phase 3: Implementation Skills (COMPLETE)**
-
-| # | Skill | Status | Token Savings | Pattern Library | HTML Output |
-|---|---|---|---|---|---|
-| 11 | `java_advanced_skill` | ✅ | 28% | Java patterns | ✅ Code reference |
-| 12 | `python_advanced_skill` | ✅ | 25% | Python patterns | ✅ Code reference |
-| 13 | `react_advanced_skill` | ✅ | 26% | React hooks | ✅ Component library |
-| 14 | `backend_skill` | ✅ | 30% | REST patterns | ✅ Endpoint reference |
-| 15 | `frontend_skill` | ✅ | 24% | Component patterns | ✅ UI component guide |
-| 16 | `database_skill` | ✅ | 22% | Schema patterns | ✅ ER diagram |
-| 17 | `test_skill` | ✅ | 27% | AAA pattern | ✅ Test report |
-| 18 | `code_documentation_skill` | ✅ | 31% | Doc standards | ✅ API reference |
-| 19 | `error_handling_skill` | ✅ | 28% | Exception hierarchies | ✅ Error catalog |
-| 20 | `refactoring_skill` | ✅ | 23% | Refactor patterns | ✅ Refactor report |
-
-### **Phase 4: Technology-Specific Skills (COMPLETE)**
-
-| # | Skill | Status | Token Savings | Pattern Library | HTML Output |
-|---|---|---|---|---|---|
-| 21 | `spring_advanced_skill` | ✅ | 25% | Spring patterns | ✅ Config reference |
-| 22 | `lombok_skill` | ✅ | 20% | Annotation guide | ✅ Lombok handbook |
-| 23 | `logger_skill` | ✅ | 26% | Logging patterns | ✅ Log config guide |
-| 24 | `apache_camel_skill` | ✅ | 24% | EIP patterns | ✅ Route guide |
-| 25 | `apache_pulsar_skill` | ✅ | 23% | Streaming patterns | ✅ Topology guide |
-| 26 | `opentelemetry_skill` | ✅ | 27% | Observability | ✅ Metric catalog |
-| 27 | `mssql_advanced_skill` | ✅ | 22% | T-SQL patterns | ✅ Query guide |
-| 28 | `mcp_server_skill` | ✅ | 25% | MCP protocol | ✅ Protocol reference |
-| 29 | `mcp_server_builder_skill` | ✅ | 24% | Builder patterns | ✅ Server guide |
-
-### **Phase 5: Business & Reporting Skills (COMPLETE)**
-
-| # | Skill | Status | Token Savings | Pattern Library | HTML Output |
-|---|---|---|---|---|---|
-| 30 | `ba_create_skill` | ✅ | 21% | BDD patterns | ✅ Ticket template |
-| 31 | `jira_html_report_skill` | ✅ | 28% | Report patterns | ✅ Backlog dashboard |
-| 32 | `jira_incremental_spec_generator_skill` | ✅ | 26% | Spec patterns | ✅ Spec changelog |
-| 33 | `multi_review_html_skill` | ✅ | 29% | Review patterns | ✅ Multi-PR report |
-| 34 | `agent_skill_design_skill` | ✅ | 23% | Skill templates | ✅ Skill checklist |
-
-### **Phase 6: Advanced Skills (COMPLETE)**
-
-| # | Skill | Status | Token Savings | Pattern Library | HTML Output |
-|---|---|---|---|---|---|
-| 35 | `nemesis_skill` | ✅ | 22% | Adversarial patterns | ✅ Verdict card |
-| 36 | `context_builder_skill` | ✅ | 31% | Analysis patterns | ✅ Architecture viz |
-| 37 | `debugging_skill` | ✅ | 24% | Root cause analysis | ✅ Debug report |
-
----
-
-## 🎯 How Each Skill Was Enhanced
-
-### Example 1: `adr_skill` (Architecture Decision Records)
-
-**Before (v4.x):**
-- 250+ lines
-- Narrative explanations
-- Single HTML template
-
-**After (v5.0.0 SUPER SKILL):**
-- 180 lines (28% reduction)
-- 3-step execution (Skip narrative)
-- Templated ADR structure (fill 7 fields)
-- HTML output: collapsible ADR cards with state transitions
-- Pattern references: DDD (aggregate roots), Decision Trees
-- Token efficiency: Reuse `project_context_skill` output
-- Examples: 3 concrete ADRs (data structure, API contract, dependency)
-- Quick reference: Decision types table (10 types), 7-state lifecycle
-- Failures & Fixes: 5 common issues + solutions
-
-**HTML Output Example:**
-```html
-<div class="adr-card">
-  <div class="header">
-    <h3>ADR-0012: Idempotency Key for Payment Retries</h3>
-    <span class="state proposed">⏱ Proposed (2026-09-28)</span>
-  </div>
-  <div class="collapsible" onclick="toggle(this)">
-    Context (Click to expand)
-  </div>
-  <div class="content">
-    <p>OrderService.submit() has no idempotency key...</p>
-  </div>
-  <div class="state-machine">
-    Proposed → <strong>Review</strong> → Accepted → Superseded
-  </div>
-  <div class="links">
-    <a href="#ADR-0011">Supersedes ADR-0011</a>
-    <a href="#REQ-123">Satisfies REQ-123</a>
-  </div>
-</div>
-```
-
-### Example 2: `test_skill` (Test Generation)
-
-**Before (v4.x):**
-- 200+ lines
-- Generic patterns
-- Limited examples
-
-**After (v5.0.0 SUPER SKILL):**
-- 150 lines (25% reduction)
-- AAA pattern (Arrange-Act-Assert) as primary template
-- 5 test types: Unit, Integration, Acceptance, Performance, Security
-- Pattern library: Mocking, fixtures, factories
-- Token efficiency: Reference `spec_driven_development_skill` for AC → test mapping
-- HTML output: Test coverage dashboard with trend chart
-- Examples: 4 concrete test suites (backend, frontend, integration, acceptance)
-- Quick reference: Test naming convention, assertion library comparison
-- Failures & Fixes: Flaky tests, coverage gaps, test maintenance
-
-**HTML Output Example:**
-```html
-<div class="test-dashboard">
-  <div class="summary">
-    <div class="metric">
-      <span class="label">Coverage</span>
-      <span class="value" style="color: green;">95%</span>
-    </div>
-    <div class="metric">
-      <span class="label">Tests Passing</span>
-      <span class="value" style="color: green;">751/751</span>
-    </div>
-    <div class="metric">
-      <span class="label">Avg Duration</span>
-      <span class="value">2.3s</span>
-    </div>
-  </div>
-  
-  <table class="test-breakdown">
-    <tr>
-      <th>Type</th>
-      <th>Count</th>
-      <th>Coverage</th>
-      <th>Status</th>
-    </tr>
-    <tr>
-      <td>Unit Tests</td>
-      <td>450</td>
-      <td>92%</td>
-      <td><span class="success">✓ Pass</span></td>
-    </tr>
-    <tr>
-      <td>Integration Tests</td>
-      <td>250</td>
-      <td>88%</td>
-      <td><span class="success">✓ Pass</span></td>
-    </tr>
-    <tr>
-      <td>Acceptance Tests</td>
-      <td>51</td>
-      <td>100%</td>
-      <td><span class="success">✓ Pass</span></td>
-    </tr>
-  </table>
-</div>
-```
-
----
-
-## 📊 Super Skill Features Checklist
-
-Each skill now includes (✅ = implemented):
-
-- [x] Token efficiency optimizations (20-32% savings)
-- [x] Advanced pattern library references
-- [x] 3-5 step execution (no narrative)
-- [x] Quick reference section (input → output)
-- [x] Pattern applied list (with links)
-- [x] Token budget estimate
-- [x] 2-4 concrete examples
-- [x] Failures & fixes table
-- [x] Related skills (cross-references)
-- [x] Beautiful HTML output (collapsible, dark mode, responsive)
-- [x] Metadata footer (generated time, skill version, duration)
-- [x] Breadcrumb navigation
-- [x] Link validation
-- [x] Code syntax highlighting
-- [x] Mermaid diagram support (where applicable)
-- [x] Mobile-friendly responsive design
-- [x] No external dependencies (inline CSS/JS)
-- [x] Search engine friendly (semantic HTML5)
-
----
-
-## 🔗 Integration with Master Workflow
-
-Each skill is positioned in the master workflow (docs/01-workflows/16-master-workflow-all-skills.md):
-
-1. **STAGE 1:** `ba_create_skill`, `project_context_skill`
-2. **STAGE 2:** `adr_skill`, `current_tech_spec_skill`
-3. **STAGE 3:** `context_builder_skill`, `project_context_skill`
-4. **STAGE 4:** `backend_skill`, `frontend_skill`, `database_skill`
-5. **STAGE 5:** `java_advanced_skill`, `python_advanced_skill`, `react_advanced_skill`, `error_handling_skill`, `logger_skill`
-6. **STAGE 6:** `test_skill`, `code_review_skill`, `code_health_skill`, `security_audit_skill`
-7. **STAGE 7:** `code_documentation_skill`, `context_builder_skill`
-8. **STAGE 8:** `opentelemetry_skill`, `logger_skill`, `debugging_skill`
-9. **STAGE 9:** `traceability_skill`, `ba_create_skill`, `spec_driven_development_skill`
-
----
-
-## 🚀 Using Super Skills
-
-### Fast Track (5-minute execution)
-Use quick reference sections + pattern library links. Skip examples if familiar with patterns.
-
-**Typical token usage:** 1,500-2,500 tokens per skill
-
-### Detailed Path (15-minute execution)
-Read full skill, work through examples, reference patterns.
-
-**Typical token usage:** 3,000-5,000 tokens per skill
-
-### Expert Path (Custom execution)
-Skip templates, apply patterns directly from library.
-
-**Typical token usage:** 2,000-4,000 tokens per skill (pattern refs are pre-written)
-
----
-
-## 📈 Version Roadmap
-
-| Version | Release Date | Focus | Skills Affected |
+| Skill | Defect | Fix | Evidence |
 |---|---|---|---|
-| **5.0.0** | 2026-09-28 | Super skill enhancement | All 37 |
-| **5.1.0** | 2026-10-15 | Nemesis + MCP enhancements | nemesis_skill, mcp_server_skill |
-| **5.2.0** | 2026-11-01 | Performance optimization | context_builder_skill, jira_html_report_skill |
-| **6.0.0** | 2027-01-01 | Integrated multi-skill workflows | All 37 (orchestrated) |
+| 11 skills | 115 closing code fences carried a language tag (` ```java `). In CommonMark such a line does not close the block, so everything after the first example rendered as code | Bare closing fences | Parser pass; nested four-backtick block in `project_context_skill` left intact |
+| `tools/fix_code_blocks.py` | Tagged every bare fence, closers included — the cause of the above | Tags opening fences only | 0 closers touched on re-run |
+| `tools/skill_validator.py` | Counted every fence as an opener, so it reported correct closers as warnings | Tracks open/close; warns on tagged closers instead | Warnings 424 → 55 (the 55 are real untagged openers) |
+| `backend_skill` | `async def` routes on a synchronous SQLAlchemy session blocked the event loop | Plain `def` routes | Example run under FastAPI TestClient: 201 / 409 / 400 / 200 / 401 / 401 |
+| `backend_skill` | Login returned early for unknown emails, so timing revealed which accounts exist | Verify against a dummy hash either way | Median 33.2 ms known email vs 33.1 ms unknown |
+| `backend_skill` | `python-jose` and `passlib` (last release 2020); Pydantic v1 `class Config` | PyJWT, pwdlib (Argon2id), `model_config` | Same run, deprecation warnings as errors |
+| `opentelemetry_skill` | Depended on `opentelemetry-exporter-jaeger-thrift` at 1.35.0 — the artifact ended at 1.34.1, so the build could not resolve | Instrumentation BOM 2.31.1; OTLP to Jaeger | Maven Central metadata |
+| `lombok_skill` | "Best practice" put `@Data` on a JPA entity and `@Enumerated` on a `String` | `@Getter`/`@Setter`, id-based `equals`, constant `hashCode`, enum field | Compiled with Lombok 1.18.34 + Hibernate 6.5.3: hash stable after id assignment |
+| `lombok_skill` | `@Wither` (deprecated) described as a setter | `@With`, which returns a copy | Same compile |
+| `test_skill` | `userEvent` imported from `@testing-library/react`, which does not export it; thin on technique | Rewritten: AAA, given/when/then, fakes vs mocks, Testcontainers, property-based, contract, mutation, determinism | pytest + Hypothesis examples pass in random order |
+| `multi_review_html_skill`, `ba_create_skill` | Review and requirement text injected without escaping — a snippet with `</script>` or `List<String>` broke the page | JSON data blocks with `<` escaped; render via `textContent` | — |
+| `spring_advanced_skill` | Comment said `publishEvent` fires after commit | It fires immediately; the listener's `AFTER_COMMIT` defers delivery | — |
+| `context_builder_skill` | Named callers removed in v4 and an API `tools/context_builder.py` does not have | Real callers; real `ContextBuilder(...).build()` example | Example run |
+
+### Not done
+
+- Skill bodies were not shortened. The saving is from reading cards, not from rewriting 16,000 lines.
+- 55 opening code fences still have no language tag. They render correctly.
+- `orchestrator_agent.md` refers to an `architecture_skill` that does not exist.
+- `CHANGELOG.md` has two `[5.0.0]` sections and a `[1.0.0]` dated 2026-09-28 above `[Unreleased]`.
 
 ---
 
-## 📚 Documentation Structure
+## See also
 
-After this enhancement, the skills directory is organized as:
-
-```
-skills/
-├── README.md                           (index of all 37 skills)
-├── SUPER_SKILLS_ENHANCEMENT.md         (this file — overview)
-├── 
-├── [CORE SKILLS]
-├── adr_skill.md                        (v5.0.0 SUPER)
-├── spec_driven_development_skill.md    (v5.0.0 SUPER)
-├── current_tech_spec_skill.md          (v5.0.0 SUPER)
-├── project_context_skill.md            (v5.0.0 SUPER)
-├── traceability_skill.md               (v5.0.0 SUPER)
-├──
-├── [ARCHITECTURE & QUALITY SKILLS]
-├── oop_skill.md                        (v5.0.0 SUPER)
-├── code_review_skill.md                (v5.0.0 SUPER)
-├── [... 32 more skills ...]
-├──
-└── [Linked from master workflow — docs/01-workflows/16-master-workflow-all-skills.md]
-```
-
----
-
-## ✨ Key Achievements
-
-✅ **Token Efficiency:** 25-30% average savings across all skills  
-✅ **Pattern Reuse:** All 37 skills reference pattern libraries (no duplication)  
-✅ **Beautiful Output:** HTML reports with dark mode, collapsible sections, responsive design  
-✅ **Linear Pipeline:** Master workflow connects all 37 skills in logical stages  
-✅ **Production Ready:** 751 tests passing, all skills deployed in v5.0.0  
-
----
-
-**Last Updated:** 2026-09-28  
-**Maintained By:** awesome-prompts team  
-**License:** MIT
+- [skills.md](skills.md) — every skill, grouped
+- [../01-workflows/skills-playbook.md](../01-workflows/skills-playbook.md) — skills by SDLC stage
+- `skills/agent_skill_design_skill.md` · `skills/html_report_skill.md`

@@ -343,11 +343,26 @@ class SkillValidator:
         content = self._content
 
         # ── Check code blocks have language tags ──────────────────────────
-        code_blocks = re.finditer(r"```(\w*)", content)
-        for match in code_blocks:
-            lang = match.group(1)
-            if not lang:
-                line_num = content[:match.start()].count("\n") + 1
+        # Only opening fences take a language tag; a closing fence must stay bare.
+        open_fence: tuple[str, int] | None = None
+        for line_num, line in enumerate(content.split("\n"), start=1):
+            fence = re.match(r"^\s*(`{3,}|~{3,})(.*)$", line)
+            if not fence:
+                continue
+            marker, info = fence.group(1), fence.group(2).strip()
+            if open_fence is not None:
+                if marker[0] == open_fence[0] and len(marker) >= open_fence[1]:
+                    if info:
+                        result.add_warning(
+                            "Closing code fence carries a language tag, so it does not close the block",
+                            line_num=line_num,
+                            suggestion="Use a bare ``` to close the block",
+                            code="TAGGED_CLOSING_FENCE",
+                        )
+                    open_fence = None
+                continue
+            open_fence = (marker[0], len(marker))
+            if not info:
                 result.add_warning(
                     "Code block without language tag",
                     line_num=line_num,

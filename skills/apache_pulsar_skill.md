@@ -1,6 +1,6 @@
 ---
 name: Apache Pulsar Advanced Skill
-version: 1.0
+version: 1.1
 description: >
   Advanced knowledge skill for Apache Pulsar messaging. Covers architecture,
   producers, consumers, subscription types, schemas, error handling, dead letter
@@ -10,7 +10,24 @@ applies_to: [java, python, apache-pulsar, spring-boot, messaging, streaming]
 tags: [pulsar, messaging, streaming, pub-sub, dead-letter, schema-registry]
 ---
 
-# Apache Pulsar Advanced Skill — v1.0
+# Apache Pulsar Advanced Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Producing or consuming Pulsar messages, choosing a subscription type, or debugging backlog/redelivery |
+| **Skip when** | In-process events — Spring application events are enough (`spring_advanced_skill` §6) |
+| **Inputs** | Topic tenant/namespace, delivery guarantees, ordering needs, schema |
+| **Produces** | Producers, consumers, schema definitions, DLT configuration |
+| **Steps** | 1. Name the topic `persistent://tenant/ns/topic` → 2. Pick the subscription type → 3. Register a schema → 4. Configure DLT + max redeliveries → 5. Monitor backlog and DLT |
+| **Done when** | Schema enforced, DLT configured and monitored, subscription type matches the ordering requirement |
+| **Senior defaults** | `Key_Shared` when order matters per key but you need parallelism · schema on every topic — no raw bytes · DLT on every consumer, with an alert · ack only after processing succeeds · producers batch + compress by default |
+| **Load on demand** | §1 architecture · §2 producers · §3 subscription types · §4 schema · §5 DLT · §6 Spring · §7 Python · §8 debugging |
+| **Run report** | `html_report_skill` — adds: Topic & subscription map |
+| **Pairs with** | `error_handling_skill`, `opentelemetry_skill` |
 
 ---
 
@@ -28,7 +45,7 @@ Topic naming:
 
   persistent://  → messages survive broker restart (backed by BookKeeper)
   non-persistent:// → messages lost if broker restarts (high throughput, low durability)
-```java
+```
 
 ### Key Concepts vs Kafka
 
@@ -102,7 +119,7 @@ public class OrderEventPublisher {
         return pulsarTemplate.send(ORDER_EVENTS_TOPIC, event);
     }
 }
-```java
+```
 
 ### Producer with Custom Configuration
 
@@ -126,7 +143,7 @@ public PulsarTemplate<PaymentEvent> paymentEventTemplate(PulsarClient pulsarClie
 
     return new PulsarTemplate<>(new DefaultPulsarProducerFactory<>(pulsarClient, builder));
 }
-```java
+```
 
 ---
 
@@ -155,7 +172,7 @@ you get duplicate processing, missed messages, or ordering violations.
 // → Like SHARED but all messages with the same key always go to the same consumer
 // → Use for: parallel processing WITH per-key ordering (e.g. all events for customer 42 in order)
 // → Best of both worlds for keyed workloads
-```java
+```
 
 ### Spring for Apache Pulsar Consumer
 
@@ -197,7 +214,7 @@ public class OrderEventConsumer {
         // Method returns normally → Spring Pulsar auto-acks the message
     }
 }
-```java
+```
 
 ### KEY_SHARED Consumer (Ordered Per Customer)
 
@@ -225,7 +242,7 @@ public void onPaymentEvent(Message<PaymentEvent> message) {
 
     paymentService.process(event);
 }
-```java
+```
 
 ---
 
@@ -265,7 +282,7 @@ PulsarTemplate<OrderEvent> template = ...;
     schemaType = SchemaType.JSON   // Pulsar validates incoming messages against the schema
 )
 public void onOrderEvent(OrderEvent event) { ... }
-```java
+```
 
 ### Schema Evolution Rules
 
@@ -278,7 +295,7 @@ NOT BACKWARD COMPATIBLE (breaking):
   ❌ Change a field's type (e.g. String → Integer)
   ❌ Rename a required field
   ❌ Remove a field that consumers depend on
-```java
+```
 
 ---
 
@@ -341,7 +358,7 @@ public void onDeadLetter(Message<OrderEvent> deadMessage) {
     // Alert the on-call engineer
     alertingService.sendAlert("DLT message received for order: " + deadMessage.getValue().getOrderId());
 }
-```java
+```
 
 ---
 
@@ -369,7 +386,7 @@ spring:
     listener:
       observation-enabled: true                # integrates with Micrometer for metrics
       schema-type: json                        # default schema for all listeners
-```java
+```
 
 ---
 
@@ -446,7 +463,7 @@ def consume_events() -> None:
         except Exception as e:
             print(f"Processing failed for order {event.order_id}: {e}")
             consumer.negative_acknowledge(message)     # failure → nack → redeliver
-```java
+```
 
 ---
 
@@ -485,4 +502,4 @@ pulsar-admin topics peek-messages \
   --count 5 \
   --subscription order-processor-subscription \
   persistent://orders/default/order-events
-```java
+```

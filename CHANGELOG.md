@@ -82,6 +82,33 @@ Production release with complete diagram-as-code system, CI/CD, and packaging.
 
 ## [Unreleased]
 
+### Added
+- **Super skills.** A Quick Card under every skill's H1 (use when, skip when, inputs,
+  produces, steps, done when, load on demand, run report, pairs with) and *senior
+  defaults* on the 18 coding skills. The 38 cards total ~8% of the full skill text.
+  Standard: `agent_skill_design_skill` §3a.
+- `html_report_skill` — one shared contract for the self-contained HTML run report.
+  Skills 37 → 38.
+- [Skills playbook](docs/01-workflows/skills-playbook.md) — the skills each of the
+  16 SDLC stages loads.
+- `applies_to` frontmatter on 14 skills; `tools/skill_validator.py` passes all 38.
+
+### Fixed
+- 115 closing code fences in 11 skills carried a language tag and so never closed.
+  Root cause: `tools/fix_code_blocks.py` tagged closers, and `tools/skill_validator.py`
+  flagged correct closers as untagged. Both fixed.
+- `backend_skill`: blocking sync DB calls in `async` routes; login timing revealed
+  registered emails; `python-jose`/`passlib` → PyJWT/pwdlib; Pydantic v2 `model_config`.
+- `opentelemetry_skill`: depended on a Jaeger exporter that ended at 1.34.1 — now the
+  instrumentation BOM and OTLP.
+- `lombok_skill`: `@Data` on a JPA entity, `@Enumerated` on a `String`, `@Wither`.
+- `test_skill`: wrong `userEvent` import; rewritten to v2.0.
+- `multi_review_html_skill`, `ba_create_skill`: unescaped data in generated HTML.
+- `spring_advanced_skill`, `context_builder_skill`: inaccurate comment; stale callers and API.
+- Replaced `docs/01-workflows/16-master-workflow-all-skills.md` and the previous
+  `SUPER_SKILLS_ENHANCEMENT.md` (commit `214803b`): they cited commands that do not
+  exist and savings that were never measured.
+
 ## [5.2.0] — 2026-09-21
 
 ### Added

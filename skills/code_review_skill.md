@@ -1,6 +1,6 @@
 ---
 name: Code Review Skill v3 (Requirement-Driven)
-version: 3.0
+version: 3.1
 description: >
   Reusable 6-phase requirement-driven code review logic. Validates that PR/MR changes
   implement JIRA requirements, with comprehensive code quality analysis, scoring, and
@@ -9,7 +9,23 @@ description: >
 applies_to: [java, python, react, mssql, all-languages]
 ---
 
-# Code Review Skill v3 — Requirement-Driven Analysis
+# Code Review Skill v3 — Requirement-Driven Analysis — v3.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Reviewing a PR against its Jira ticket — `quality:review`, `quality:report` |
+| **Skip when** | Conformance observations with no scoring — `quality:observe` |
+| **Inputs** | Jira ticket, PR diff, test files |
+| **Produces** | Review report with requirement coverage, issues, test and doc analysis, grade A–F |
+| **Steps** | 1. Restate the ticket's ACs → 2. Map diff to ACs → 3. Review quality → 4. Test coverage → 5. Docs → 6. Score (Req 40 · Quality 30 · Tests 20 · Docs 10) |
+| **Done when** | Every AC marked met / partial / missing with evidence; every issue has severity, location, and fix |
+| **Load on demand** | §2–§6 the five phases · §7 scorecard · §8 issue format · §9 report structure |
+| **Run report** | own HTML report; batch runs use `multi_review_html_skill` |
+| **Pairs with** | `security_audit_skill`, `test_skill`, `multi_review_html_skill` |
 
 ---
 

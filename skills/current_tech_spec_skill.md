@@ -1,14 +1,33 @@
 ---
 name: Current Technical Specification Skill
-version: 1.0
+version: 1.1
 description: >
   Reusable skill for the Current Technical Specification — the latest approved
   design only, generated as a projection of Accepted-or-later ADRs, never
   hand-authored. Also carries the Final Implementation Record. Owned by
   architect:spec.
+applies_to: [architecture, specification, governance, all-languages]
 ---
 
-# Current Technical Specification Skill — v1.0
+# Current Technical Specification Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | An ADR reached Accepted or later, or a PR merged — `architect:spec` |
+| **Skip when** | Hand-editing the spec. Never — regenerate it |
+| **Inputs** | Every file in `docs/adr/` |
+| **Produces** | `docs/current-technical-specification.md` (regenerated) + Final Implementation Record on merge |
+| **Steps** | 1. Read all ADRs → 2. Select Accepted / Implemented / Verified → 3. Stop on conflicts (missing supersede link) → 4. Regenerate from scratch → 5. Diff and attribute each change to an ADR → 6. Sync project-context nodes |
+| **Done when** | Every section cites an ADR; no prose survives without one; pending list complete |
+| **Load on demand** | §The Projection Rule · §Specification Template · §Versioning · §Final Implementation Record |
+| **Run report** | `html_report_skill` — adds: Changes since previous version, each with its ADR |
+| **Pairs with** | `adr_skill`, `traceability_skill`, `project_context_skill` |
+
+---
 
 ## Purpose
 

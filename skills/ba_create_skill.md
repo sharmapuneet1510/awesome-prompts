@@ -1,11 +1,30 @@
 ---
 name: BA Create Skill
-version: 1.0
+version: 1.1
 description: >
   Parse plain-text requirements (free-form, Markdown, or Gherkin format) and generate structured JIRA-ready issues with auto-generated BDD Given-When-Then acceptance criteria. Output: requirements.json (structured data) and requirements-cards.html (interactive card visualization with editable scenarios).
+applies_to: [requirements, jira, bdd, language-agnostic]
 ---
 
-# BA Create Skill — v1.0
+# BA Create Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Plain-text, Markdown, or Gherkin requirements must become Jira issues with BDD acceptance criteria (`ba:create`) |
+| **Skip when** | Requirements still ambiguous — run `ba:discover` / `ba:clarify` first |
+| **Inputs** | `requirements.txt` / `.md` / Gherkin file, up to ~50K characters |
+| **Produces** | `requirements.json` (Jira-importable) + `requirements-cards.html` (editable cards) |
+| **Steps** | 1. Auto-detect format → 2. Split into requirement blocks → 3. Parse fields → 4. Generate 3 Given/When/Then scenarios each → 5. Write JSON → 6. Render HTML cards |
+| **Done when** | Every block became one issue with ≥ 3 scenarios; JSON validates; HTML opens offline |
+| **Load on demand** | §Input · §Output · §Parsing Logic phases 1–4 · §JSON Output · §HTML Generation |
+| **Run report** | own HTML — `requirements-cards.html` reuses `html_report_skill` §3 `<head>` tokens |
+| **Pairs with** | `project_context_skill`, `traceability_skill`, `html_report_skill` |
+
+---
 
 ## Purpose
 
@@ -241,6 +260,8 @@ Failure modes (choose based on requirement):
 - Responsive: 1 card on mobile, 2–3 cards on desktop
 - All CSS and JavaScript inline (no external CDN)
 - Smooth animations for expand/collapse
+- **Escape everything from the input file.** Requirement text is untrusted: embed issues as JSON in `<script type="application/json">` with every `<` written as `<`, render fields with `textContent`, never `innerHTML`
+- **Read edits back as text.** `editCard` saves and the export functions read `textContent` from `contentEditable` fields, so pasted markup stays text in `requirements.json`
 
 ### Page Sections
 

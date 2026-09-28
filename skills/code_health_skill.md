@@ -1,6 +1,6 @@
 ---
 name: Code Health Inspection Skill
-version: 1.0
+version: 1.1
 description: >
   Reusable skill module for deep code health analysis. Defines the complete
   taxonomy of issues to detect, severity scoring, evidence collection rules,
@@ -8,7 +8,23 @@ description: >
 applies_to: [java, python, react, mssql, all-languages]
 ---
 
-# Code Health Inspection Skill — v1.0
+# Code Health Inspection Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Deep inspection of existing code for risk — `quality:audit`, or a health pass before refactoring |
+| **Skip when** | Reviewing a single PR against its ticket — `code_review_skill` |
+| **Inputs** | Files or modules in scope, language |
+| **Produces** | Code Health Inspection Report: registry, detailed findings, priorities, grade |
+| **Steps** | 1. Scan with the §4 checklist for the language → 2. Classify by taxonomy code → 3. Grade P0–P3 → 4. Collect the five evidence fields → 5. Order fixes |
+| **Done when** | Every finding has location, snippet, root cause, impact, and a concrete fix |
+| **Load on demand** | §1 taxonomy · §2 severity · §3 evidence rules · §4 scan checklist by language · §5 report format |
+| **Run report** | `html_report_skill` — adds: Issue registry by severity |
+| **Pairs with** | `security_audit_skill`, `refactoring_skill`, `error_handling_skill` |
 
 ---
 
@@ -220,4 +236,4 @@ What will happen if nothing is fixed?]
 
 ## HEALTH SCORE
 [Optional: a simple A/B/C/D/F grade with justification]
-```plaintext
+```

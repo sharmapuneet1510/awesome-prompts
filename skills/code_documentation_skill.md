@@ -1,13 +1,32 @@
 ---
 name: Code Documentation Skill
-version: 1.0
+version: 1.1
 description: >
   Reusable skill for adding comprehensive documentation to code across all tech stacks.
   Generates JSDoc (JavaScript/TypeScript), docstrings (Python), Javadoc (Java),
   improves comments, and ensures 100% method documentation. Used by all agents.
+applies_to: [java, python, javascript, typescript, documentation]
 ---
 
-# Code Documentation Skill — v1.0
+# Code Documentation Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Adding or fixing Javadoc, docstrings, or JSDoc — `implementer:doc`, or the doc phase of `implementer:full` |
+| **Skip when** | Architecture narrative — that is `context_builder_skill` / `current_tech_spec_skill` |
+| **Inputs** | Source files, the public API surface, existing comments |
+| **Produces** | Method, class, and module docs in the language's native format |
+| **Steps** | 1. Find undocumented public API → 2. Write the one-line summary first → 3. Params, returns, throws → 4. Example for non-obvious use → 5. Link related APIs |
+| **Done when** | Every public method has summary, params, return, and exceptions; nothing restates the method name |
+| **Load on demand** | §Tech-Specific Formats · §Implementation Workflow · §Quality Checklist · §Documentation Debt Fixing |
+| **Run report** | `html_report_skill` — adds: Documentation coverage before → after |
+| **Pairs with** | `java_advanced_skill` §5, `python_advanced_skill` §6 |
+
+---
 
 ## Purpose
 

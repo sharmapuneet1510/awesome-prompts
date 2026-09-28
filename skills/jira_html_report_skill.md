@@ -1,13 +1,32 @@
 ---
 name: JIRA HTML Report Skill
-version: 1.0
+version: 1.1
 description: >
   Parse JIRA JSON or CSV exports and generate a single-file, self-contained HTML
   backlog report with filtering, sorting, summary stats, and row expansion. No
   external dependencies—all CSS and JavaScript inline.
+applies_to: [jira, reporting, html, language-agnostic]
 ---
 
-# JIRA HTML Report Skill — v1.0
+# JIRA HTML Report Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | A Jira export (JSON or CSV) must become a readable backlog — `ba:parse`, `ba:report` |
+| **Skip when** | Turning prose into new issues — `ba_create_skill` |
+| **Inputs** | `jira-export.json` or `jira-export.csv` |
+| **Produces** | `jira-report.html` — filters, statistics, single file, works offline |
+| **Steps** | 1. Detect format → 2. Normalise fields → 3. Escape all text → 4. Compute stats → 5. Render HTML |
+| **Done when** | Every issue appears once; filters work; all Jira text HTML-escaped |
+| **Load on demand** | §Input · §Output · §Parsing Logic · §HTML Generation |
+| **Run report** | own HTML — `jira-report.html` reuses `html_report_skill` §3 `<head>` tokens |
+| **Pairs with** | `ba_create_skill`, `html_report_skill` |
+
+---
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 ---
 name: MCP Server Builder Skill
-version: 1.0
+version: 1.1
 description: >
   Use when creating, scaffolding, testing, or registering a new Model Context
   Protocol (MCP) server. Covers SDK and transport choice, a working server in
@@ -10,7 +10,26 @@ applies_to: [mcp, python, typescript, java, agent-tools]
 tags: [mcp, mcp-server, stdio, streamable-http, sdk, testing]
 ---
 
-# MCP Server Builder Skill — v1.0
+# MCP Server Builder Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Creating, testing, or registering an MCP server |
+| **Skip when** | Deciding which tools to expose — `mcp_server_skill` (apply both) |
+| **Inputs** | SDK language, transport, the tool set from `mcp_server_skill` |
+| **Produces** | Server code, three test layers, Claude Code registration |
+| **Steps** | 1. Pin the SDK major and read its quickstart → 2. Pick primitives + transport (stdio first) → 3. Write the server → 4. Test in-process, as a subprocess, and in the client → 5. Register with absolute paths |
+| **Done when** | §8 checklist passes |
+| **Senior defaults** | Nothing on stdout under stdio — log to stderr · anticipated failures as `ToolError` / `isError` with actionable, secret-free text · types constrain inputs; lists have a default and hard `limit` · secrets from env only · returned data is untrusted input to the model |
+| **Load on demand** | §1 SDK pinning · §2 primitives + transport · §3 Python · §4 TypeScript · §5 rules · §6 tests · §7 registration |
+| **Run report** | `html_report_skill` — adds: Tools exposed · Test layers run |
+| **Pairs with** | `mcp_server_skill`, `security_audit_skill` |
+
+---
 
 > **Scope.** How to *build* an MCP server: pick SDK and transport, write it, test it, register it. *Which* tools to expose and how to shape their schemas is `mcp_server_skill.md` — apply both.
 >

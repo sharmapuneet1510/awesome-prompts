@@ -1,6 +1,6 @@
 ---
 name: MSSQL Advanced Coding Skill
-version: 2.0
+version: 2.1
 description: >
   Reusable skill module for SQL Server T-SQL development. Covers version
   detection, stored procedure templates, NOLOCK explained clearly, query
@@ -8,7 +8,24 @@ description: >
 applies_to: [mssql, t-sql, sql-server, azure-sql]
 ---
 
-# MSSQL Advanced Coding Skill — v2.0
+# MSSQL Advanced Coding Skill — v2.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Writing or reviewing T-SQL: procedures, indexes, dynamic SQL on SQL Server / Azure SQL |
+| **Skip when** | Portable schema design — `database_skill` |
+| **Inputs** | SQL Server version (§1 — detect first), schema, workload |
+| **Produces** | Procedures, indexes, test scripts |
+| **Steps** | 1. Detect version → 2. Write set-based queries → 3. Procedures with `NOCOUNT` + `XACT_ABORT` + `TRY/CATCH` → 4. Index from the plan → 5. Generate the test script |
+| **Done when** | §8 rules hold; a test script accompanies every procedure |
+| **Senior defaults** | `SET XACT_ABORT ON` in every transactional procedure · `THROW`, never `RAISERROR`, in new code · dynamic SQL only via `sp_executesql` with parameters · set-based over cursors · `NOLOCK` only with the dirty-read trade-off written down · explicit column lists and schema prefixes |
+| **Load on demand** | §1 version · §2 NOLOCK · §3 procedures · §4 indexing · §5 dynamic SQL · §6 query standards · §7 test template |
+| **Run report** | `html_report_skill` — adds: Procedures + test scripts |
+| **Pairs with** | `database_skill` |
 
 ---
 
@@ -21,7 +38,7 @@ Before writing any SQL, check what is installed:
 SELECT @@VERSION;
 SELECT SERVERPROPERTY('ProductVersion') AS [Version],
        SERVERPROPERTY('Edition')        AS [Edition];
-```sql
+```
 
 | Version | Key Features Available |
 |---------|----------------------|
@@ -56,7 +73,7 @@ This is one of the most misunderstood hints in T-SQL. Understand it before using
 -- Transaction B (with NOLOCK): reads order #99 and sees £200
 -- Transaction A: gets an error, rolls back — balance goes back to £500
 -- Transaction B now has a "fact" (£200) that was never true. It never committed.
-```sql
+```
 
 ### Decision Guide — NOLOCK or Not?
 
@@ -72,7 +89,7 @@ Is this a dashboard or report where approximate counts are acceptable?
 
 Is this a development/debug query to inspect data quickly?
   YES → ✅ NOLOCK is fine. Don't commit this to production code.
-```sql
+```
 
 ### The Better Alternative: RCSI
 
@@ -95,7 +112,7 @@ WITH ROLLBACK IMMEDIATE;
 
 -- After this, READ COMMITTED queries will automatically use snapshots.
 -- You do NOT need to add NOLOCK hints anywhere.
-```sql
+```
 
 ### Isolation Level Summary
 
@@ -119,7 +136,7 @@ SNAPSHOT ISOLATION
 SERIALIZABLE
   Dirty reads: NO   |  All anomalies: NO    |  Blocks heavily
   → Only for financial reconciliation or critical single-row operations.
-```sql
+```
 
 ---
 
@@ -176,7 +193,7 @@ BEGIN
         o.created_at DESC;
 
 END;
-```sql
+```
 
 ### Transactional Procedure (Write Operations)
 
@@ -248,7 +265,7 @@ BEGIN
     END CATCH;
 
 END;
-```sql
+```
 
 ---
 
@@ -291,7 +308,7 @@ FROM sys.dm_db_missing_index_group_stats AS migs
 JOIN sys.dm_db_missing_index_groups      AS mig ON migs.group_handle = mig.index_group_handle
 JOIN sys.dm_db_missing_index_details     AS mid ON mig.index_handle  = mid.index_handle
 ORDER BY estimated_benefit DESC;
-```sql
+```
 
 ---
 
@@ -320,7 +337,7 @@ EXEC sp_executesql
     @paramDef,
     @StatusParam     = @Status,       -- bound as a parameter, not code
     @CustomerIdParam = @CustomerId;
-```sql
+```
 
 ---
 
@@ -356,7 +373,7 @@ SELECT
     r.total_amount
 FROM recent_orders AS r
 WHERE r.order_rank = 1;  -- Only keep the most recent per customer
-```sql
+```
 
 ---
 
@@ -464,7 +481,7 @@ END CATCH;
 -- ── Cleanup: roll back ALL test data ──────────────────────────────────
 ROLLBACK TRANSACTION;
 PRINT '=== All test data rolled back. Database is unchanged. ===';
-```sql
+```
 
 ---
 

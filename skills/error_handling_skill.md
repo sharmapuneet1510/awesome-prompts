@@ -1,6 +1,6 @@
 ---
 name: Error Handling & Resilience Skill
-version: 1.0
+version: 1.1
 description: >
   Comprehensive error handling patterns across Java, Python, and JavaScript/React.
   Covers custom exceptions, try-catch patterns, logging, error recovery, and resilience.
@@ -8,7 +8,24 @@ applies_to: [java, python, javascript, react, error-handling, exceptions]
 tags: [error-handling, exceptions, logging, resilience, patterns]
 ---
 
-# Error Handling & Resilience Skill — v1.0
+# Error Handling & Resilience Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Designing exceptions, retries, fallbacks, or error responses in Java, Python, or JS |
+| **Skip when** | Logging configuration — `logger_skill` |
+| **Inputs** | Failure modes of the code: invalid input, dependencies down, timeouts, conflicts |
+| **Produces** | Exception hierarchy, retry/backoff policy, fallback paths, consistent error responses |
+| **Steps** | 1. Classify each failure: retryable or not → 2. Define the exception hierarchy → 3. Catch specific before general → 4. Retry transient with backoff → 5. Degrade gracefully → 6. Return a consistent error shape |
+| **Done when** | §6 checklist passes; nothing swallowed; every external call has a timeout |
+| **Senior defaults** | Exponential backoff with jitter, capped · circuit breaker around every remote dependency · fail fast on non-retryable errors · catch where you can act, not everywhere · every remote call has a timeout · errors carry context (IDs), never secrets |
+| **Load on demand** | §1 exception design · §2 try/catch patterns · §3 logging · §4 retry + backoff · §5 recovery |
+| **Run report** | `html_report_skill` — adds: Failure-mode matrix (failure · handling · user sees) |
+| **Pairs with** | `logger_skill`, `oop_skill`, `apache_camel_skill` §3 |
 
 ---
 
@@ -81,7 +98,7 @@ public class ConflictException extends DomainException {
         super("CONFLICT", message);
     }
 }
-```plaintext
+```
 
 ```python
 # Python: Create custom exception hierarchy
@@ -136,7 +153,7 @@ class InsufficientResourcesException(DomainException):
             error_code="INSUFFICIENT_RESOURCES",
             message=f"Insufficient {resource} available"
         )
-```plaintext
+```
 
 ---
 
@@ -214,7 +231,7 @@ public OrderProcessResult processOrder(Long orderId) {
         closeAnyOpenResources();
     }
 }
-```plaintext
+```
 
 ### 2.2 Python — Try-Except-Else Pattern
 
@@ -298,7 +315,7 @@ async def process_order(order_id: int) -> OrderProcessResult:
     finally:
         # Cleanup: always executes
         await cleanup_resources()
-```plaintext
+```
 
 ---
 
@@ -346,7 +363,7 @@ public class OrderProcessor {
         }
     }
 }
-```plaintext
+```
 
 ```python
 import logging
@@ -396,7 +413,7 @@ async def process_order(order_id: int) -> None:
         # ERROR: Unexpected errors with full stack trace
         logger.error("Unexpected error processing order: order_id=%s",
                     order_id, exc_info=True)
-```plaintext
+```
 
 ---
 
@@ -457,7 +474,7 @@ RetryPolicy<PaymentResult> policy = new RetryPolicy<>(3, 100, 2.0);
 PaymentResult result = policy.execute(() ->
         paymentGateway.processPayment(order)
 );
-```plaintext
+```
 
 ```python
 import asyncio
@@ -520,7 +537,7 @@ result = await retry_operation(
     initial_backoff_ms=100,
     backoff_multiplier=2.0
 )
-```plaintext
+```
 
 ---
 
@@ -551,7 +568,7 @@ public Order getOrderWithFallback(Long orderId) {
         }
     }
 }
-```plaintext
+```
 
 ### 5.2 Circuit Breaker Pattern
 
@@ -605,7 +622,7 @@ public class CircuitBreaker<T> {
         }
     }
 }
-```plaintext
+```
 
 ---
 

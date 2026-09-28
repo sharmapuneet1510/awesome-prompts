@@ -1,6 +1,6 @@
 ---
 name: Apache Camel Advanced Skill
-version: 1.0
+version: 1.1
 description: >
   Advanced knowledge skill for Apache Camel integration framework. Covers
   Enterprise Integration Patterns, route DSL, error handling, components,
@@ -10,7 +10,24 @@ applies_to: [java, apache-camel, spring-boot, integration, eip]
 tags: [camel, integration, eip, routing, messaging]
 ---
 
-# Apache Camel Advanced Skill — v1.0
+# Apache Camel Advanced Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Building or debugging Camel routes, EIP integrations, or Camel on Spring Boot |
+| **Skip when** | Plain request/response HTTP calls with no routing — a client library is simpler |
+| **Inputs** | Source/target endpoints, message formats, error and retry policy |
+| **Produces** | `RouteBuilder` classes, processors, route tests |
+| **Steps** | 1. Model Exchange → Message → Body/Headers → 2. Write the route in Java DSL → 3. Add `onException` per failure class → 4. Extract logic into processors → 5. Test with `AdviceWith` / mock endpoints |
+| **Done when** | Route tests pass with endpoints mocked; every exception class has an explicit handler |
+| **Senior defaults** | Retryable vs non-retryable errors get separate `onException` blocks · exponential redelivery with `handled(true)` + dead-letter route · no business logic inline in the DSL — processors · headers for routing, body for payload · idempotent consumer on at-least-once sources |
+| **Load on demand** | §1 mental model · §2 route DSL · §3 error handling · §4 processors · §5 Spring Boot · §6 testing · §7 debugging |
+| **Run report** | `html_report_skill` — adds: Route map · Error-handling matrix |
+| **Pairs with** | `error_handling_skill`, `spring_advanced_skill`, `logger_skill` |
 
 ---
 
@@ -24,7 +41,7 @@ Exchange  — the wrapper that carries a message through a route
         ├── Body     — the payload (String, byte[], POJO, InputStream, etc.)
         ├── Headers  — key/value metadata (like HTTP headers, file names, etc.)
         └── Properties — exchange-scoped metadata (survive routing steps)
-```java
+```
 
 **Route** = a pipeline of steps. Data enters at a `from()`, flows through
 processors and transformers, and exits at one or more `to()` endpoints.
@@ -88,7 +105,7 @@ public class OrderIngestionRoute extends RouteBuilder {
             .log("Order ${body.orderId} sent to processing queue");
     }
 }
-```java
+```
 
 ### Content-Based Router (EIP Pattern)
 
@@ -130,7 +147,7 @@ public class PaymentRoutingRoute extends RouteBuilder {
             .end();
     }
 }
-```java
+```
 
 ### Splitter + Aggregator (Process a list, collect results)
 
@@ -168,7 +185,7 @@ public class BatchOrderRoute extends RouteBuilder {
             .log("Batch complete: ${body.successCount} succeeded, ${body.failureCount} failed");
     }
 }
-```java
+```
 
 ---
 
@@ -215,7 +232,7 @@ public class PaymentProcessingRoute extends RouteBuilder {
             .to("direct:payment-success");
     }
 }
-```java
+```
 
 ### Dead Letter Channel (Global Fallback)
 
@@ -229,7 +246,7 @@ errorHandler(
         .deadLetterHandleNewException(false)
         .log("Message sent to DLQ after ${header.CamelRedeliveryCounter} retries")
 );
-```java
+```
 
 ---
 
@@ -269,7 +286,7 @@ public class OrderValidator implements Processor {
         log.debug("Order validation passed for customer {}", order.getCustomerId());
     }
 }
-```java
+```
 
 ---
 
@@ -293,7 +310,7 @@ camel:
     http:
       connection-timeout: 5000      # ms — ALWAYS set timeouts on HTTP components
       response-timeout: 10000
-```java
+```
 
 ### Inject Camel Context in Spring Beans
 
@@ -325,7 +342,7 @@ public class OrderDispatchService {
         producerTemplate.asyncSendBody("direct:process-order", order);
     }
 }
-```java
+```
 
 ---
 
@@ -391,7 +408,7 @@ class OrderIngestionRouteTest extends CamelTestSupport {
         return new OrderIngestionRoute();
     }
 }
-```java
+```
 
 ---
 
@@ -407,7 +424,7 @@ from("direct:my-route")
     .bean(MyTransformer.class)
     .log("Body after transform: ${body}")
     .to("direct:next");
-```java
+```
 
 ### Tracer (Full Exchange History)
 
@@ -421,7 +438,7 @@ public BacklogTracer backlogTracer(CamelContext context) {
     tracer.setTraceFilter("routeId == 'order-ingestion'");  // trace specific route
     return tracer;
 }
-```java
+```
 
 ### Common Debugging Patterns
 
@@ -444,7 +461,7 @@ public BacklogTracer backlogTracer(CamelContext context) {
         // handle the caught exception
     }
 })
-```java
+```
 
 ### Common Issues and Fixes
 

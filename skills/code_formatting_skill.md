@@ -1,6 +1,6 @@
 ---
 name: Code Formatting & Style Skill
-version: 1.0
+version: 1.1
 description: >
   Universal code formatting standards across Java, Python, and JavaScript/TypeScript.
   Covers indentation, line length, whitespace, naming conventions, alignment, and tooling.
@@ -8,7 +8,23 @@ applies_to: [java, python, javascript, typescript, code-quality, formatting]
 tags: [formatting, style, conventions, tools, linting, prettier, black, google-style]
 ---
 
-# Code Formatting & Style Skill — v1.0
+# Code Formatting & Style Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Setting up or enforcing formatting and naming for Java, Python, or JS/TS |
+| **Skip when** | A formatter is already enforced in CI — follow it; do not restyle by hand |
+| **Inputs** | Language, existing formatter config |
+| **Produces** | Formatter config (Spotless / Black / Prettier), pre-commit hook, CI check |
+| **Steps** | 1. Detect existing config → 2. Adopt the language's standard style → 3. Automate in pre-commit → 4. Enforce in CI |
+| **Done when** | Formatter runs in pre-commit and CI; zero manual style debates |
+| **Load on demand** | §1 universal rules · §2 per language · §4 naming · §5 auto-formatting setup |
+| **Run report** | `html_report_skill` — adds: Files reformatted |
+| **Pairs with** | `code_health_skill` |
 
 ---
 
@@ -54,7 +70,7 @@ method(arg1, arg2);
 
 // ✗ AVOID: Space before parentheses
 method (arg1, arg2);
-```plaintext
+```
 
 ---
 
@@ -136,7 +152,7 @@ public class OrderProcessor {
 
     // Closing brace on own line for class
 }
-```plaintext
+```
 
 **Java Formatter Tools:**
 - **Spotless** (Gradle/Maven plugin)
@@ -156,7 +172,7 @@ public class OrderProcessor {
         </java>
     </configuration>
 </plugin>
-```plaintext
+```
 
 ### 2.2 Python Formatting
 
@@ -230,7 +246,7 @@ class OrderProcessor:
             message = f"Payment failed: {payment_result['error']}"
 
         return {"status": "SUCCESS", "message": message}
-```plaintext
+```
 
 **Python Formatter Tools:**
 - **Black** (opinionated code formatter)
@@ -250,7 +266,7 @@ isort app/
 # Lint code
 pylint app/
 flake8 app/
-```plaintext
+```
 
 **pyproject.toml:**
 ```toml
@@ -264,7 +280,7 @@ line_length = 88
 
 [tool.pylint."messages control"]
 disable = ["C0330", "C0326"]  # Formatting handled by Black
-```plaintext
+```
 
 ### 2.3 JavaScript/TypeScript Formatting
 
@@ -329,7 +345,7 @@ export class OrderProcessor {
     return { status: 'SUCCESS', message };
   }
 }
-```plaintext
+```
 
 **Prettier Configuration (.prettierrc):**
 ```json
@@ -342,7 +358,7 @@ export class OrderProcessor {
   "useTabs": false,
   "arrowParens": "always"
 }
-```plaintext
+```
 
 **ESLint Configuration (.eslintrc.json):**
 ```json
@@ -357,7 +373,7 @@ export class OrderProcessor {
     "eol-last": ["error", "always"]
   }
 }
-```plaintext
+```
 
 ---
 
@@ -378,7 +394,7 @@ public OrderProcessResult processOrder(
 public OrderProcessResult processOrder(Long orderId, PaymentRequest paymentRequest, DeliveryAddress deliveryAddress) {
     // method body
 }
-```plaintext
+```
 
 ### 3.2 Long Expressions
 
@@ -397,7 +413,7 @@ List<Order> recentOrders = orderRepository.findAll()
         .filter(o -> o.getCreatedAt().isAfter(cutoffDate))
         .map(this::enrichOrderData)
         .collect(Collectors.toList());
-```plaintext
+```
 
 ---
 
@@ -435,7 +451,7 @@ npx prettier --write src/
 git add -A
 
 exit 0
-```plaintext
+```
 
 ### 5.2 GitHub Actions Workflow
 
@@ -464,7 +480,7 @@ jobs:
         run: |
           npm install
           npx prettier --check src/
-```plaintext
+```
 
 ---
 

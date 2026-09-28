@@ -1,6 +1,6 @@
 ---
 name: NEMESIS Skill
-version: 1.0
+version: 1.1
 description: >
   Use when an existing conclusion (a PR approval, an ADR, a test result, a release
   decision, an RCA, a recommendation) must be attacked before it is trusted. Defines the
@@ -11,7 +11,25 @@ applies_to: [review, architecture, testing, release, rca, security, requirements
 tags: [nemesis, adversarial, validation, tenth-man, counterexample, evidence, verdict]
 ---
 
-# NEMESIS Skill — v1.0
+# NEMESIS Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | A finished conclusion — PR approval, ADR, test result, release decision, RCA — must be attacked before it is trusted (`orchestrator:nemesis`) |
+| **Skip when** | Work still in progress; routine review — use the normal reviewer |
+| **Inputs** | The conclusion and its sources only — not the author's reasoning (§2) |
+| **Produces** | `docs/nemesis/NMS-<year>-<seq>.md`: findings, five-way verdict, ranked failure-cause hypotheses |
+| **Steps** | 1. Reverse the hypothesis → 2. Plan challenges → 3. Gather evidence independently → 4. Attack each requirement → 5. Hunt counterexamples → 6. Grade evidence → 7. Apply the ordered verdict rules |
+| **Done when** | Verdict follows §10's first matching rule; SURVIVED is a valid result — never invent a defect |
+| **Load on demand** | §2 independence · §6 requirement attack · §7 counterexamples · §9 findings · §10 verdict · §11 hypotheses · §12 report |
+| **Run report** | own Markdown report (§12); `report=html` renders it with `html_report_skill` |
+| **Pairs with** | `adr_skill`, `traceability_skill`, `security_audit_skill` |
+
+---
 
 > **NEMESIS — Challenge everything before you trust anything.**
 >

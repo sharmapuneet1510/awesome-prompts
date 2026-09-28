@@ -1,6 +1,6 @@
 ---
 name: Security Audit Skill
-version: 1.0
+version: 1.1
 description: >
   OWASP Top 10-driven security audit methodology with severity grading and
   fix-example discipline. Complements code_review_skill.md's general review process.
@@ -8,7 +8,25 @@ applies_to: [java, python, javascript, react, security]
 tags: [security, owasp, audit, vulnerability]
 ---
 
-# Security Audit Skill — v1.0
+# Security Audit Skill — v1.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | A focused hunt for exploitable weaknesses — `quality:security`, `quality:qa suite=security` |
+| **Skip when** | General style review — `code_review_skill` |
+| **Inputs** | Entry points, trust boundaries, dependency lockfiles |
+| **Produces** | Findings with OWASP category, file:line, severity, concrete fix |
+| **Steps** | 1. Walk every entry point → 2. Check every trust boundary → 3. OWASP Top 10 pass → 4. Grade by exploitability → 5. Concrete fix per finding |
+| **Done when** | §5 checklist passes; no finding without file:line and a specific fix |
+| **Load on demand** | §1 scope · §2 OWASP checklist · §3 severity · §4 fix discipline |
+| **Run report** | `html_report_skill` — adds: Findings by severity × OWASP category |
+| **Pairs with** | `code_health_skill`, `backend_skill`, `nemesis_skill` |
+
+---
 
 ## 1. Audit Scope
 
@@ -53,4 +71,4 @@ Every finding needs a concrete fix, not just "sanitize input":
 ✅ No secrets/PII in logs or error responses
 
 ---
-> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `CREDITS.md`.
+> Inspired by ideas from [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) (GPL-3.0) — content rewritten, not copied. See `docs/reference/credits.md`.

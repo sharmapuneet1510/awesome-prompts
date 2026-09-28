@@ -1,6 +1,6 @@
 ---
 name: Java Advanced Coding Skill
-version: 2.0
+version: 2.1
 description: >
   Reusable skill module for Java coding. Covers Java 17/21 features, OOP
   principles with clear examples, Spring Boot 3.x patterns, Javadoc standards,
@@ -8,7 +8,24 @@ description: >
 applies_to: [java, spring-boot, maven, gradle]
 ---
 
-# Java Advanced Coding Skill — v2.0
+# Java Advanced Coding Skill — v2.1
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Writing or reviewing Java 17/21 code, with or without Spring Boot |
+| **Skip when** | Spring internals (AOP, WebFlux, Batch) — `spring_advanced_skill` |
+| **Inputs** | Java version (§1 — detect first), build tool, existing conventions |
+| **Produces** | Idiomatic Java with Javadoc and JUnit 5 tests |
+| **Steps** | 1. Detect JDK and Spring Boot versions → 2. Model data (records, sealed types) → 3. Apply OOP pillars → 4. Javadoc → 5. Tests |
+| **Done when** | §7 quality rules hold; tests in the same change |
+| **Senior defaults** | Records for DTOs and value types · sealed interfaces + exhaustive `switch` for closed result types · virtual threads for blocking I/O on 21 (`spring.threads.virtual.enabled=true`) · constructor injection only · `Optional` for nullable returns, never `null` from public methods · JPQL named parameters, never concatenation |
+| **Load on demand** | §1 version detection · §2 OOP in Java · §3 Java 17/21 features · §4 Spring Boot 3 · §5 Javadoc · §6 testing · §7 rules |
+| **Run report** | `html_report_skill` — adds: Java features used, with version gates |
+| **Pairs with** | `spring_advanced_skill`, `lombok_skill`, `logger_skill`, `test_skill` |
 
 ---
 
@@ -19,7 +36,7 @@ Before writing any Java code, check what is installed:
 ```bash
 java -version
 mvn -version
-```java
+```
 
 Then match features to what is available:
 
@@ -92,7 +109,7 @@ public class BankAccount {
         return ownerName;
     }
 }
-```java
+```
 
 ### 2.2 Abstraction — Define WHAT, Not HOW
 
@@ -149,7 +166,7 @@ public class EmailNotificationSender implements NotificationSender {
         return true;
     }
 }
-```java
+```
 
 ### 2.3 Inheritance — Shared Behaviour, Specialised Differences
 
@@ -224,7 +241,7 @@ public class CardPayment extends Payment {
         return PaymentResult.success(referenceId);
     }
 }
-```java
+```
 
 ### 2.4 Polymorphism — Write Code to the Interface
 
@@ -246,7 +263,7 @@ public void sendConfirmation(NotificationSender sender, String recipient, Paymen
                                    payment.getAmount(), payment.getCurrency());
     sender.send(recipient, subject, message);
 }
-```java
+```
 
 ---
 
@@ -270,7 +287,7 @@ public record CreateOrderRequest(
     @NotNull Long customerId,
     @NotEmpty List<String> items
 ) {}
-```java
+```
 
 ### Sealed Classes (Java 17+) — Controlled Hierarchies
 
@@ -307,7 +324,7 @@ String message = switch (result) {
     case PaymentResult.Success s -> "Payment " + s.transactionId() + " succeeded";
     case PaymentResult.Failure f -> "Payment failed: " + f.reason();
 };
-```java
+```
 
 ### Virtual Threads (Java 21+) — Simple Concurrency
 
@@ -323,7 +340,7 @@ ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 Thread.ofVirtual()
       .name("order-processor")
       .start(() -> processOrder(orderId));
-```java
+```
 
 ---
 
@@ -338,7 +355,7 @@ Service Impl      → Implements the business logic (how)
 Repository        → Data access (Spring Data JPA interface)
 Entity            → JPA entity (maps to a DB table)
 DTO               → What goes in/out of the API (not the entity)
-```java
+```
 
 ### Constructor Injection (Always)
 
@@ -357,7 +374,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository repository;  // injected via constructor
 }
-```java
+```
 
 ### application.yml Recommended Defaults
 
@@ -376,7 +393,7 @@ spring:
   threads:
     virtual:
       enabled: true
-```java
+```
 
 ---
 
@@ -407,7 +424,7 @@ public class YourClass {
      */
     public ReturnType methodName(ParamType paramName) { }
 }
-```java
+```
 
 ---
 
@@ -446,7 +463,7 @@ class OrderServiceImplTest {
         // Tests multiple bad inputs with one test method
     }
 }
-```java
+```
 
 ### Integration Tests — @SpringBootTest + Testcontainers
 
@@ -477,7 +494,7 @@ class OrderControllerIntegrationTest {
                .andExpect(jsonPath("$.status").value("PENDING"));
     }
 }
-```java
+```
 
 ---
 
