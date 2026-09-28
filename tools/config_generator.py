@@ -55,63 +55,70 @@ class ConfigGenerator:
         """Generate .claude/settings.json with hook registrations.
 
         Creates a settings dictionary suitable for Claude Code's settings.json,
-        with hooks organized by type (pre-commit, user-prompt-submit, etc).
+        with hooks organized by valid Claude Code events only (not git pre-commit).
 
         Args:
             hooks: List of HookFile objects from exporter
 
         Returns:
             Dict suitable for JSON serialization to .claude/settings.json
+
+        Note:
+            - Does NOT include hardcoded model or enabledPlugins (user preference)
+            - Only registers valid Claude Code events (UserPromptSubmit, etc.)
+            - Pre-commit/post-commit hooks should use git config, not Claude settings
+            - Uses correct nested matcher structure for Claude Code
         """
-        # Organize hooks by type
-        hooks_by_type: dict[str, list[dict[str, str]]] = {}
+        # Only Claude Code events (not git pre-commit)
+        valid_claude_events = {
+            "user-prompt-submit": "UserPromptSubmit",
+            "pre-tool-use": "PreToolUse",
+            "post-tool-use": "PostToolUse",
+            "session-start": "SessionStart",
+            "stop": "Stop",
+        }
+
+        # Organize hooks by valid Claude events only
+        hooks_by_event: dict[str, list[dict[str, str]]] = {}
 
         for hook in hooks:
-            hook_type = hook.hook_type  # e.g. 'pre-commit', 'user-prompt-submit'
+            hook_type = hook.hook_type.lower()  # normalize
 
-            if hook_type not in hooks_by_type:
-                hooks_by_type[hook_type] = []
+            # Skip git hooks (pre-commit, post-commit) - they belong in .git/hooks
+            if hook_type in ("pre-commit", "post-commit"):
+                continue
+
+            # Only register valid Claude Code events
+            if hook_type not in valid_claude_events:
+                continue
+
+            event_name = valid_claude_events[hook_type]
 
             # Get relative path from repo root to hook file
             try:
                 hook_rel_path = hook.path.relative_to(self.repo_root)
             except ValueError:
-                # Hook path is not relative to repo_root, use absolute
                 hook_rel_path = hook.path
 
-            hooks_by_type[hook_type].append({
+            if event_name not in hooks_by_event:
+                hooks_by_event[event_name] = []
+
+            hooks_by_event[event_name].append({
                 "type": "command",
                 "command": str(hook_rel_path)
             })
 
-        # Build settings structure
-        settings = {
-            "model": "haiku",
-            "hooks": {},
-            "enabledPlugins": {
-                "superpowers@claude-plugins-official": True,
-                "frontend-design@claude-plugins-official": True,
-                "code-review@claude-plugins-official": True,
-                "playwright@claude-plugins-official": True,
-            }
-        }
+        # Build settings structure with correct nested matcher shape
+        # Claude Code expects: event -> [{ matcher, hooks }]
+        settings = {"hooks": {}}
 
-        # Map hook types to Claude settings hook categories
-        # Claude settings uses specific hook category names
-        hook_type_mapping = {
-            "pre-commit": "PreCommit",
-            "user-prompt-submit": "UserPromptSubmit",
-            "post-commit": "PostCommit",
-        }
-
-        for hook_type, hook_list in hooks_by_type.items():
-            # Get Claude hook category name, or use hook_type as-is
-            category_name = hook_type_mapping.get(hook_type, hook_type)
-
-            if category_name not in settings["hooks"]:
-                settings["hooks"][category_name] = []
-
-            settings["hooks"][category_name].extend(hook_list)
+        for event_name, hook_list in hooks_by_event.items():
+            settings["hooks"][event_name] = [
+                {
+                    "matcher": "",  # empty matcher = apply to all
+                    "hooks": hook_list
+                }
+            ]
 
         return settings
 
