@@ -70,7 +70,8 @@ token_optimizer = ["py.typed"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
-addopts = "--cov=. --cov-report=html --cov-report=term-missing"
+# Note: Coverage is optional. Run with: pytest --cov=. --cov-report=html
+# Default addopts removed to allow tests to run without coverage plugin
 
 [tool.black]
 line-length = 100
