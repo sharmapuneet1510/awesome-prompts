@@ -14,6 +14,29 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.0] — 2026-09-28
+
+Production release with complete diagram-as-code system, CI/CD, and packaging.
+
+### Added
+- **Archify** — Complete diagram-as-code system with 5 diagram types, automatic layout, self-contained HTML output, and LLM skill
+- **CI/CD** — GitHub Actions workflow with multi-version testing (Python 3.11-3.12, Node 20-22), coverage, security scanning
+- **Python Packaging** — `pyproject.toml` with dependencies, development tools, and CLI entry points
+- **GitHub Repository** — Metadata, topics, and first official release (v1.0.0)
+- **Contributing Guide** — Setup, testing, commit conventions, code style, troubleshooting
+- **Documentation** — Updated README with "What's New", improved navigation, installation guide
+
+### Fixed
+- **P0 #20** — Removed broken prompt hook that was executing YAML as bash and wasting tokens
+- **P0 #21** — Fixed exporter to generate valid settings, merge with existing files, preserve user preferences
+
+### Changed
+- Repository root cleaned: moved IDE configs to `.config/ide/`, removed build artifacts
+- Documentation updated: added v1.0.0 features, improved getting started
+- `.claude/settings.json` simplified: no hooks by default, users choose model/plugins
+
+---
+
 ## [Unreleased]
 
 ## [5.2.0] — 2026-09-21

@@ -5,6 +5,7 @@
 **Spec-driven engineering for AI coding assistants.**<br/>
 Your assistant stops and asks before it builds the wrong thing — then leaves a record of why.
 
+[![CI](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml/badge.svg)](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml)
 [![5 agents](https://img.shields.io/badge/agents-5-0969da?style=flat-square)](docs/02-reference/agents.md)
 [![43 functions](https://img.shields.io/badge/functions-43-0969da?style=flat-square)](docs/02-reference/functions.md)
 [![37 skills](https://img.shields.io/badge/skills-37-0969da?style=flat-square)](docs/02-reference/skills.md)
@@ -28,6 +29,16 @@ This repository gives an assistant two things it lacks:
 
 It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and Aider.
 
+## ✨ What's New (v1.0.0)
+
+- **Archify** — Diagram-as-code system with 5 types (Architecture, Workflow, Sequence, DataFlow, Lifecycle)
+- **CI/CD** — GitHub Actions with multi-version testing (Python 3.11-3.12, Node 20-22)
+- **Python Packaging** — Install via `pip install awesome-prompts`
+- **Contributing Guide** — Onboarding for developers
+- **P0 Fixes** — Security fixes for prompt hook and exporter settings
+
+See [CHANGELOG.md](CHANGELOG.md) for full details.
+
 ## How it works
 
 ```mermaid
@@ -47,11 +58,23 @@ flowchart LR
 
 ## Quick start
 
-**1. Get it**
+**1. Install**
 
+Option A: pip install (easiest)
+```bash
+pip install awesome-prompts
+```
+
+Option B: Clone from source
 ```bash
 git clone https://github.com/sharmapuneet1510/awesome-prompts.git
 cd awesome-prompts
+pip install -e .
+```
+
+Option C: Docker (coming soon)
+```bash
+docker run -it ghcr.io/sharmapuneet1510/awesome-prompts
 ```
 
 **2. See what is available** — read-only

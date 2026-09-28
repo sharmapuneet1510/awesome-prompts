@@ -1,12 +1,3 @@
-#!/bin/bash
----
-name: Promptshield Security Check
-version: 1.0
-description: Validates user prompts for security patterns and injection attempts
-hook_type: user-prompt-submit
-applies_to: [claude, copilot, cursor, windsurf, gemini, continue, openai, aider]
----
-
 set -e
 
 # List of dangerous patterns to check for

@@ -2164,14 +2164,37 @@ def main() -> None:
                 for result in results:
                     if result.target == "claude":
                         if all_hooks:
-                            settings = config_gen.generate_claude_settings(all_hooks)
+                            generated = config_gen.generate_claude_settings(all_hooks)
                             settings_file = repo_root / ".claude" / "settings.json"
                             settings_file.parent.mkdir(parents=True, exist_ok=True)
+
+                            # Merge with existing settings instead of overwriting
+                            existing = {}
+                            if settings_file.exists():
+                                try:
+                                    existing = json.loads(settings_file.read_text(encoding="utf-8"))
+                                    # Backup original
+                                    backup_file = settings_file.with_suffix(".json.bak")
+                                    backup_file.write_text(
+                                        json.dumps(existing, indent=2),
+                                        encoding="utf-8"
+                                    )
+                                except (json.JSONDecodeError, IOError):
+                                    pass
+
+                            # Merge: keep existing keys, only update hooks
+                            merged = {**existing, **generated}
+                            if "hooks" in existing and "hooks" in generated:
+                                # Deep merge hooks
+                                merged["hooks"] = {**existing.get("hooks", {}), **generated.get("hooks", {})}
+
                             settings_file.write_text(
-                                json.dumps(settings, indent=2),
+                                json.dumps(merged, indent=2),
                                 encoding="utf-8"
                             )
                             print(f"  Generated .claude/settings.json with {len(all_hooks)} hook(s)")
+                            if settings_file.with_suffix(".json.bak").exists():
+                                print(f"  (Original backed up to .claude/settings.json.bak)")
 
                     elif result.target == "copilot":
                         if all_hooks:
