@@ -34,7 +34,7 @@ tags: [opentelemetry, tracing, metrics, observability, jaeger, prometheus]
 
 ### 1.1 Three Pillars of Observability
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  OBSERVABILITY = Traces + Metrics + Logs                │
 ├─────────────────────────────────────────────────────────┤
@@ -59,7 +59,7 @@ tags: [opentelemetry, tracing, metrics, observability, jaeger, prometheus]
 
 ### 1.2 OpenTelemetry Architecture
 
-```
+```text
 Application Code
         ↓
    OpenTelemetry API (Facade)

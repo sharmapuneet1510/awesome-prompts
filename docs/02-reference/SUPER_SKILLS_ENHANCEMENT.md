@@ -1,7 +1,7 @@
 # Super Skills
 
 **What makes a skill a "super skill" in this repository, and what changed to
-get all 38 there.** Updated 2026-09-28.
+get all 43 there.** Updated 2026-09-29.
 
 > **Correction.** An earlier version of this page (commit `214803b`) claimed
 > per-skill token savings of 18–32% and marked all 37 skills enhanced. None of
@@ -25,7 +25,7 @@ Plus hygiene the validator enforces: frontmatter with `name`, `version`,
 `description`, `applies_to`; code fences that actually close.
 
 ```bash
-python3 tools/skill_validator.py      # 38 valid; README.md is not a skill
+python3 tools/skill_validator.py      # 43 valid; README.md is not a skill
 ```
 
 ---
@@ -36,16 +36,16 @@ Estimated as characters ÷ 4 over `skills/*_skill.md`.
 
 | | Tokens (≈) |
 |---|---|
-| All 38 skill files, in full | 143,800 |
-| All 38 Quick Cards | 11,700 — 8.2% of the full set |
-| Median skill file | 4,150 |
-| Median Quick Card | 290 |
-| Largest file — `code_review_skill` | 9,540; its card 250 |
+| All 43 skill files, in full | 166,300 |
+| All 43 Quick Cards | 14,100 — 8.5% of the full set |
+| Median skill file | 4,120 |
+| Median Quick Card | 300 |
+| Largest file — `code_review_skill` | 9,550; its card 250 |
 
 **What this does and does not show.** An agent that reads only the cards of
 the skills it might need, then loads one section, reads a fraction of the file.
 An agent that loads whole files anyway pays about 290 tokens *more* per skill
-for the card. The saving comes from following the card's **Load on demand** row;
+for the card (measured 2026-09-29). The saving comes from following the card's **Load on demand** row;
 it is not automatic, and agent behaviour was not measured here.
 
 ---
@@ -73,12 +73,13 @@ written only when a run changes files, or on `report=html`.
 
 ---
 
-## What changed in v5.1
+## What changed (unreleased)
 
 ### Added
 
 - `html_report_skill` — the shared run-report contract (skill 38).
-- A Quick Card on all 38 skills; senior defaults on the 18 coding skills.
+- Five skills built from files that were executed (skills 39–43) — see the table below.
+- A Quick Card on all 43 skills; senior defaults on the 23 coding and build skills.
 - `applies_to` frontmatter on the 14 skills that lacked it — the validator now passes all 38.
 - `agent_skill_design_skill` §3a — the Quick Card specification.
 - [Skills playbook](../01-workflows/skills-playbook.md) — which skills each of the 16 SDLC stages loads.
@@ -101,12 +102,30 @@ written only when a run changes files, or on `report=html`.
 | `spring_advanced_skill` | Comment said `publishEvent` fires after commit | It fires immediately; the listener's `AFTER_COMMIT` defers delivery | — |
 | `context_builder_skill` | Named callers removed in v4 and an API `tools/context_builder.py` does not have | Real callers; real `ContextBuilder(...).build()` example | Example run |
 
+### Added — skills 39–43
+
+| Skill | Verified by |
+|---|---|
+| `mssql_dba_skill` | SQL Server 2022 lab: a live head blocker (idle session, open transaction) found with its lock; a real deadlock read back from `system_health`; missing, redundant, and write-only indexes, 99%-fragmented / 60%-full GUID index, forwarded heap, stale statistics each detected; non-aligned index blocked `SWITCH` (error 7733) until aligned; sliding window run end to end. Every SQL block in the file executed without error |
+| `maven_skill` | Two-module build on Maven 3.9.16 / JDK 21: Enforcer failed on unpinned default plugins and on a real `javassist` convergence conflict, then passed once fixed; Failsafe IT coverage counted; custom `argLine` without `@{argLine}` shown to skip the coverage gate silently |
+| `python_project_skill` | uv project: ruff, `mypy --strict`, 6 tests in random order with warnings as errors, 100% branch coverage; `uv sync --locked` failed on a stale lock; `pip-audit` on the hashed export; wheel built; image ran as uid 10001 with no dev tools |
+| `ansible_skill` | ansible-core 2.21.4 against a Debian 13 container: lint production profile passed (after the role-prefix rule forced renames); first apply `changed=7`, second `changed=0`; `--check --diff` found manual drift; argument spec and `assert` rejected bad input; the Vault token appeared in no output |
+| `project_setup_skill` | Every catalog library checked on PyPI / npm / Maven Central for a 2026 release (httpx noted: last release Dec 2024); Boot-managed versions read from the Spring Boot 4.1.1 BOM |
+
+### Fixed — second pass
+
+- `orchestrator_agent.md` named a non-existent `architecture_skill`; now the Maven, Python, and Ansible skills via `implementer:pipeline`/`:docker`/`:iac`.
+- 54 untagged code fences tagged. The validator now reports none.
+- `CHANGELOG.md` reordered; tagged releases named by their git tags.
+- `pyproject.toml` console script for a Python `archify` module that does not exist — removed.
+- README's `pip install awesome-prompts` — the package is not on PyPI.
+
 ### Not done
 
 - Skill bodies were not shortened. The saving is from reading cards, not from rewriting 16,000 lines.
-- 55 opening code fences still have no language tag. They render correctly.
-- `orchestrator_agent.md` refers to an `architecture_skill` that does not exist.
-- `CHANGELOG.md` has two `[5.0.0]` sections and a `[1.0.0]` dated 2026-09-28 above `[Unreleased]`.
+- `mssql_dba_skill`'s multi-plan Query Store query ran, but the lab produced no plan regressions for it to find.
+- `ansible_skill`'s fleet-rollout playbook was syntax-checked and linted, not executed — its load-balancer scripts are placeholders. Molecule is described, not configured.
+- The git tags `v1.0.0` and `v5.0.0` (2026-09-28) reuse numbers the changelog's reconstructed history already had. Retagging is a decision for the maintainer.
 
 ---
 

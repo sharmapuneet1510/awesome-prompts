@@ -61,7 +61,7 @@ unpicking a bundle.
 
 | Category | Count | Source |
 |---|---|---|
-| Skills | 38 | `skills/*.md` |
+| Skills | 43 | `skills/*.md` |
 | Agents | 5 | `agents/*_agent.md` |
 | Functions | 35 | `agents/*/functions/*.md` |
 | Modules | 3 | `agents/orchestrator/modules/` |

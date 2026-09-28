@@ -42,7 +42,7 @@ This skill is **internal** — called by agents, not invoked directly by users.
 
 ## The Chain
 
-```
+```text
 Requirement ──▶ Jira ──▶ ADR ──▶ Technical Specification
                                         │
                                         ▼

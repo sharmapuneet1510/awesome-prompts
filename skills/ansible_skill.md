@@ -1,0 +1,385 @@
+---
+name: Ansible Skill
+version: 1.0
+description: >
+  Write, test, and run Ansible for configuration management: project layout,
+  pinned collections, inventories and variable precedence, roles with argument
+  specs, idempotent tasks with FQCN modules, handlers, validated templates,
+  Vault secrets that never reach logs, check/diff dry runs, rolling updates,
+  and ansible-lint's production profile. The example role here was linted,
+  dry-run, and applied twice (second run changed=0) with ansible-core 2.21.4.
+applies_to: [ansible, iac, configuration-management, devops, linux]
+tags: [ansible, roles, inventory, vault, idempotency, ansible-lint, handlers, check-mode]
+---
+
+# Ansible Skill — v1.0
+
+## Quick Card
+
+> Read this card first. Load a section below only when the task needs it.
+
+| | |
+|---|---|
+| **Use when** | Configuring servers or VMs, deploying an app onto hosts, or reviewing playbooks — `implementer:iac`, `implementer:pipeline` |
+| **Skip when** | Creating cloud resources (networks, databases, clusters) — use Terraform/OpenTofu and hand Ansible the hosts. Containers on Kubernetes — manifests or Helm |
+| **Inputs** | Target hosts and groups, OS family, what each host must end up with, secrets and where they live |
+| **Produces** | `ansible.cfg`, `collections/requirements.yml`, `inventories/<env>/`, `roles/<role>/`, `playbooks/site.yml`, `.ansible-lint` |
+| **Steps** | 1. Layout (§1) → 2. Pin collections (§2) → 3. Inventory and variables (§3) → 4. Role with argument spec (§4) → 5. Secrets in Vault (§5) → 6. Lint, check, apply, apply again (§6) → 7. Roll out safely (§7) |
+| **Done when** | `ansible-lint` passes the `production` profile; a second run reports `changed=0`; no secret appears in any output |
+| **Senior defaults** | FQCN always (`ansible.builtin.copy`) · every task idempotent — `command`/`shell` only with `creates`, `removes`, or `changed_when` · restarts through handlers, never inline · `validate:` on every config file · `argument_specs.yml` so bad input fails before any change · secrets: Vault + `no_log: true` + `diff: false` · pin collection versions · `--check --diff` before every production run · `serial` + `max_fail_percentage` for fleets |
+| **Load on demand** | §1 layout · §2 collections · §3 inventory · §4 role · §5 secrets · §6 test loop · §7 rollout · §8 pitfalls |
+| **Run report** | `html_report_skill` — adds: Recap per host (ok / changed / failed) · Idempotence result · Lint result |
+| **Pairs with** | `security_audit_skill`, `project_setup_skill`, `logger_skill` (log config deployed by roles) |
+
+---
+
+## 1. Layout
+
+```text
+infra/
+├── ansible.cfg                      ← project-local config; beats ~/.ansible.cfg
+├── collections/requirements.yml     ← pinned collections, installed into ./collections
+├── inventories/
+│   ├── staging/hosts.yml
+│   └── production/
+│       ├── hosts.yml
+│       └── group_vars/all/
+│           ├── main.yml             ← plain variables
+│           └── vault.yml            ← encrypted: vault_* variables only
+├── playbooks/site.yml
+├── roles/app_service/
+│   ├── defaults/main.yml            ← every variable the role reads, with a safe default
+│   ├── meta/main.yml
+│   ├── meta/argument_specs.yml      ← types, choices, required — validated before tasks run
+│   ├── tasks/main.yml
+│   ├── handlers/main.yml
+│   ├── templates/
+│   └── files/
+└── .ansible-lint
+```
+
+One inventory directory per environment, so pointing at production is an
+explicit `-i inventories/production`, never an accident.
+
+```ini
+[defaults]
+inventory = inventories/lab/hosts.yml
+roles_path = roles
+collections_path = collections
+interpreter_python = auto_silent
+callback_result_format = yaml
+retry_files_enabled = false
+
+[diff]
+always = false
+```
+
+## 2. Collections — Pinned, Local
+
+```yaml
+---
+collections:
+  - name: community.docker
+    version: 5.3.0
+```
+
+```bash
+ansible-galaxy collection install -r collections/requirements.yml -p collections
+```
+
+`ansible-core` ships only `ansible.builtin`. Everything else (`community.general`,
+`ansible.posix`, `community.docker`, cloud collections) is a versioned
+dependency — pin it as you would a library.
+
+## 3. Inventory and Variables
+
+```yaml
+# inventories/lab/hosts.yml
+---
+all:
+  children:
+    app_servers:
+      hosts:
+        ans-target:
+          ansible_connection: community.docker.docker
+```
+
+```yaml
+# inventories/lab/group_vars/all/main.yml
+---
+app_service_port: 8080
+app_service_log_level: info
+app_service_api_token: "{{ vault_app_api_token }}"
+```
+
+Precedence, in the order that matters day to day (later wins):
+
+| Where | Use for |
+|---|---|
+| `roles/<role>/defaults/main.yml` | The role's safe defaults — the only place a role's variables are introduced |
+| `inventories/<env>/group_vars/all/` | Environment-wide values |
+| `inventories/<env>/group_vars/<group>/` | Per group of hosts |
+| `inventories/<env>/host_vars/<host>/` | One host's exceptions — keep rare |
+| `-e` on the command line | One-off overrides; highest precedence, so never for normal config |
+
+Avoid `roles/<role>/vars/main.yml` for anything a user should change: it beats
+inventory variables and surprises everyone.
+
+## 4. A Role
+
+`ansible-lint`'s `production` profile requires role variables to carry the role
+name as prefix (`var-naming[no-role-prefix]`) — the example first failed six
+times on names like `app_port` until they became `app_service_port`.
+
+**`defaults/main.yml`**
+
+```yaml
+---
+app_service_user: app
+app_service_config_dir: /etc/app
+app_service_state_dir: /var/lib/app
+app_service_port: 8080
+app_service_log_level: info
+app_service_packages:
+  - jq
+```
+
+**`meta/argument_specs.yml`** — checked before the first task:
+
+```yaml
+---
+argument_specs:
+  main:
+    short_description: Install and configure the app service
+    options:
+      app_service_port:
+        type: int
+        required: true
+        description: TCP port the app listens on.
+      app_service_log_level:
+        type: str
+        choices: [debug, info, warning, error]
+        default: info
+        description: Log level written to the config file.
+      app_service_api_token:
+        type: str
+        required: true
+        no_log: true
+        description: Token the app uses to call the upstream API. Supply from Vault.
+      app_service_user:
+        type: str
+        default: app
+        description: System user that owns the app's files.
+      app_service_config_dir:
+        type: path
+        default: /etc/app
+        description: Directory for the config file.
+      app_service_state_dir:
+        type: path
+        default: /var/lib/app
+        description: Writable state directory.
+      app_service_packages:
+        type: list
+        elements: str
+        default: [jq]
+        description: OS packages the app needs.
+```
+
+Verified: `-e app_service_log_level=verbose` failed before any change with
+*"value of app_service_log_level must be one of: debug, info, warning, error, got: verbose"*.
+
+**`tasks/main.yml`**
+
+```yaml
+---
+- name: Check the port is unprivileged and valid
+  ansible.builtin.assert:
+    that:
+      - app_service_port | int >= 1024
+      - app_service_port | int <= 65535
+    fail_msg: "app_service_port must be 1024-65535, got {{ app_service_port }}"
+    quiet: true
+
+- name: Install OS packages
+  ansible.builtin.apt:
+    name: "{{ app_service_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create the app group
+  ansible.builtin.group:
+    name: "{{ app_service_user }}"
+    system: true
+
+- name: Create the app user
+  ansible.builtin.user:
+    name: "{{ app_service_user }}"
+    group: "{{ app_service_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ app_service_user }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ app_service_config_dir }}", owner: root, mode: "0750" }
+    - { path: "{{ app_service_state_dir }}", owner: "{{ app_service_user }}", mode: "0750" }
+
+- name: Install the reload script
+  ansible.builtin.copy:
+    src: app-reload
+    dest: /usr/local/bin/app-reload
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Render the config file
+  ansible.builtin.template:
+    src: app.toml.j2
+    dest: "{{ app_service_config_dir }}/app.toml"
+    owner: root
+    group: "{{ app_service_user }}"
+    mode: "0640"
+    validate: python3 -c 'import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))' %s
+  no_log: true
+  diff: false
+  notify: Restart app
+```
+
+**`handlers/main.yml`**
+
+```yaml
+---
+- name: Restart app
+  ansible.builtin.command: /usr/local/bin/app-reload
+  changed_when: true
+```
+
+**`templates/app.toml.j2`**
+
+```jinja
+# {{ ansible_managed }}
+[server]
+port = {{ app_service_port | int }}
+log_level = "{{ app_service_log_level }}"
+
+[upstream]
+api_token = "{{ app_service_api_token }}"
+```
+
+What each choice buys:
+
+| Choice | Why |
+|---|---|
+| `assert` first | Fails with a clear message (`app_service_port must be 1024-65535, got 80` — verified) instead of a half-configured host |
+| `apt` with `cache_valid_time` | Idempotent; does not refresh the package cache on every run |
+| `validate:` on the template | A broken config never replaces a working one — the file is checked in a temp path first |
+| `notify` → handler | The service restarts once, at the end, only if something changed |
+| `no_log: true` + `diff: false` on the secret-bearing template | Neither the task result nor `--diff` output can print the token |
+| Real service restart | `ansible.builtin.systemd_service: name=app state=restarted` in the handler (the example container has no systemd, so it used a script) |
+
+## 5. Secrets
+
+```bash
+ansible-vault encrypt inventories/production/group_vars/all/vault.yml
+ansible-playbook playbooks/site.yml --vault-password-file ~/.config/infra/vault_pass
+```
+
+- `vault.yml` holds only `vault_*` variables; `main.yml` maps them to real names
+  (`app_service_api_token: "{{ vault_app_api_token }}"`), so a grep of
+  `main.yml` shows every secret that exists without revealing any.
+- The vault password comes from a file outside the repository, a password
+  manager script, or the CI secret store — never committed.
+- Any task that handles a secret gets `no_log: true`; any template that
+  renders one also gets `diff: false`. Verified: across a dry run, two real
+  runs, and a `--check --diff` run, the token appeared in no output.
+
+## 6. The Test Loop
+
+```bash
+ansible-playbook playbooks/site.yml --syntax-check
+ansible-lint                                             # profile: production
+ansible-playbook playbooks/site.yml --check --diff       # what would change
+ansible-playbook playbooks/site.yml                      # apply
+ansible-playbook playbooks/site.yml                      # apply again: must be changed=0
+```
+
+Verified results on a Debian 13 target:
+
+| Run | Recap |
+|---|---|
+| First apply | `ok=10 changed=7` (6 task changes + the handler) |
+| Second apply | `ok=9 changed=0` — idempotent |
+| `--check --diff` on the converged host | `changed=0` |
+| `--check --diff` after editing the config by hand | `changed=1`, handler skipped — drift found without touching the host |
+
+The second apply is the test. Any `changed` on it is a bug: a `command` without
+`changed_when`, a template with a timestamp in it, a package with
+`state: latest`.
+
+For role-level CI across OS versions, Molecule runs the same
+converge-then-idempotence sequence in containers.
+
+## 7. Rolling Out to a Fleet
+
+```yaml
+- name: Update app servers without an outage
+  hosts: app_servers
+  serial: "25%"                 # a quarter of the fleet at a time
+  max_fail_percentage: 0        # any failure stops the rollout
+  pre_tasks:
+    - name: Take the host out of the load balancer
+      ansible.builtin.command: /usr/local/bin/lb-drain {{ inventory_hostname }}
+      delegate_to: localhost
+      changed_when: true
+  roles:
+    - role: app_service
+  post_tasks:
+    - name: Wait until the app answers
+      ansible.builtin.uri:
+        url: "http://{{ inventory_hostname }}:{{ app_service_port }}/health"
+      register: health
+      until: health.status == 200
+      retries: 30
+      delay: 2
+    - name: Put the host back
+      ansible.builtin.command: /usr/local/bin/lb-enable {{ inventory_hostname }}
+      delegate_to: localhost
+      changed_when: true
+```
+
+Syntax-checked and linted (production profile); not executed — `lb-drain` and
+`lb-enable` stand in for your load balancer's API or module.
+
+`--limit` narrows a run to named hosts; `--start-at-task` resumes; tags let a
+run touch only config (`--tags config`).
+
+## 8. Pitfalls
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `python3-apt must be installed to use check mode` | `apt` needs `python3-apt` on the target for `--check`; a real run auto-installs it | Run once for real, or install `python3-apt` in the base image — verified on a fresh Debian 13 host |
+| Second run shows `changed` | Non-idempotent task | `creates`/`removes`/`changed_when`; no timestamps in templates; `state: present`, not `latest` |
+| Variable ignored | Defined in `roles/…/vars/` or overridden by `-e` | Move to `defaults/`; check with `ansible-inventory --host <h>` |
+| Secret printed in CI log | Missing `no_log`, or `--diff` on a template | `no_log: true` and `diff: false` on that task |
+| `couldn't resolve module/action` | Collection not installed or wrong `collections_path` | `ansible-galaxy collection install -r collections/requirements.yml -p collections` |
+| `Ansible requires blocking IO on stdin/stdout/stderr` | Run from a tool that gives Ansible non-blocking pipes | Redirect: `ansible-playbook … > out.log 2>&1 < /dev/null` |
+
+## 9. Checklist
+
+✅ Project-local `ansible.cfg`; one inventory directory per environment
+✅ Collections pinned in `collections/requirements.yml`
+✅ FQCN for every module
+✅ Role variables prefixed, defaulted in `defaults/`, typed in `argument_specs.yml`
+✅ `command`/`shell` only with `creates`/`removes`/`changed_when`
+✅ Config files rendered with `validate:`; restarts via handlers
+✅ Secrets in Vault; `no_log` + `diff: false` wherever they flow
+✅ `ansible-lint` production profile passes
+✅ `--check --diff` reviewed before production; second apply is `changed=0`
+✅ Fleet changes use `serial` and `max_fail_percentage`

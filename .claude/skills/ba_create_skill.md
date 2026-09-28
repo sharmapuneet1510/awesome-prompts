@@ -63,7 +63,7 @@ Transform natural-language requirements into JIRA-structured issues with BDD acc
 
 ### Phase 1: Auto-detect input format
 
-```
+```text
 Scan first 200 characters of input file:
   If contains "Feature:", "Scenario:", "Given ", "When ", "Then "
     → Gherkin (Cucumber format)
@@ -105,7 +105,7 @@ For each requirement, generate exactly **3 scenarios** following BDD Given-When-
 
 **Scenario 1: Happy Path (✅ Success case)**
 
-```
+```text
 Name: Successful [action from requirement verb]
 GIVEN: Extract subject (user type) from "As a..." or requirement context
        "a registered user is on the [location]"
@@ -125,7 +125,7 @@ Rules by verb:
 
 **Scenario 2: Edge Case / Validation (⚠ Boundary or invalid input)**
 
-```
+```text
 Name: [Invalid/Boundary condition] entered
 GIVEN: Same context as happy path OR varied initial state
        "a user is on the [same form/page]"
@@ -144,7 +144,7 @@ Variations (choose based on requirement):
 
 **Scenario 3: Error Path / Failure (❌ System unavailable or unexpected error)**
 
-```
+```text
 Name: [External service/system] unavailable
 GIVEN: Prerequisite that will fail
        "the [external service] is [down/unavailable/overloaded]"
@@ -274,7 +274,7 @@ Failure modes (choose based on requirement):
 
 **B. Stats Bar (CSS Grid with 4 stat cards)**
 
-```
+```text
 Displays 4 stat cards, each with icon and value:
   • Total Requirements: [N]
   • By Type: [Story: X, Bug: Y, Task: Z, Epic: W]
@@ -319,7 +319,7 @@ Color-coded type/priority badges
 
 **Collapsed Card (default view):**
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │ REQ-001  📖 Story  🟠 High  ⭐ 3pts     │
 │ #auth #email #security                  │
@@ -335,7 +335,7 @@ Color-coded type/priority badges
 
 **Expanded Card (after click toggle):**
 
-```
+```text
 ┌──────────────────────────────────────────────────────┐
 │ REQ-001  📖 Story  🟠 High  ⭐ 3pts                 │
 │ #auth #email #security                               │
@@ -410,7 +410,7 @@ All functions must be self-contained with no external libraries:
 
 ### Input file (requirements.txt)
 
-```
+```markdown
 ## Password Reset
 Users should be able to reset their password via email link. This is a high priority feature for security.
 

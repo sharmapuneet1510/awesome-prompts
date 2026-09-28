@@ -26,7 +26,7 @@
 
 ### 1.1 Three Pillars of Observability
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  OBSERVABILITY = Traces + Metrics + Logs                │
 ├─────────────────────────────────────────────────────────┤
@@ -51,7 +51,7 @@
 
 ### 1.2 OpenTelemetry Architecture
 
-```
+```text
 Application Code
         ↓
    OpenTelemetry API (Facade)

@@ -6,15 +6,78 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 > **On version numbers.** This repository ran two overlapping version schemes
 > for most of its life: a repo release number that reached `v4.2.0` in May 2026,
-> and an agent-architecture number that ran `v1.0` → `v3.2`. Nothing was ever
-> git-tagged. This changelog reconciles them into a single line, keeping the
-> dates and content that actually shipped and noting the architecture version
-> inside each release. Releases before `v5.0.0` are reconstructed from commit
-> history and are dated by the work, not by a tag.
+> and an agent-architecture number that ran `v1.0` → `v3.2`. The entries from
+> `[1.0.0]` (2025) to `[5.2.0]` reconcile them into one line, dated by the work.
+>
+> **Git tags do not follow that line.** Four tags exist, created at the time
+> under the older scheme; each entry below names its tag. The two releases of
+> 2026-09-28 were tagged `v1.0.0` and `v5.0.0` — numbers the reconstructed line
+> had already used for 2025 and 2026-08 work — so they are listed by tag name.
+>
+> | Tag | Date | Entry |
+> |---|---|---|
+> | `v5.0.0` | 2026-09-28 | Tagged `v5.0.0` — stability release |
+> | `v1.0.0` | 2026-09-28 | Tagged `v1.0.0` — packaging and CI |
+> | `v4.3.0` | 2026-09-21 | `[5.2.0]` — NEMESIS |
+> | `v4.2.0` | 2026-05-20 | `[3.0.0]` — autonomous developer system |
 
 ---
 
-## [5.0.0] — 2026-09-28
+## [Unreleased]
+
+### Added
+- **Super skills.** A Quick Card under every skill's H1 (use when, skip when, inputs,
+  produces, steps, done when, load on demand, run report, pairs with) and *senior
+  defaults* on the 18 coding skills. The 38 cards total ~8% of the full skill text.
+  Standard: `agent_skill_design_skill` §3a.
+- `html_report_skill` — one shared contract for the self-contained HTML run report.
+  Skills 37 → 38.
+- [Skills playbook](docs/01-workflows/skills-playbook.md) — the skills each of the
+  16 SDLC stages loads.
+- `applies_to` frontmatter on 14 skills; `tools/skill_validator.py` passes all 38.
+- Five skills (38 → 43), each built from files that were run, not written from memory:
+  - `mssql_dba_skill` — head blockers, deadlock graphs, waits, Query Store, index review
+    (missing, unused, redundant, fragmentation, statistics, forwarded heaps), partition
+    alignment and the sliding window. Every query run on SQL Server 2022 against a lab that
+    reproduced each problem.
+  - `project_setup_skill` — stack, one library per use case with the rejected alternative,
+    project rules, `AGENTS.md`, ADRs, scaffold, approval gate. Catalog checked against PyPI,
+    npm, and Maven Central.
+  - `maven_skill` — parent POM built with Maven 3.9.16: BOM import, every plugin pinned,
+    Enforcer convergence (shown failing, then fixed), Surefire/Failsafe, JaCoCo gate, SBOM.
+  - `python_project_skill` — uv project with ruff, strict mypy, pytest gates, `--locked` CI,
+    pip-audit, and a two-stage non-root image, all run.
+  - `ansible_skill` — role linted on the production profile, applied twice (`changed=0`),
+    Vault secret absent from every output.
+- Agents route to them: `implementer` by `pom.xml` / `pyproject.toml` / inventory,
+  `quality:perf` to `mssql_dba_skill`, `orchestrator:plan` to `project_setup_skill`.
+
+### Fixed
+- 115 closing code fences in 11 skills carried a language tag and so never closed.
+  Root cause: `tools/fix_code_blocks.py` tagged closers, and `tools/skill_validator.py`
+  flagged correct closers as untagged. Both fixed.
+- `backend_skill`: blocking sync DB calls in `async` routes; login timing revealed
+  registered emails; `python-jose`/`passlib` → PyJWT/pwdlib; Pydantic v2 `model_config`.
+- `opentelemetry_skill`: depended on a Jaeger exporter that ended at 1.34.1 — now the
+  instrumentation BOM and OTLP.
+- `lombok_skill`: `@Data` on a JPA entity, `@Enumerated` on a `String`, `@Wither`.
+- `test_skill`: wrong `userEvent` import; rewritten to v2.0.
+- `multi_review_html_skill`, `ba_create_skill`: unescaped data in generated HTML.
+- `spring_advanced_skill`, `context_builder_skill`: inaccurate comment; stale callers and API.
+- `orchestrator_agent.md` named a non-existent `architecture_skill` for deployment; it now
+  points at `implementer:pipeline`/`:docker`/`:iac` with the Maven, Python, and Ansible skills.
+- 54 untagged code fences in skills tagged (`text`, `markdown`, `csv`).
+- `pyproject.toml` declared an `archify` console script for a Python module that does not
+  exist (archify is Node) — `pip install -e .` created a command that crashed. Removed.
+- README offered `pip install awesome-prompts`; the package is not on PyPI. Install from a clone.
+- This changelog: `[Unreleased]` restored to the top, tagged releases named by their tags.
+- Replaced `docs/01-workflows/16-master-workflow-all-skills.md` and the previous
+  `SUPER_SKILLS_ENHANCEMENT.md` (commit `214803b`): they cited commands that do not
+  exist and savings that were never measured.
+
+---
+
+## Tagged `v5.0.0` — 2026-09-28
 
 **Stability & Quality Release** — Production-hardened with comprehensive test suite and critical bug fixes.
 
@@ -53,11 +116,11 @@ versioning follows [Semantic Versioning](https://semver.org/).
 - ✅ All platforms supported (8/8: Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, Aider)
 - ✅ CI/CD green (GitHub Actions: Python 3.11-3.12, Node 20-22)
 - ✅ Code quality clean (ruff, pylint, mypy, black, isort)
-- ✅ Package installable (`pip install awesome-prompts`)
+- ~~Package installable (`pip install awesome-prompts`)~~ — corrected: the package is not on PyPI; install from a clone (see README)
 
 ---
 
-## [1.0.0] — 2026-09-28
+## Tagged `v1.0.0` — 2026-09-28
 
 Production release with complete diagram-as-code system, CI/CD, and packaging.
 
@@ -80,36 +143,7 @@ Production release with complete diagram-as-code system, CI/CD, and packaging.
 
 ---
 
-## [Unreleased]
-
-### Added
-- **Super skills.** A Quick Card under every skill's H1 (use when, skip when, inputs,
-  produces, steps, done when, load on demand, run report, pairs with) and *senior
-  defaults* on the 18 coding skills. The 38 cards total ~8% of the full skill text.
-  Standard: `agent_skill_design_skill` §3a.
-- `html_report_skill` — one shared contract for the self-contained HTML run report.
-  Skills 37 → 38.
-- [Skills playbook](docs/01-workflows/skills-playbook.md) — the skills each of the
-  16 SDLC stages loads.
-- `applies_to` frontmatter on 14 skills; `tools/skill_validator.py` passes all 38.
-
-### Fixed
-- 115 closing code fences in 11 skills carried a language tag and so never closed.
-  Root cause: `tools/fix_code_blocks.py` tagged closers, and `tools/skill_validator.py`
-  flagged correct closers as untagged. Both fixed.
-- `backend_skill`: blocking sync DB calls in `async` routes; login timing revealed
-  registered emails; `python-jose`/`passlib` → PyJWT/pwdlib; Pydantic v2 `model_config`.
-- `opentelemetry_skill`: depended on a Jaeger exporter that ended at 1.34.1 — now the
-  instrumentation BOM and OTLP.
-- `lombok_skill`: `@Data` on a JPA entity, `@Enumerated` on a `String`, `@Wither`.
-- `test_skill`: wrong `userEvent` import; rewritten to v2.0.
-- `multi_review_html_skill`, `ba_create_skill`: unescaped data in generated HTML.
-- `spring_advanced_skill`, `context_builder_skill`: inaccurate comment; stale callers and API.
-- Replaced `docs/01-workflows/16-master-workflow-all-skills.md` and the previous
-  `SUPER_SKILLS_ENHANCEMENT.md` (commit `214803b`): they cited commands that do not
-  exist and savings that were never measured.
-
-## [5.2.0] — 2026-09-21
+## [5.2.0] — 2026-09-21 · tag `v4.3.0`
 
 ### Added
 - **NEMESIS**, an adversarial validation mode: `orchestrator:nemesis` (alias `/nemesis <id>`) and
@@ -312,7 +346,7 @@ Specialist agents, hooks, and the instruction framework.
 
 ---
 
-## [3.0.0] — 2026-05-20
+## [3.0.0] — 2026-05-20 · tag `v4.2.0`
 
 The autonomous developer system.
 

@@ -487,17 +487,17 @@ def calculate_total_with_tax(
 ## Tool Integration
 
 **Used by test-case-generator:**
-```
+```text
 Test Method → Apply code_documentation_skill → Add JSDoc/docstring
 ```
 
 **Used by implementation_agent:**
-```
+```text
 Generated Code → Apply code_documentation_skill → Fully documented code
 ```
 
 **Used by code_review_agent:**
-```
+```text
 Code Review → Check documentation coverage → Flag missing docs
 ```
 

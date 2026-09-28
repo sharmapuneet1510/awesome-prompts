@@ -1,6 +1,6 @@
 # Skill Reference
 
-**38 skills.** Reusable implementation modules that agents dispatch to. A skill
+**43 skills.** Reusable implementation modules that agents dispatch to. A skill
 knows *how*; an [agent](agents.md) decides *what*.
 
 Skills are never invoked directly by users — agents load them. Source:
@@ -52,6 +52,7 @@ See [../01-workflows/05-record-a-decision.md](../01-workflows/05-record-a-decisi
 | `python_advanced_skill` | Python 3.11+, async, typing |
 | `react_advanced_skill` | React 18+, TypeScript, hooks |
 | `mssql_advanced_skill` | T-SQL patterns and optimisation |
+| `mssql_dba_skill` | Running-server diagnosis: blocking, deadlocks, waits, Query Store, index and partition review |
 | `apache_camel_skill` | Integration and EIP patterns |
 | `apache_pulsar_skill` | Messaging, producers, consumers |
 | `logger_skill` | SLF4J, Logback, structured logging |
@@ -73,6 +74,17 @@ See [../01-workflows/05-record-a-decision.md](../01-workflows/05-record-a-decisi
 | `error_handling_skill` | Exception handling and recovery patterns |
 | `oop_skill` | OOP pillars, SOLID, design patterns |
 | `multi_review_html_skill` | Batch PR review HTML with sidebar tabs |
+
+---
+
+## Build, setup & operations
+
+| Skill | Covers |
+|---|---|
+| `project_setup_skill` | Stack, one library per use case, project rules, `AGENTS.md`, scaffold, approval gate — before feature code |
+| `maven_skill` | Parent POM, BOM import, pinned plugins, Enforcer convergence, test and coverage gates, SBOM, wrapper |
+| `python_project_skill` | uv and lockfile, `pyproject.toml`, ruff, strict mypy, pytest gates, pip-audit, Docker image |
+| `ansible_skill` | Roles, inventories, Vault, idempotency, lint/check/apply loop, rolling updates |
 
 ---
 
@@ -118,7 +130,8 @@ implementer:build
     ├─ Java?       → java_advanced_skill + spring_advanced_skill
     ├─ Python?     → python_advanced_skill
     ├─ React?      → react_advanced_skill
-    ├─ SQL?        → database_skill + mssql_advanced_skill
+    ├─ SQL?        → database_skill + mssql_advanced_skill (+ mssql_dba_skill to diagnose)
+    ├─ Build?      → maven_skill / python_project_skill; ansible_skill for hosts
     └─ all         → code_documentation_skill + test_skill + error_handling_skill
 ```
 

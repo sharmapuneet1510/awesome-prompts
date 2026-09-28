@@ -37,7 +37,7 @@ This skill is **internal** — called by agents, not invoked directly by users.
 
 ADRs live in the **downstream project** being built, not in this repo:
 
-```
+```text
 <project-root>/docs/adr/
 ├── ADR-0001-postgres-over-mongo.md
 ├── ADR-0002-idempotent-order-endpoint.md
@@ -161,7 +161,7 @@ for first and list the other in `Related ADRs`.
 
 ## Lifecycle
 
-```
+```text
 Draft ──▶ Proposed ──▶ Accepted ──▶ Implemented ──▶ Verified
                           │              │              │
                           └──────────────┴──────────────┴──▶ Superseded ──▶ Archived

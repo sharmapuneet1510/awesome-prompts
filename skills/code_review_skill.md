@@ -146,7 +146,7 @@ Map code changes to acceptance criteria. Score how well the PR implements the re
 - Any over-engineering (unnecessary features)?
 
 For the user registration example:
-```
+```text
 AC1 (email/password form)
   ✅ frontend/components/SignupForm.tsx (email, password inputs)
   ✅ backend/routes/auth.py (POST /auth/signup endpoint)
@@ -254,7 +254,7 @@ Evaluate code against design, SOLID, patterns, performance, security, testing, a
 
 **Example Issues:**
 
-```
+```text
 Issue: God Class (Authentication.java)
 Severity: P1 (Design issue)
 Location: src/auth/Authentication.java, line 1-450
@@ -284,7 +284,7 @@ Fix: Split into:
 
 **Example Issues:**
 
-```
+```text
 Issue: Tight Coupling (PaymentController depends on concrete UserRepository)
 Severity: P2 (SOLID violation)
 Location: src/controllers/PaymentController.java, line 23
@@ -310,7 +310,7 @@ Fix: Inject UserRepository interface via constructor
 
 **Example Issues:**
 
-```
+```text
 Issue: Missing Error Pattern (try/except with no handler)
 Severity: P1 (Pattern violation)
 Location: src/services/payment_service.py, line 42
@@ -338,7 +338,7 @@ Fix: Catch specific exceptions, log, and re-raise or handle gracefully
 
 **Example Issues:**
 
-```
+```text
 Issue: N+1 Query Pattern
 Severity: P1 (Performance)
 Location: src/services/order_service.py, line 67-72
@@ -371,7 +371,7 @@ Fix: Use JOIN to load customers with orders in single query
 
 **Example Issues:**
 
-```
+```text
 Issue: SQL Injection Vulnerability
 Severity: P0 (Security)
 Location: src/repositories/user_repo.java, line 34
@@ -405,7 +405,7 @@ Fix: Use parameterized query
 
 **Example Issues:**
 
-```
+```text
 Issue: Missing Error Case Test
 Severity: P1 (Testing)
 Location: tests/test_payment.py (missing)
@@ -431,7 +431,7 @@ Fix: Add test_payment_failure_with_retry test case
 
 **Example Issues:**
 
-```
+```text
 Issue: Missing Docstring
 Severity: P2 (Documentation)
 Location: src/services/payment_service.py, line 45
@@ -489,7 +489,7 @@ Analyze tests to verify that code changes are adequately tested. Check for happy
 ### Process Steps
 
 **Step 1: Quantify Code Changes**
-```
+```text
 Production Code:
 - Lines added: 150
 - Lines modified: 45
@@ -514,7 +514,7 @@ For each new/modified function, check for:
 
 **Step 3: Coverage Analysis**
 
-```
+```text
 Function: create_user(email, password)
   Total lines: 25
   
@@ -620,7 +620,7 @@ For each public function/class, verify:
 
 **Step 2: Assess Documentation Quality**
 
-```
+```text
 Function: create_user(email: str, password: str) → User
 
 ✅ Documented:
@@ -727,7 +727,7 @@ Combine all scores from phases 2-5 into a final grade.
 
 ### Scoring Formula
 
-```
+```text
 Final Score = (Requirement × 0.40) + (CodeQuality × 0.30) + 
               (TestCoverage × 0.20) + (Documentation × 0.10)
 
@@ -741,7 +741,7 @@ Grade Scale:
 
 ### Worked Example
 
-```
+```text
 Input Scores:
   - Requirement Met: 95%
   - Code Quality: 85%
@@ -1110,7 +1110,7 @@ This skill is **tech-agnostic** because:
 This skill provides the **reusable review logic** used by **agents/code_review_agent.md**.
 
 **Agent Flow:**
-```
+```text
 Code Review Agent v3
   ↓
   Apply Code Review Skill v3

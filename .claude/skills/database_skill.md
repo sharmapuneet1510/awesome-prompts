@@ -10,7 +10,7 @@
 | | |
 |---|---|
 | **Use when** | Designing tables, indexes, or migrations for PostgreSQL, MySQL, or SQL Server — `architect:schema` |
-| **Skip when** | T-SQL procedure standards — `mssql_advanced_skill` |
+| **Skip when** | T-SQL procedure standards — `mssql_advanced_skill`. Tuning a live SQL Server — `mssql_dba_skill` |
 | **Inputs** | Entities, relationships, access patterns, target RDBMS |
 | **Produces** | Idempotent migration scripts with rollback, indexes, constraints |
 | **Steps** | 1. Model entities to 3NF → 2. Keys and constraints → 3. Index from the queries, not the columns → 4. Write idempotent migration + rollback → 5. Validate against §6 |

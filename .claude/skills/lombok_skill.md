@@ -64,7 +64,7 @@ dependencies {
 
 ### 1.3 IDE Configuration
 
-```
+```text
 IntelliJ IDEA:
   Settings → Plugins → Search "Lombok" → Install
   Settings → Build, Execution, Deployment → Compiler →

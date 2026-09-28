@@ -51,7 +51,7 @@ This skill **reads JIRA tickets incrementally** by auto-incrementing ticket numb
 
 ## Algorithm: Incremental Discovery
 
-```
+```text
 INITIALIZE:
   current_number = start_number
   consecutive_misses = 0
@@ -78,7 +78,7 @@ RETURN all_tickets
 ```
 
 **Example Execution:**
-```
+```text
 Prefix: PROJ
 Start: 1
 Max Consecutive Misses: 10
@@ -173,7 +173,7 @@ Result: Found 5 tickets [PROJ-1, PROJ-2, PROJ-4, PROJ-5, ...]
 - **Non-Functional Requirements** — Performance, security, scaling (Epic, Labels)
 
 **Output:**
-```
+```text
 Functional Requirements (Stories): 12 tickets
 Technical Requirements (Tasks): 8 tickets
 Bug Fixes: 4 tickets
@@ -192,7 +192,7 @@ Total: 30 tickets
 5. Parallel capabilities
 
 **Output:**
-```
+```text
 Dependency Graph:
   PROJ-1 (Auth)
     ├─ blocks PROJ-2 (Profile)
@@ -213,7 +213,7 @@ Dependency Order (topological sort):
 **Goal:** Organize tickets into book-like chapters
 
 **Book Structure:**
-```
+```text
 I.    Executive Summary
       - Overview
       - Key statistics
@@ -264,7 +264,7 @@ VII.  Appendices
 4. **Implementation notes** — Technical considerations
 
 **Example Chapter:**
-```
+```markdown
 ## Chapter 2: User Authentication & Authorization
 
 ### Overview
@@ -311,7 +311,7 @@ confirmation email, and activate their account.
 6. Export to requested format
 
 **Output Files:**
-```
+```text
 application-spec.md                          ← Main document
 ├── TOC (auto-generated)
 ├── Executive Summary
@@ -450,7 +450,7 @@ orchestrator:jira-spec-generator \
 ```
 
 ### What Happens
-```
+```text
 [Step 1] Discovering tickets...
   MYAPP-1  ✓ User Registration (Story)
   MYAPP-2  ✓ User Profile (Story)
@@ -600,7 +600,7 @@ orchestrator:jira-spec-generator \
 ```
 
 **Output:**
-```
+```text
 proj-specification.md (48 pages)
 auth-specification.md (32 pages)
 order-specification.md (56 pages)
@@ -615,7 +615,7 @@ orchestrator:jira-spec-generator \
 ```
 
 **Output:**
-```
+```text
 What's New in v1.2 (vs v1.1):
 - 4 new requirements added
 - 2 requirements updated
@@ -624,7 +624,7 @@ What's New in v1.2 (vs v1.1):
 ```
 
 ### Feature 3: Metrics & Analytics
-```
+```text
 📊 Specification Metrics
 
 Total Requirements: 30
@@ -652,7 +652,7 @@ Quality Score: 92%
 ### Scenarios & Recovery
 
 **Scenario 1: JIRA Connection Fails**
-```
+```text
 Error: Cannot connect to JIRA API
 Action: Retry with exponential backoff (1s, 2s, 4s, 8s, 16s)
 If all retries fail: Use cached data if available
@@ -660,20 +660,20 @@ Notify: "Using cached data from 2 hours ago"
 ```
 
 **Scenario 2: Ticket Not Found**
-```
+```text
 PROJ-5 not found → consecutive_misses = 1
 Continue searching...
 ```
 
 **Scenario 3: Malformed Ticket Data**
-```
+```text
 PROJ-8: Title is missing
 Action: Use description as fallback, add warning note
 Output: "⚠️ PROJ-8: Title missing (used description instead)"
 ```
 
 **Scenario 4: Circular Dependency Detected**
-```
+```text
 PROJ-1 → PROJ-2 → PROJ-3 → PROJ-1 (circular!)
 Action: Flag error, highlight in document, recommend fix
 Output: "🚨 Circular dependency detected: PROJ-1 → PROJ-2 → PROJ-3 → PROJ-1"

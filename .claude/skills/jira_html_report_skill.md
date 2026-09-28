@@ -66,7 +66,7 @@ Transform local JIRA exports (JSON or CSV format) into an interactive, browser-r
 **File:** `jira-export.csv`
 
 **Headers (comma-separated, optional columns shown with asterisk):**
-```
+```csv
 "Issue Key","Summary","Issue Type","Priority","Status","Assignee","Sprint*","Story Points*","Description*","Created*","Updated*","Labels*"
 "PROJ-1","Add login feature","Story","High","In Progress","Alice","Sprint-5","8","Implement OAuth2...","2026-05-15","2026-06-02","auth,oauth2"
 "PROJ-2","Fix NPE in auth","Bug","Critical","Open","Bob","","","Null pointer when...","2026-05-20","2026-06-02","auth,critical"

@@ -10,7 +10,7 @@
 | | |
 |---|---|
 | **Use when** | Writing or reviewing Python 3.11+ code: FastAPI, SQLAlchemy, Pydantic, asyncio |
-| **Skip when** | API route scaffolding — `backend_skill` wraps this skill |
+| **Skip when** | API route scaffolding — `backend_skill`. Project tooling, dependencies, packaging — `python_project_skill` |
 | **Inputs** | Python version (§1 — detect first), frameworks, existing conventions |
 | **Produces** | Typed, documented Python with pytest tests |
 | **Steps** | 1. Detect versions → 2. Model with Pydantic at edges, dataclasses inside → 3. Depend on `Protocol`s → 4. Custom exceptions → 5. Google docstrings → 6. pytest |
@@ -18,7 +18,7 @@
 | **Senior defaults** | Annotate every signature; `Protocol` for dependencies · Pydantic v2 at boundaries (`model_config`, `model_validate`) · never block the event loop — `asyncio.to_thread()`, or a sync `def` route · `except SpecificError`, custom hierarchy · settings via `pydantic-settings`, never literals |
 | **Load on demand** | §1 version · §2 OOP · §3 dataclasses/Pydantic · §4 async · §5 exceptions · §6 docstrings · §7 pytest · §8 rules |
 | **Run report** | `html_report_skill` — adds: Modules touched |
-| **Pairs with** | `backend_skill`, `test_skill`, `error_handling_skill` |
+| **Pairs with** | `backend_skill`, `python_project_skill`, `test_skill`, `error_handling_skill` |
 
 ---
 

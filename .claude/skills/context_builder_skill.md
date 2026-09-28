@@ -10,7 +10,7 @@
 | | |
 |---|---|
 | **Use when** | A project has no `docs/context/`, or its structure changed — `orchestrator:context`, `architect:analyse` |
-| **Skip when** | `docs/context/` is current — read it instead of re-scanning |
+| **Skip when** | `docs/context/` is current — read it instead of re-scanning. Nothing exists yet — `project_setup_skill` decides the stack first |
 | **Inputs** | Project root: manifests, source tree, config |
 | **Produces** | `docs/context/` — `context.json`, `architecture.md`, `tech-stack.md`, `design.html` |
 | **Steps** | 1. Discovery — reuse existing context if fresh → 2. Deep scan → 3. Confirm with the user → 4. Write the four files → 5. Return context |
@@ -33,7 +33,7 @@ This skill is **internal** — called by agents, not invoked directly by users.
 
 Scans a project directory and generates 4 context files:
 
-```
+```text
 docs/context/
 ├── context.json      ← Machine-readable project metadata
 ├── architecture.md   ← Mermaid diagram + narrative + design decisions
@@ -146,7 +146,7 @@ def scan_project(project_path):
 
 Present findings in a structured format:
 
-```
+```text
 DETECTED ARCHITECTURE:
 
 Frontend:      React 18.2.0 + TypeScript

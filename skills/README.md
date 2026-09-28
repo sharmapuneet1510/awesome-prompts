@@ -1,12 +1,12 @@
 # 🛠️ Skills Directory (v5.1 — Super Skills)
 
-> Reusable, tech-specific implementation modules used by agents. 38 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 43 skills, zero orphans.
 >
 > Every skill opens with a **Quick Card** — use-when, inputs, outputs, steps, done-when, and which section to load on demand — so an agent reads the card and loads the body only when a step needs it. Runs that change files write one HTML report per [`html_report_skill`](html_report_skill.md).
 >
 > 📖 [The super-skill standard](../docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md) · 🧭 [Skills playbook — which skill loads at each SDLC stage](../docs/01-workflows/skills-playbook.md)
 
-## Quick Navigation (38 Skills)
+## Quick Navigation (43 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -48,6 +48,11 @@
 | 36 | [MCP Server Builder](mcp_server_builder_skill.md) | Build an MCP server: SDK pinning, stdio vs HTTP, Python/TS examples, 3-layer testing, Claude Code registration | Python/TypeScript (Java: pointers) | Implementer, Architect |
 | 37 | [NEMESIS](nemesis_skill.md) | Adversarial validation mode: reverse hypothesis, counterexamples, evidence grading, five-way verdict, ranked failure-cause hypotheses | Language-agnostic | Orchestrator, Quality |
 | 38 | [HTML Run Report](html_report_skill.md) | One shared contract for the self-contained HTML report a run writes: what was done, artifacts, claims, gates, open items | Language-agnostic | All agents |
+| 39 | [MSSQL DBA](mssql_dba_skill.md) | Diagnose a running SQL Server: head blockers, deadlock graphs, waits, Query Store, missing/unused/redundant indexes, statistics, partition alignment and sliding window | SQL Server / Azure SQL | Quality Agent |
+| 40 | [Project Setup](project_setup_skill.md) | Before feature code: stack, one library per use case, project rules, AGENTS.md, ADRs, scaffold — then an approval gate | Java/Python/TypeScript | Orchestrator, Architect |
+| 41 | [Maven](maven_skill.md) | Parent POM, BOM import, every plugin pinned, Enforcer convergence, Surefire/Failsafe, JaCoCo gate, SBOM, wrapper | Java / Maven | Implementer |
+| 42 | [Python Project](python_project_skill.md) | uv + lockfile, pyproject.toml, src layout, ruff, strict mypy, pytest gates, pip-audit, slim non-root image | Python | Implementer |
+| 43 | [Ansible](ansible_skill.md) | Roles with argument specs, idempotent FQCN tasks, validated templates, Vault secrets, lint/check/apply-twice loop, rolling updates | Ansible | Implementer |
 
 ---
 
@@ -84,6 +89,13 @@
 ### Quality Agent Skills (Batch Review)
 - `multi_review_html_skill` — Batch PR review HTML with sidebar tabs, summary dashboard, export options
 
+### Build, Setup & Operations
+- `project_setup_skill` — stack, library-per-use-case catalog, project rules, AGENTS.md, scaffold, approval gate
+- `maven_skill` — Maven builds that fail on version conflicts and unpinned plugins
+- `python_project_skill` — uv, pyproject.toml, lint/type/test gates, packaging, Docker
+- `ansible_skill` — configuration management with idempotent, linted, Vault-safe roles
+- `mssql_dba_skill` — diagnosing and tuning a running SQL Server
+
 ### Reporting (All Agents)
 - `html_report_skill` — the run report every skill writes when it changes files; its `<head>` tokens are shared by every HTML deliverable
 
@@ -119,7 +131,7 @@ everything else reads from it.
 
 ## 🏗️ Skills Architecture
 
-```
+```text
 Implementation Agent
     ↓
 Detect tech stack
@@ -198,4 +210,4 @@ Generate complete code
 
 ---
 
-**Last Updated:** September 28, 2026 | **Version:** 5.1 (Super Skills) | **Skills:** 38 | **Agents:** 5
+**Last Updated:** September 28, 2026 | **Version:** 5.1 (Super Skills) | **Skills:** 43 | **Agents:** 5

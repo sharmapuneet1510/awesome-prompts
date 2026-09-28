@@ -18,7 +18,7 @@
 | **Senior defaults** | Records for DTOs and value types · sealed interfaces + exhaustive `switch` for closed result types · virtual threads for blocking I/O on 21 (`spring.threads.virtual.enabled=true`) · constructor injection only · `Optional` for nullable returns, never `null` from public methods · JPQL named parameters, never concatenation |
 | **Load on demand** | §1 version detection · §2 OOP in Java · §3 Java 17/21 features · §4 Spring Boot 3 · §5 Javadoc · §6 testing · §7 rules |
 | **Run report** | `html_report_skill` — adds: Java features used, with version gates |
-| **Pairs with** | `spring_advanced_skill`, `lombok_skill`, `logger_skill`, `test_skill` |
+| **Pairs with** | `spring_advanced_skill`, `maven_skill`, `lombok_skill`, `logger_skill`, `test_skill` |
 
 ---
 

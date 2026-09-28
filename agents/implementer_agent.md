@@ -350,6 +350,15 @@ Based on detected tech stack, apply the matching skill:
 | **React/TypeScript** | `react_advanced_skill.md` | Use master instructions |
 | **T-SQL/SQL Server** | `mssql_advanced_skill.md` | Use master instructions |
 
+Build and delivery, loaded alongside the language skill:
+
+| Detected | Skill |
+|-----------|-------|
+| `pom.xml` | `maven_skill.md` |
+| `pyproject.toml` / `uv.lock` | `python_project_skill.md` |
+| Ansible inventory or roles (`implementer:iac`) | `ansible_skill.md` |
+| No `docs/project-setup/` on a new project | `project_setup_skill.md` — stop and run it first |
+
 ### Phase 1.2 — Implement with Standards
 
 Follow `instructions/master_instruction_set.md`:

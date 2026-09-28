@@ -8,7 +8,7 @@ Your assistant stops and asks before it builds the wrong thing — then leaves a
 [![CI](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml/badge.svg)](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml)
 [![5 agents](https://img.shields.io/badge/agents-5-0969da?style=flat-square)](docs/02-reference/agents.md)
 [![43 functions](https://img.shields.io/badge/functions-43-0969da?style=flat-square)](docs/02-reference/functions.md)
-[![38 skills](https://img.shields.io/badge/skills-38-0969da?style=flat-square)](docs/02-reference/skills.md)
+[![43 skills](https://img.shields.io/badge/skills-43-0969da?style=flat-square)](docs/02-reference/skills.md)
 [![8 platforms](https://img.shields.io/badge/platforms-8-0969da?style=flat-square)](docs/01-workflows/14-export-to-platforms.md)
 [![MIT license](https://img.shields.io/badge/license-MIT-0969da?style=flat-square)](LICENSE)
 
@@ -31,10 +31,11 @@ It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and A
 
 ## ✨ What's New
 
-**Super skills (unreleased).** Every one of the 38 skills now opens with a **Quick Card** — use when, inputs, outputs, steps, done when, and which section to load on demand. The 38 cards together are about 8% of the full skill text, so an assistant reads the card and loads the body only when it needs it.
+**Super skills (unreleased).** Every one of the 43 skills now opens with a **Quick Card** — use when, inputs, outputs, steps, done when, and which section to load on demand. The 43 cards together are about 8.5% of the full skill text, so an assistant reads the card and loads the body only when it needs it.
 
 - **HTML run reports** — a run that changes files leaves one self-contained page: what was asked, each step, every file touched, labelled claims, gates, open items ([`html_report_skill`](skills/html_report_skill.md))
-- **Senior defaults** — the advanced rules that matter most, on each of the 18 coding skills
+- **Senior defaults** — the advanced rules that matter most, on each of the 23 coding and build skills
+- **Five new skills, each built from files that ran** — an SQL Server DBA (blockers, deadlocks, indexes, partitioning), project setup (one library per use case, rules, `AGENTS.md`), Maven, Python project tooling, and Ansible
 - **Corrected skills** — examples that now run: a backend login that no longer leaks which emails exist, an OpenTelemetry setup that resolves, a Lombok entity that stays in its `HashSet`, and 115 code fences that now close
 - **[Skills playbook](docs/01-workflows/skills-playbook.md)** — which skills each SDLC stage loads, requirement to release
 
@@ -63,22 +64,13 @@ flowchart LR
 
 **1. Install**
 
-Option A: pip install (easiest)
-```bash
-pip install awesome-prompts
-```
-
-Option B: Clone from source
 ```bash
 git clone https://github.com/sharmapuneet1510/awesome-prompts.git
 cd awesome-prompts
 pip install -e .
 ```
 
-Option C: Docker (coming soon)
-```bash
-docker run -it ghcr.io/sharmapuneet1510/awesome-prompts
-```
+<sub>Not published to PyPI — install from the clone. A container image is planned but not yet available.</sub>
 
 **2. See what is available** — read-only
 

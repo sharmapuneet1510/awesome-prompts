@@ -33,7 +33,7 @@ support means adding one skill, not one agent.
 
 ```
 agent  = orchestration + dispatch    (5)
-skill  = implementation knowledge    (38)
+skill  = implementation knowledge    (43)
 ```
 
 The 13 → 5 mapping is in [../../CHANGELOG.md](../../CHANGELOG.md) under 4.0.0.
@@ -168,5 +168,5 @@ Detail in [rules.md](rules.md).
 ## See also
 
 - [functions.md](functions.md) — all 43 functions
-- [skills.md](skills.md) — the 38 skills agents dispatch to
+- [skills.md](skills.md) — the 43 skills agents dispatch to
 - [../01-workflows/](../01-workflows/) — which agent for which job

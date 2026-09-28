@@ -59,9 +59,6 @@ Repository = "https://github.com/sharmapuneet1510/awesome-prompts.git"
 Issues = "https://github.com/sharmapuneet1510/awesome-prompts/issues"
 Documentation = "https://github.com/sharmapuneet1510/awesome-prompts/blob/main/README.md"
 
-[project.scripts]
-archify = "archify.bin.archify:main"
-
 [tool.setuptools]
 packages = ["tools"]
 

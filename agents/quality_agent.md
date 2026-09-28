@@ -478,6 +478,7 @@ quality:security audit path=./src filters=sql,injection,auth
 **PHASE 2: Code Profiling & Analysis**
 - Read affected code path, trace execution
 - Analyze database queries (N+1, missing indexes, joins)
+- SQL Server: load `skills/mssql_dba_skill.md` — blocking, waits, Query Store, index and partition review, with the DMV evidence
 - Analyze algorithms & loops (time complexity, iteration count)
 - Identify memory allocations and inefficiencies
 - Analyze external dependencies (network latency, parallelization)

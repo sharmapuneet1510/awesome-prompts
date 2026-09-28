@@ -39,7 +39,7 @@ This skill is **internal** — called by agents, not invoked directly by users.
 
 Lives in the **downstream project**, one file per node:
 
-```
+```text
 <project-root>/docs/project-context/
 ├── README.md                  ← index; links every node below
 ├── project-overview.md

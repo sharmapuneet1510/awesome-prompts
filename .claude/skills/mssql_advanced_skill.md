@@ -10,7 +10,7 @@
 | | |
 |---|---|
 | **Use when** | Writing or reviewing T-SQL: procedures, indexes, dynamic SQL on SQL Server / Azure SQL |
-| **Skip when** | Portable schema design — `database_skill` |
+| **Skip when** | Portable schema design — `database_skill`. Diagnosing a slow or blocked server — `mssql_dba_skill` |
 | **Inputs** | SQL Server version (§1 — detect first), schema, workload |
 | **Produces** | Procedures, indexes, test scripts |
 | **Steps** | 1. Detect version → 2. Write set-based queries → 3. Procedures with `NOCOUNT` + `XACT_ABORT` + `TRY/CATCH` → 4. Index from the plan → 5. Generate the test script |
@@ -18,7 +18,7 @@
 | **Senior defaults** | `SET XACT_ABORT ON` in every transactional procedure · `THROW`, never `RAISERROR`, in new code · dynamic SQL only via `sp_executesql` with parameters · set-based over cursors · `NOLOCK` only with the dirty-read trade-off written down · explicit column lists and schema prefixes |
 | **Load on demand** | §1 version · §2 NOLOCK · §3 procedures · §4 indexing · §5 dynamic SQL · §6 query standards · §7 test template |
 | **Run report** | `html_report_skill` — adds: Procedures + test scripts |
-| **Pairs with** | `database_skill` |
+| **Pairs with** | `database_skill`, `mssql_dba_skill` |
 
 ---
 

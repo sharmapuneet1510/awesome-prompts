@@ -614,7 +614,8 @@ If [Risk] happens:
    └─ Update task-completion.json
    ↓
 6. Task 05: Deployment & Infrastructure
-   ├─ Call architecture_skill
+   ├─ Call implementer:pipeline / :docker / :iac
+   ├─ Build: maven_skill (Java) or python_project_skill (Python); config management: ansible_skill
    ├─ Generate docker-compose, CI/CD pipelines, IaC
    ├─ Document deployment process
    └─ Update task-completion.json
@@ -909,7 +910,7 @@ If test coverage < 90%:
 | 02 | backend_skill | requirement.md + context.json | routes/, models/, services/ | [Apply code_documentation_skill] |
 | 03 | frontend_skill | requirement.md + context.json | components/, pages/, hooks/ | [Apply code_documentation_skill] |
 | 04 | test_skill | all code | tests/, coverage/ | [Apply code_documentation_skill] |
-| 05 | architecture_skill | all generated code | docker-compose, CI/CD, IaC | [Update architecture.md] |
+| 05 | maven_skill / python_project_skill + ansible_skill (via implementer:pipeline, :docker, :iac) | all generated code | build config, docker-compose, CI/CD, IaC, playbooks | [Update architecture.md] |
 
 Each task receives full context from prior tasks + evolving design.
 
@@ -954,7 +955,8 @@ And so on...
 **Steps:**
 1. Parse requirement.txt into structured requirement.md
 2. Ask clarifying questions if ambiguous
-3. Detect project type (new/existing)
+3. Detect project type (new/existing) — a new project without approved
+   `docs/project-setup/` runs `skills/project_setup_skill.md` first
 4. Break into 5-7 concrete tasks
 5. Define acceptance criteria per task
 6. Map tasks to skills
@@ -1261,7 +1263,7 @@ Output: Rate-limiting feature integrated cleanly
 - backend_skill — Task 02 (API routes)
 - frontend_skill — Task 03 (UI components)
 - test_skill — Task 04 (test generation)
-- architecture_skill — Task 05 (deployment)
+- maven_skill / python_project_skill / ansible_skill — Task 05 (build and deployment)
 - code_documentation_skill — Applied to all tasks
 - java_advanced_skill / python_advanced_skill / react_advanced_skill — Language-specific implementation
 

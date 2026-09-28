@@ -43,7 +43,7 @@ This skill is **internal** — called by agents, not invoked directly by users.
 
 Downstream project:
 
-```
+```text
 <project-root>/docs/
 ├── current-technical-specification.md
 └── implementation-records/

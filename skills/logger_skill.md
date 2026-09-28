@@ -34,7 +34,7 @@ tags: [logging, slf4j, log4j2, logback, structured-logging, observability]
 
 ### 1.1 Logging Stack Layers
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │  Application Code (Log Statements)          │
 ├─────────────────────────────────────────────┤
@@ -150,7 +150,7 @@ public void exceptionLogging(Order order) {
 
 ### 3.1 Log Level Hierarchy
 
-```
+```text
 TRACE   (Level 5000) - Very detailed diagnostic information
 DEBUG   (Level 10000) - Detailed information for debugging
 INFO    (Level 20000) - General informational messages (default)
