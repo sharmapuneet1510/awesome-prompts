@@ -1,0 +1,192 @@
+{
+  "type": "architecture",
+  "version": "1.0.0",
+  "title": "E-Commerce Platform Architecture",
+  "description": "High-level architecture of a scalable e-commerce platform with microservices",
+  "nodes": [
+    {
+      "id": "web-client",
+      "label": "Web Client",
+      "color": "frontend",
+      "icon": "globe",
+      "description": "React-based single-page application",
+      "evidence": {
+        "file": "src/frontend/",
+        "commit": "abc1234"
+      },
+      "zone": "client"
+    },
+    {
+      "id": "api-gateway",
+      "label": "API Gateway",
+      "color": "backend",
+      "description": "Routes requests to appropriate microservices",
+      "evidence": {
+        "file": "src/api-gateway/main.ts",
+        "lines": "1-50"
+      },
+      "zone": "api"
+    },
+    {
+      "id": "auth-service",
+      "label": "Auth Service",
+      "color": "security",
+      "description": "JWT token generation and validation",
+      "evidence": {
+        "file": "src/services/auth/service.ts",
+        "lines": "42-120"
+      },
+      "zone": "api"
+    },
+    {
+      "id": "product-service",
+      "label": "Product Service",
+      "color": "backend",
+      "description": "Product catalog and inventory",
+      "evidence": {
+        "file": "src/services/product/service.ts"
+      },
+      "zone": "api"
+    },
+    {
+      "id": "order-service",
+      "label": "Order Service",
+      "color": "backend",
+      "description": "Order processing and fulfillment",
+      "evidence": {
+        "file": "src/services/order/service.ts"
+      },
+      "zone": "api"
+    },
+    {
+      "id": "postgres-main",
+      "label": "PostgreSQL (Main)",
+      "color": "database",
+      "description": "Primary relational database",
+      "evidence": {
+        "file": "docker-compose.yml",
+        "lines": "10-20"
+      },
+      "zone": "data"
+    },
+    {
+      "id": "redis-cache",
+      "label": "Redis Cache",
+      "color": "database",
+      "description": "Session and query result caching",
+      "evidence": {
+        "file": "docker-compose.yml",
+        "lines": "21-30"
+      },
+      "zone": "data"
+    },
+    {
+      "id": "message-queue",
+      "label": "RabbitMQ",
+      "color": "messaging",
+      "description": "Async task queue for order processing",
+      "evidence": {
+        "file": "docker-compose.yml",
+        "lines": "31-40"
+      },
+      "zone": "data"
+    },
+    {
+      "id": "payment-gateway",
+      "label": "Stripe API",
+      "color": "external",
+      "description": "Third-party payment processor",
+      "evidence": {
+        "url": "https://stripe.com/docs/api"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "from": "web-client",
+      "to": "api-gateway",
+      "label": "HTTP/REST",
+      "evidence": {
+        "file": "src/frontend/api-client.ts",
+        "lines": "1-30"
+      }
+    },
+    {
+      "id": "edge-2",
+      "from": "api-gateway",
+      "to": "auth-service",
+      "label": "Verify token",
+      "evidence": {
+        "file": "src/api-gateway/middleware.ts"
+      }
+    },
+    {
+      "id": "edge-3",
+      "from": "api-gateway",
+      "to": "product-service",
+      "label": "Route /products",
+      "evidence": {
+        "file": "src/api-gateway/routes.ts"
+      }
+    },
+    {
+      "id": "edge-4",
+      "from": "api-gateway",
+      "to": "order-service",
+      "label": "Route /orders",
+      "evidence": {
+        "file": "src/api-gateway/routes.ts"
+      }
+    },
+    {
+      "id": "edge-5",
+      "from": "product-service",
+      "to": "postgres-main",
+      "label": "Query"
+    },
+    {
+      "id": "edge-6",
+      "from": "order-service",
+      "to": "postgres-main",
+      "label": "Persist orders"
+    },
+    {
+      "id": "edge-7",
+      "from": "order-service",
+      "to": "message-queue",
+      "label": "Publish events"
+    },
+    {
+      "id": "edge-8",
+      "from": "order-service",
+      "to": "payment-gateway",
+      "label": "Process payment"
+    },
+    {
+      "id": "edge-9",
+      "from": "auth-service",
+      "to": "redis-cache",
+      "label": "Cache tokens"
+    }
+  ],
+  "zones": [
+    {
+      "id": "client",
+      "label": "Client Layer"
+    },
+    {
+      "id": "api",
+      "label": "API & Service Layer"
+    },
+    {
+      "id": "data",
+      "label": "Data & Messaging Layer"
+    }
+  ],
+  "metadata": {
+    "author": "Platform Team",
+    "created": "2026-09-28T10:00:00Z",
+    "version": "2.1.0"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "type": "lifecycle",
+  "version": "1.0.0",
+  "title": "Feature Release Lifecycle",
+  "description": "Stages of a feature from conception to production support",
+  "stages": [
+    {
+      "id": "ideation",
+      "label": "Ideation",
+      "duration": "1-2 weeks",
+      "description": "Gather requirements and define problem statement",
+      "activities": [
+        "Stakeholder interviews",
+        "Market research",
+        "Define success metrics"
+      ]
+    },
+    {
+      "id": "design",
+      "label": "Design",
+      "duration": "2-3 weeks",
+      "description": "Create technical and UX design specifications",
+      "activities": [
+        "Architecture review",
+        "API design",
+        "UI/UX mockups",
+        "Design review approval"
+      ]
+    },
+    {
+      "id": "implementation",
+      "label": "Implementation",
+      "duration": "3-5 weeks",
+      "description": "Code development and unit testing",
+      "activities": [
+        "Code development",
+        "Unit tests (>90% coverage)",
+        "Code review",
+        "Integration testing"
+      ]
+    },
+    {
+      "id": "staging",
+      "label": "Staging & QA",
+      "duration": "1-2 weeks",
+      "description": "Pre-production testing and validation",
+      "activities": [
+        "Deploy to staging",
+        "QA testing",
+        "Performance testing",
+        "Security audit"
+      ]
+    },
+    {
+      "id": "release",
+      "label": "Release",
+      "duration": "1-2 days",
+      "description": "Production deployment with monitoring",
+      "activities": [
+        "Canary deployment (5%)",
+        "Monitor metrics",
+        "Gradual rollout to 100%",
+        "Run smoke tests"
+      ]
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring & Support",
+      "duration": "2-4 weeks",
+      "description": "Post-release support and optimization",
+      "activities": [
+        "Monitor error rates",
+        "Gather user feedback",
+        "Performance optimization",
+        "Bug fixes"
+      ]
+    },
+    {
+      "id": "stable",
+      "label": "Stable",
+      "duration": "Ongoing",
+      "description": "Ongoing maintenance and support",
+      "activities": [
+        "Regular monitoring",
+        "Maintenance updates",
+        "Security patches",
+        "Documentation updates"
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "ideation",
+      "to": "design",
+      "trigger": "Requirements approved",
+      "condition": "Stakeholder sign-off"
+    },
+    {
+      "from": "design",
+      "to": "implementation",
+      "trigger": "Design approved",
+      "condition": "Architecture review passed"
+    },
+    {
+      "from": "implementation",
+      "to": "staging",
+      "trigger": "Code complete",
+      "condition": ">90% test coverage"
+    },
+    {
+      "from": "staging",
+      "to": "release",
+      "trigger": "QA approved",
+      "condition": "No critical bugs"
+    },
+    {
+      "from": "release",
+      "to": "monitoring",
+      "trigger": "100% rollout complete",
+      "condition": "No critical incidents"
+    },
+    {
+      "from": "monitoring",
+      "to": "stable",
+      "trigger": "Metrics stable for 2 weeks",
+      "condition": "No regressions"
+    }
+  ],
+  "metadata": {
+    "author": "Engineering Leadership",
+    "created": "2026-09-28T10:00:00Z",
+    "subject": "New customer-facing feature"
+  }
+}

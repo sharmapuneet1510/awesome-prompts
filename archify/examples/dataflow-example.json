@@ -1,0 +1,170 @@
+{
+  "type": "dataflow",
+  "version": "1.0.0",
+  "title": "User Analytics Pipeline",
+  "description": "Data flow from user events to analytics dashboard",
+  "nodes": [
+    {
+      "id": "events-source",
+      "label": "User Events (Frontend)",
+      "color": "frontend",
+      "dataType": "event",
+      "description": "Click, page view, scroll events from browser",
+      "evidence": {
+        "file": "src/frontend/tracking.ts"
+      }
+    },
+    {
+      "id": "event-collector",
+      "label": "Event Collection Service",
+      "color": "backend",
+      "description": "Receives and validates events",
+      "transformation": "JSON schema validation",
+      "evidence": {
+        "file": "src/services/events/collector.ts"
+      }
+    },
+    {
+      "id": "event-queue",
+      "label": "Message Queue",
+      "color": "messaging",
+      "dataType": "queue",
+      "description": "Buffers events for processing",
+      "evidence": {
+        "file": "docker-compose.yml"
+      }
+    },
+    {
+      "id": "stream-processor",
+      "label": "Stream Processor",
+      "color": "backend",
+      "description": "Real-time aggregation and filtering",
+      "transformation": "Count, filter, aggregate",
+      "evidence": {
+        "file": "src/services/analytics/stream-processor.ts"
+      }
+    },
+    {
+      "id": "time-series-db",
+      "label": "Time Series Database",
+      "color": "database",
+      "dataType": "timeseries",
+      "description": "High-performance metrics storage",
+      "evidence": {
+        "file": "docker-compose.yml"
+      }
+    },
+    {
+      "id": "analytics-api",
+      "label": "Analytics API",
+      "color": "backend",
+      "description": "Query interface for dashboards",
+      "evidence": {
+        "file": "src/services/analytics/api.ts"
+      }
+    },
+    {
+      "id": "dashboard",
+      "label": "Analytics Dashboard",
+      "color": "frontend",
+      "description": "React visualization",
+      "evidence": {
+        "file": "src/frontend/dashboard/"
+      }
+    },
+    {
+      "id": "batch-processor",
+      "label": "Batch Processor",
+      "color": "backend",
+      "description": "Nightly aggregations",
+      "transformation": "Daily rollup & ML features",
+      "evidence": {
+        "file": "src/services/analytics/batch.ts"
+      }
+    },
+    {
+      "id": "data-lake",
+      "label": "Data Lake (S3)",
+      "color": "cloud",
+      "dataType": "parquet",
+      "description": "Long-term archival",
+      "evidence": {
+        "url": "https://docs.aws.amazon.com/s3/"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "from": "events-source",
+      "to": "event-collector",
+      "label": "POST /events",
+      "format": "json"
+    },
+    {
+      "id": "edge-2",
+      "from": "event-collector",
+      "to": "event-queue",
+      "label": "Publish",
+      "format": "json"
+    },
+    {
+      "id": "edge-3",
+      "from": "event-queue",
+      "to": "stream-processor",
+      "label": "Subscribe",
+      "format": "json"
+    },
+    {
+      "id": "edge-4",
+      "from": "stream-processor",
+      "to": "time-series-db",
+      "label": "Write metrics",
+      "format": "json"
+    },
+    {
+      "id": "edge-5",
+      "from": "stream-processor",
+      "to": "batch-processor",
+      "label": "Async",
+      "format": "json"
+    },
+    {
+      "id": "edge-6",
+      "from": "time-series-db",
+      "to": "analytics-api",
+      "label": "Query"
+    },
+    {
+      "id": "edge-7",
+      "from": "analytics-api",
+      "to": "dashboard",
+      "label": "GET /metrics"
+    },
+    {
+      "id": "edge-8",
+      "from": "batch-processor",
+      "to": "data-lake",
+      "label": "Write Parquet",
+      "format": "parquet"
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow-realtime",
+      "path": ["events-source", "event-collector", "event-queue", "stream-processor", "time-series-db", "analytics-api", "dashboard"],
+      "dataType": "event",
+      "description": "Real-time metrics pipeline"
+    },
+    {
+      "id": "flow-batch",
+      "path": ["event-queue", "batch-processor", "data-lake"],
+      "dataType": "aggregated",
+      "description": "Batch archival pipeline"
+    }
+  ],
+  "metadata": {
+    "author": "Analytics Team",
+    "created": "2026-09-28T10:00:00Z"
+  }
+}

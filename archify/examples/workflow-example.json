@@ -1,0 +1,184 @@
+{
+  "type": "workflow",
+  "version": "1.0.0",
+  "title": "Order Fulfillment Workflow",
+  "description": "Process flow for receiving, processing, and shipping customer orders",
+  "nodes": [
+    {
+      "id": "start-order",
+      "label": "Order Received",
+      "type": "start",
+      "color": "backend",
+      "description": "Customer submits order",
+      "evidence": {
+        "file": "src/services/order/handlers.ts",
+        "lines": "1-30"
+      }
+    },
+    {
+      "id": "validate-payment",
+      "label": "Validate Payment",
+      "type": "process",
+      "color": "security",
+      "action": "Verify payment method & amount",
+      "evidence": {
+        "file": "src/services/payment/validate.ts"
+      }
+    },
+    {
+      "id": "check-inventory",
+      "label": "Check Inventory",
+      "type": "decision",
+      "color": "backend",
+      "action": "Items in stock?",
+      "evidence": {
+        "file": "src/services/inventory/check.ts"
+      }
+    },
+    {
+      "id": "backorder",
+      "label": "Create Backorder",
+      "type": "process",
+      "color": "database",
+      "action": "Schedule for later",
+      "evidence": {
+        "file": "src/services/order/backorder.ts"
+      }
+    },
+    {
+      "id": "reserve-items",
+      "label": "Reserve Items",
+      "type": "process",
+      "color": "backend",
+      "action": "Lock inventory",
+      "evidence": {
+        "file": "src/services/inventory/reserve.ts"
+      }
+    },
+    {
+      "id": "generate-label",
+      "label": "Generate Shipping Label",
+      "type": "process",
+      "color": "external",
+      "action": "Create carrier label",
+      "evidence": {
+        "file": "src/services/shipping/label.ts"
+      }
+    },
+    {
+      "id": "pack-items",
+      "label": "Pack Items",
+      "type": "process",
+      "color": "backend",
+      "action": "Prepare for shipment",
+      "evidence": {
+        "file": "src/warehouse/packing.ts"
+      }
+    },
+    {
+      "id": "ship-order",
+      "label": "Ship Order",
+      "type": "process",
+      "color": "external",
+      "action": "Hand off to carrier",
+      "evidence": {
+        "file": "src/services/shipping/dispatch.ts"
+      }
+    },
+    {
+      "id": "notify-customer",
+      "label": "Notify Customer",
+      "type": "process",
+      "color": "messaging",
+      "action": "Send tracking email",
+      "evidence": {
+        "file": "src/services/notifications/email.ts"
+      }
+    },
+    {
+      "id": "end-order",
+      "label": "Order Complete",
+      "type": "end",
+      "color": "backend"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "from": "start-order",
+      "to": "validate-payment",
+      "order": 1
+    },
+    {
+      "id": "edge-2",
+      "from": "validate-payment",
+      "to": "check-inventory",
+      "order": 2
+    },
+    {
+      "id": "edge-3",
+      "from": "check-inventory",
+      "to": "backorder",
+      "condition": "Out of stock",
+      "order": 3
+    },
+    {
+      "id": "edge-4",
+      "from": "check-inventory",
+      "to": "reserve-items",
+      "condition": "In stock",
+      "order": 3
+    },
+    {
+      "id": "edge-5",
+      "from": "reserve-items",
+      "to": "generate-label",
+      "order": 4
+    },
+    {
+      "id": "edge-6",
+      "from": "generate-label",
+      "to": "pack-items",
+      "order": 5
+    },
+    {
+      "id": "edge-7",
+      "from": "pack-items",
+      "to": "ship-order",
+      "order": 6
+    },
+    {
+      "id": "edge-8",
+      "from": "ship-order",
+      "to": "notify-customer",
+      "order": 7
+    },
+    {
+      "id": "edge-9",
+      "from": "notify-customer",
+      "to": "end-order",
+      "order": 8
+    }
+  ],
+  "swimlanes": [
+    {
+      "id": "fulfillment",
+      "label": "Fulfillment System",
+      "actor": "Automated"
+    },
+    {
+      "id": "warehouse",
+      "label": "Warehouse",
+      "actor": "Staff"
+    },
+    {
+      "id": "carrier",
+      "label": "Shipping Carrier",
+      "actor": "External"
+    }
+  ],
+  "metadata": {
+    "author": "Operations Team",
+    "created": "2026-09-28T10:00:00Z"
+  }
+}

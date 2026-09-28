@@ -1,0 +1,185 @@
+{
+  "type": "sequence",
+  "version": "1.0.0",
+  "title": "User Authentication Flow",
+  "description": "Sequence diagram showing OAuth2 authentication with JWT tokens",
+  "participants": [
+    {
+      "id": "browser",
+      "label": "Browser",
+      "role": "actor",
+      "color": "frontend",
+      "evidence": {
+        "file": "src/frontend/auth.ts"
+      }
+    },
+    {
+      "id": "auth-service",
+      "label": "Auth Service",
+      "role": "participant",
+      "color": "security",
+      "evidence": {
+        "file": "src/services/auth/service.ts"
+      }
+    },
+    {
+      "id": "identity-provider",
+      "label": "Identity Provider (OAuth2)",
+      "role": "system",
+      "color": "external",
+      "evidence": {
+        "url": "https://oauth.example.com"
+      }
+    },
+    {
+      "id": "database",
+      "label": "User Database",
+      "role": "system",
+      "color": "database",
+      "evidence": {
+        "file": "docker-compose.yml"
+      }
+    },
+    {
+      "id": "api-gateway",
+      "label": "API Gateway",
+      "role": "participant",
+      "color": "backend",
+      "evidence": {
+        "file": "src/api-gateway/gateway.ts"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-1",
+      "from": "browser",
+      "to": "auth-service",
+      "label": "POST /auth/login?provider=google",
+      "type": "sync",
+      "order": 1,
+      "evidence": {
+        "file": "src/frontend/auth.ts",
+        "lines": "42-55"
+      }
+    },
+    {
+      "id": "msg-2",
+      "from": "auth-service",
+      "to": "identity-provider",
+      "label": "Redirect to OAuth endpoint",
+      "type": "sync",
+      "order": 2,
+      "evidence": {
+        "file": "src/services/auth/oauth.ts",
+        "lines": "1-30"
+      }
+    },
+    {
+      "id": "msg-3",
+      "from": "identity-provider",
+      "to": "browser",
+      "label": "Redirect to auth-service/callback?code=...",
+      "type": "sync",
+      "order": 3
+    },
+    {
+      "id": "msg-4",
+      "from": "browser",
+      "to": "auth-service",
+      "label": "GET /auth/callback?code=...",
+      "type": "sync",
+      "order": 4
+    },
+    {
+      "id": "msg-5",
+      "from": "auth-service",
+      "to": "identity-provider",
+      "label": "Exchange code for token",
+      "type": "sync",
+      "order": 5,
+      "evidence": {
+        "file": "src/services/auth/oauth.ts",
+        "lines": "31-60"
+      }
+    },
+    {
+      "id": "msg-6",
+      "from": "identity-provider",
+      "to": "auth-service",
+      "label": "Return ID token & refresh token",
+      "type": "return",
+      "order": 6
+    },
+    {
+      "id": "msg-7",
+      "from": "auth-service",
+      "to": "database",
+      "label": "SELECT/INSERT user",
+      "type": "sync",
+      "order": 7,
+      "evidence": {
+        "file": "src/services/auth/user-repo.ts"
+      }
+    },
+    {
+      "id": "msg-8",
+      "from": "database",
+      "to": "auth-service",
+      "label": "User record",
+      "type": "return",
+      "order": 8
+    },
+    {
+      "id": "msg-9",
+      "from": "auth-service",
+      "to": "auth-service",
+      "label": "Generate JWT",
+      "type": "sync",
+      "order": 9,
+      "evidence": {
+        "file": "src/services/auth/jwt.ts"
+      }
+    },
+    {
+      "id": "msg-10",
+      "from": "auth-service",
+      "to": "browser",
+      "label": "Set-Cookie: jwt_token=...",
+      "type": "return",
+      "order": 10
+    },
+    {
+      "id": "msg-11",
+      "from": "browser",
+      "to": "api-gateway",
+      "label": "GET /api/user (with jwt_token cookie)",
+      "type": "sync",
+      "order": 11
+    },
+    {
+      "id": "msg-12",
+      "from": "api-gateway",
+      "to": "api-gateway",
+      "label": "Verify JWT",
+      "type": "sync",
+      "order": 12,
+      "evidence": {
+        "file": "src/api-gateway/middleware.ts"
+      }
+    },
+    {
+      "id": "msg-13",
+      "from": "api-gateway",
+      "to": "browser",
+      "label": "200 OK + user profile",
+      "type": "return",
+      "order": 13
+    }
+  ],
+  "metadata": {
+    "author": "Security Team",
+    "created": "2026-09-28T10:00:00Z",
+    "scenario": "New user login via OAuth2"
+  }
+}
