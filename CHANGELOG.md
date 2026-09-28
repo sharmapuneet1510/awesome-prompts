@@ -16,6 +16,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
 >
 > | Tag | Date | Entry |
 > |---|---|---|
+> | `v5.0.1` | 2026-09-29 | Tagged `v5.0.1` — super skills and five new skills |
 > | `v5.0.0` | 2026-09-28 | Tagged `v5.0.0` — stability release |
 > | `v1.0.0` | 2026-09-28 | Tagged `v1.0.0` — packaging and CI |
 > | `v4.3.0` | 2026-09-21 | `[5.2.0]` — NEMESIS |
@@ -25,16 +26,23 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## Tagged `v5.0.1` — 2026-09-29
+
+Super skills: a Quick Card on every skill, a shared HTML run report, five new
+skills built from files that were executed, and fixes to skill examples that
+did not work. Replaces the unverified claims of commit `214803b`.
+
 ### Added
 - **Super skills.** A Quick Card under every skill's H1 (use when, skip when, inputs,
   produces, steps, done when, load on demand, run report, pairs with) and *senior
-  defaults* on the 18 coding skills. The 38 cards total ~8% of the full skill text.
+  defaults* on the 23 coding and build skills. The 43 cards total ~8.5% of the full skill text.
   Standard: `agent_skill_design_skill` §3a.
 - `html_report_skill` — one shared contract for the self-contained HTML run report.
-  Skills 37 → 38.
 - [Skills playbook](docs/01-workflows/skills-playbook.md) — the skills each of the
   16 SDLC stages loads.
-- `applies_to` frontmatter on 14 skills; `tools/skill_validator.py` passes all 38.
+- `applies_to` frontmatter on 14 skills; `tools/skill_validator.py` passes all 43.
 - Five skills (38 → 43), each built from files that were run, not written from memory:
   - `mssql_dba_skill` — head blockers, deadlock graphs, waits, Query Store, index review
     (missing, unused, redundant, fragmentation, statistics, forwarded heaps), partition

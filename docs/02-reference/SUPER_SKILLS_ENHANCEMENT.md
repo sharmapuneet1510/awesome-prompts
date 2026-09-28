@@ -73,7 +73,7 @@ written only when a run changes files, or on `report=html`.
 
 ---
 
-## What changed (unreleased)
+## What changed in v5.0.1
 
 ### Added
 

@@ -31,7 +31,7 @@ It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and A
 
 ## ✨ What's New
 
-**Super skills (unreleased).** Every one of the 43 skills now opens with a **Quick Card** — use when, inputs, outputs, steps, done when, and which section to load on demand. The 43 cards together are about 8.5% of the full skill text, so an assistant reads the card and loads the body only when it needs it.
+**v5.0.1 — super skills.** Every one of the 43 skills now opens with a **Quick Card** — use when, inputs, outputs, steps, done when, and which section to load on demand. The 43 cards together are about 8.5% of the full skill text, so an assistant reads the card and loads the body only when it needs it.
 
 - **HTML run reports** — a run that changes files leaves one self-contained page: what was asked, each step, every file touched, labelled claims, gates, open items ([`html_report_skill`](skills/html_report_skill.md))
 - **Senior defaults** — the advanced rules that matter most, on each of the 23 coding and build skills

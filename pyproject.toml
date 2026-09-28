@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "awesome-prompts"
-version = "5.0.0"
+version = "5.0.1"
 description = "Spec-driven engineering for AI coding assistants — stop before you build the wrong thing"
 readme = "README.md"
 license = {text = "MIT"}
