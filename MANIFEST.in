@@ -1,0 +1,14 @@
+include README.md
+include LICENSE
+include CONTRIBUTING.md
+include pyproject.toml
+recursive-include archify *.ts *.json *.md
+recursive-include docs *.md
+recursive-include examples *.json
+recursive-include instructions *.md
+recursive-include prompts *.md
+recursive-include agents *.md
+recursive-include skills *.md
+recursive-include parser *.py
+recursive-include tools *.py
+recursive-include hooks *.sh *.py

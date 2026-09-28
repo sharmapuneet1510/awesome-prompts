@@ -48,11 +48,23 @@ flowchart LR
 
 ## Quick start
 
-**1. Get it**
+**1. Install**
 
+Option A: pip install (easiest)
+```bash
+pip install awesome-prompts
+```
+
+Option B: Clone from source
 ```bash
 git clone https://github.com/sharmapuneet1510/awesome-prompts.git
 cd awesome-prompts
+pip install -e .
+```
+
+Option C: Docker (coming soon)
+```bash
+docker run -it ghcr.io/sharmapuneet1510/awesome-prompts
 ```
 
 **2. See what is available** — read-only
