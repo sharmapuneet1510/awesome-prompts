@@ -24,9 +24,11 @@ turns them into instruction files for 8 AI coding assistants. Overview:
 | `archify/` | Diagram-as-code (TypeScript), with its own tests |
 | `tests/` | pytest suite, run in CI |
 
-**Generated — do not edit by hand:** `.claude/` (committed) and `.cursor/`,
-`.windsurf/`, `.gemini/`, `.continue/`, `.github/instructions/` (gitignored).
-Edit the sources, then re-run the exporter.
+**Generated — do not edit by hand:** `plugins/` and `.claude-plugin/` (committed;
+`tests/test_plugins_repo.py` fails when they are stale), `.claude/hooks/`, and
+`.cursor/`, `.windsurf/`, `.gemini/`, `.continue/`, `.github/instructions/` (gitignored).
+Edit the sources, then re-run the exporter. To use the plugins while working here,
+run `/plugin marketplace add ./` once in Claude Code.
 
 ## Commands
 

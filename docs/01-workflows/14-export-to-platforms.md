@@ -55,6 +55,11 @@ Each gets its own directory convention and file format. Nothing is merged — on
 file per skill, one per agent, so you can delete what you do not want without
 unpicking a bundle.
 
+**Claude Code** is different: `--target claude` writes a plugin marketplace
+(`.claude-plugin/marketplace.json` and `plugins/`), which users install with
+`/plugin marketplace add sharmapuneet1510/awesome-prompts`. The other seven
+targets write instruction files.
+
 ---
 
 ## What gets exported
@@ -97,7 +102,7 @@ python3 tools/exporter.py              # write it
 ## Artifacts
 
 Written into the target project or this repository, depending on platform
-conventions: `.claude/`, `.cursor/`, `.github/`, `.windsurf/`, `.gemini/`,
+conventions: `plugins/` and `.claude-plugin/` (Claude Code), `.claude/hooks/`, `.cursor/`, `.github/`, `.windsurf/`, `.gemini/`,
 `.continue/`, `.aider/`, and OpenAI-format files.
 
 ---
