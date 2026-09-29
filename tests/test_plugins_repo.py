@@ -23,17 +23,33 @@ def _front(path: Path) -> dict:
     return yaml.safe_load(text.split("---", 2)[1])
 
 
+def _gitignored(rels: list[str]) -> set[str]:
+    """Which of these repo-relative paths git ignores (empty outside a git checkout)."""
+    if not rels or shutil.which("git") is None or not (ROOT / ".git").exists():
+        return set()
+    out = subprocess.run(["git", "check-ignore", "--no-index", "--stdin"], cwd=ROOT, input="\n".join(rels),
+                         capture_output=True, text=True).stdout
+    return set(out.split())
+
+
+def _expected() -> dict[str, str]:
+    orch = ExportOrchestrator(ROOT)
+    agents = orch.discover_agents()
+    return ClaudeExporter(ROOT).plan_files(orch.discover_skills(), agents, orch.discover_modules(),
+                                           orch.discover_functions(), orch.discover_referenced_instructions(agents))
+
+
 def _skills(plugin: str) -> list[Path]:
     return sorted((PLUGINS / plugin / "skills").glob("*/SKILL.md"))
 
 
 def test_committed_plugins_are_fresh():
-    orch = ExportOrchestrator(ROOT)
-    agents = orch.discover_agents()
-    expected = ClaudeExporter(ROOT).plan_files(orch.discover_skills(), agents, orch.discover_modules(),
-                                               orch.discover_functions(), orch.discover_referenced_instructions(agents))
-    on_disk = {p.relative_to(ROOT).as_posix(): p.read_text(encoding="utf-8")
-               for p in list(PLUGINS.rglob("*")) + [ROOT / ".claude-plugin/marketplace.json"] if p.is_file()}
+    expected = _expected()
+    # Files git ignores (e.g. a Finder .DS_Store) are never committed, so they don't count as stale.
+    paths = [p for p in list(PLUGINS.rglob("*")) + [ROOT / ".claude-plugin/marketplace.json"] if p.is_file()]
+    rels = [p.relative_to(ROOT).as_posix() for p in paths]
+    ignored = _gitignored(rels)
+    on_disk = {rel: p.read_text(encoding="utf-8") for rel, p in zip(rels, paths) if rel not in ignored}
     assert sorted(on_disk) == sorted(expected), "run: python3 tools/exporter.py --target claude"
     stale = [rel for rel, text in expected.items() if on_disk[rel] != text]
     assert stale == [], "run: python3 tools/exporter.py --target claude"
@@ -92,7 +108,4 @@ def test_no_generated_plugin_file_is_gitignored():
     # A generated file that .gitignore hides is on disk locally but missing from every clone.
     if shutil.which("git") is None or not (ROOT / ".git").exists():
         pytest.skip("not a git checkout")
-    files = [str(p.relative_to(ROOT)) for p in PLUGINS.rglob("*") if p.is_file()]
-    ignored = subprocess.run(["git", "check-ignore", "--no-index", *files], cwd=ROOT,
-                             capture_output=True, text=True).stdout.split()
-    assert ignored == []
+    assert sorted(_gitignored(list(_expected()))) == []
