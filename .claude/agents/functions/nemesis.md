@@ -10,7 +10,7 @@ NEMESIS is an **execution mode**, not an agent: it turns the specialist that fit
 opposing specialist (`Architect + NEMESIS = NEMESIS Architect`). It may just as well conclude that the
 conclusion **survived**, and it never invents a defect.
 
-**Skill:** [`nemesis_skill`](../../../skills/nemesis_skill.md) holds the behaviour, the enumerations and
+**Skill:** [`nemesis_skill`](../../skills/nemesis_skill.md) holds the behaviour, the enumerations and
 the report format. This file holds the lifecycle, the persona table and the isolation contract.
 
 ## Input Specification
