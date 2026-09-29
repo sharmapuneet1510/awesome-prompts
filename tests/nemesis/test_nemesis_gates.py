@@ -7,7 +7,7 @@ COVERS = ["N12"]
 GATES = {
     "agents/quality/functions/review.md": ["critical_change", "security_change", "payment_change"],
     "agents/architect/functions/adr.md": ["architecture_change"],
-    "agents/orchestrator_agent.md": ["production_release"],
+    "agents/orchestrator/functions/pr.md": ["production_release"],
 }
 
 
@@ -53,7 +53,7 @@ def test_the_review_gate_handles_every_verdict_and_stops_a_fix_loop():
 
 
 def test_the_pr_gate_stops_on_a_defeat_and_stops_a_fix_loop():
-    text = gate_text("agents/orchestrator_agent.md")
+    text = gate_text("agents/orchestrator/functions/pr.md")
     assert "stop on a `DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE` verdict" in text
     assert "on `SURVIVED WITH CONDITIONS`, put its conditions in the PR description" in text
     assert "two consecutive blocking results (`DEFEATED`, `CHALLENGED` or `INSUFFICIENT EVIDENCE`) for the same release" in text and "`change` header matches it" in text
@@ -61,9 +61,9 @@ def test_the_pr_gate_stops_on_a_defeat_and_stops_a_fix_loop():
 
 
 def test_the_pr_gate_sits_after_the_step_list_of_the_orchestrator_pr_section_and_says_before_step_1():
-    text = c.read(c.ROOT / "agents/orchestrator_agent.md")
-    section = text[text.index("### orchestrator:pr"):]
-    section = section[: section.index("\n---", 10)]
+    # orchestrator:pr moved from a section of orchestrator_agent.md to its own function file (#53)
+    text = c.read(c.ROOT / "agents/orchestrator/functions/pr.md")
+    section = text[text.index("# orchestrator:pr"):]
     assert section.index("NEMESIS gate (optional)") > section.index("8. Generate completion report")
     assert "Before step 1" in section
 
