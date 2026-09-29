@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -268,6 +269,11 @@ class ModuleFile(BaseFile):
     agent_type: str
     module_type: str = "module"
 
+    @property
+    def role(self) -> str:
+        """The owning agent type — lets agent formatters format modules too."""
+        return self.agent_type
+
     @classmethod
     def from_path(cls, path: Path) -> "ModuleFile":
         """Parses a module markdown file.
@@ -306,6 +312,11 @@ class FunctionFile(BaseFile):
     agent_type: str
     prefix: str
 
+    @property
+    def role(self) -> str:
+        """The owning agent type — lets agent formatters format functions too."""
+        return self.agent_type
+
     @classmethod
     def from_path(cls, path: Path) -> "FunctionFile":
         """Parses a function markdown file.
@@ -343,6 +354,11 @@ class InstructionFile(BaseFile):
     """
 
     applies_to: list[str]
+
+    @property
+    def role(self) -> str:
+        """Lets agent formatters format instructions too."""
+        return "instructions"
 
     @classmethod
     def from_path(cls, path: Path) -> "InstructionFile":
@@ -560,6 +576,43 @@ class ExportResult:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Link rewriting
+# ─────────────────────────────────────────────────────────────────────────────
+
+_MD_LINK = re.compile(r"\]\((?P<target>[^)\s#]+\.md)(?P<anchor>#[^)\s]*)?\)")
+
+
+def _rewrite_links(text: str, source: Path, out: Path, exported: dict[Path, Path]) -> str:
+    """Re-points relative .md links so they resolve from the exported file's location.
+
+    A link to another exported file points at its exported copy; a link to any other
+    existing repo file points at that file. Absolute URLs and links that did not
+    resolve in the source are left unchanged.
+
+    Args:
+        text:     Formatted file content.
+        source:   The source file the content came from.
+        out:      Where the content is being written.
+        exported: Resolved source path → output path, for every file in this export.
+
+    Returns:
+        The content with its relative links rewritten.
+    """
+    def repoint(match: re.Match[str]) -> str:
+        target = match.group("target")
+        if "://" in target or target.startswith("/"):
+            return match.group(0)
+        resolved = (source.parent / target).resolve()
+        dest = exported.get(resolved) or (resolved if resolved.exists() else None)
+        if dest is None:
+            return match.group(0)
+        rel = Path(os.path.relpath(dest, out.parent)).as_posix()
+        return f"]({rel}{match.group('anchor') or ''})"
+
+    return _MD_LINK.sub(repoint, text)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Abstract Platform Exporter
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -774,6 +827,11 @@ class PlatformExporter(ABC):
         }
         manifest_file.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
+    def _owns(self, path: Path) -> bool:
+        """True if path lies inside this repo. Manifests hold absolute paths, so an
+        export run from a copy of the repo must not delete the original's files."""
+        return path.resolve().is_relative_to(self._repo_root.resolve())
+
     def _cleanup_old_exports(self, current_skills: list[Path], current_agents: list[Path],
                              current_modules: list[Path], current_functions: list[Path],
                              current_instructions: list[Path], current_hooks: list[Path],
@@ -807,7 +865,7 @@ class PlatformExporter(ABC):
         for old_path_str in manifest.get("skills", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
-                if old_path.exists():
+                if old_path.exists() and self._owns(old_path):
                     removed.append(old_path)
                     if not dry_run:
                         old_path.unlink()
@@ -816,7 +874,7 @@ class PlatformExporter(ABC):
         for old_path_str in manifest.get("agents", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
-                if old_path.exists():
+                if old_path.exists() and self._owns(old_path):
                     removed.append(old_path)
                     if not dry_run:
                         old_path.unlink()
@@ -825,7 +883,7 @@ class PlatformExporter(ABC):
         for old_path_str in manifest.get("modules", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
-                if old_path.exists():
+                if old_path.exists() and self._owns(old_path):
                     removed.append(old_path)
                     if not dry_run:
                         old_path.unlink()
@@ -834,7 +892,7 @@ class PlatformExporter(ABC):
         for old_path_str in manifest.get("functions", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
-                if old_path.exists():
+                if old_path.exists() and self._owns(old_path):
                     removed.append(old_path)
                     if not dry_run:
                         old_path.unlink()
@@ -843,7 +901,7 @@ class PlatformExporter(ABC):
         for old_path_str in manifest.get("instructions", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
-                if old_path.exists():
+                if old_path.exists() and self._owns(old_path):
                     removed.append(old_path)
                     if not dry_run:
                         old_path.unlink()
@@ -852,7 +910,7 @@ class PlatformExporter(ABC):
         for old_path_str in manifest.get("hooks", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
-                if old_path.exists():
+                if old_path.exists() and self._owns(old_path):
                     removed.append(old_path)
                     if not dry_run:
                         old_path.unlink()
@@ -861,7 +919,7 @@ class PlatformExporter(ABC):
         for old_path_str in manifest.get("prompts", []):
             if old_path_str not in current_paths:
                 old_path = Path(old_path_str)
-                if old_path.exists():
+                if old_path.exists() and self._owns(old_path):
                     removed.append(old_path)
                     if not dry_run:
                         old_path.unlink()
@@ -895,46 +953,28 @@ class PlatformExporter(ABC):
             ExportResult with all written (or planned) file paths and removed old files.
         """
         prompts = prompts or []
-        skill_paths: list[Path] = []
-        agent_paths: list[Path] = []
-        module_paths: list[Path] = []
-        function_paths: list[Path] = []
-        instruction_paths: list[Path] = []
 
-        for skill in skills:
-            out = self.skill_output_dir() / self.skill_filename(skill)
-            skill_paths.append(out)
-            if not dry_run:
-                out.parent.mkdir(parents=True, exist_ok=True)
-                out.write_text(self.format_skill(skill), encoding="utf-8")
+        # Plan every output path first, so links between exported files can be rewritten.
+        plans = {
+            "skill": [(s, self.skill_output_dir() / self.skill_filename(s), self.format_skill) for s in skills],
+            "agent": [(a, self.agent_output_dir() / self.agent_filename(a), self.format_agent) for a in agents],
+            "module": [(m, self.module_output_dir() / self.module_filename(m), self.format_module) for m in modules],
+            "function": [(f, self.function_output_dir() / self.function_filename(f), self.format_function)
+                         for f in functions],
+            "instruction": [(i, self.instruction_output_dir() / self.instruction_filename(i), self.format_instruction)
+                            for i in instructions],
+        }
+        exported = {item.path.resolve(): out for plan in plans.values() for item, out, _ in plan}
 
-        for agent in agents:
-            out = self.agent_output_dir() / self.agent_filename(agent)
-            agent_paths.append(out)
-            if not dry_run:
-                out.parent.mkdir(parents=True, exist_ok=True)
-                out.write_text(self.format_agent(agent), encoding="utf-8")
+        if not dry_run:
+            for plan in plans.values():
+                for item, out, fmt in plan:
+                    out.parent.mkdir(parents=True, exist_ok=True)
+                    out.write_text(_rewrite_links(fmt(item), item.path, out, exported), encoding="utf-8")
 
-        for module in modules:
-            out = self.module_output_dir() / self.module_filename(module)
-            module_paths.append(out)
-            if not dry_run:
-                out.parent.mkdir(parents=True, exist_ok=True)
-                out.write_text(self.format_module(module), encoding="utf-8")
-
-        for function in functions:
-            out = self.function_output_dir() / self.function_filename(function)
-            function_paths.append(out)
-            if not dry_run:
-                out.parent.mkdir(parents=True, exist_ok=True)
-                out.write_text(self.format_function(function), encoding="utf-8")
-
-        for instruction in instructions:
-            out = self.instruction_output_dir() / self.instruction_filename(instruction)
-            instruction_paths.append(out)
-            if not dry_run:
-                out.parent.mkdir(parents=True, exist_ok=True)
-                out.write_text(self.format_instruction(instruction), encoding="utf-8")
+        skill_paths, agent_paths, module_paths, function_paths, instruction_paths = (
+            [out for _, out, _ in plans[kind]] for kind in ("skill", "agent", "module", "function", "instruction")
+        )
 
         hook_paths = self.export_hooks(hooks, dry_run=dry_run)
         prompt_paths = self.export_prompts(prompts, dry_run=dry_run)

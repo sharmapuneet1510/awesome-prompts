@@ -552,6 +552,6 @@ Everything below lands in the **downstream project**, not in this repo.
 - **[Function reference](../02-reference/functions.md)** — one-page cheat sheets
 - **[Agent reference](../02-reference/agents.md)** — nine specialist role modes
 - **[agents/README.md](../../agents/README.md)** — agent descriptions and dispatch syntax
-- **[skills/README.md](../02-reference/skills.md)** — the 43 reusable skills
+- **[skills/README.md](../02-reference/skills.md)** — the 44 reusable skills
 - **[Skills playbook](skills-playbook.md)** — which skills each stage loads
 - **[instructions/master_instruction_set.md](../02-reference/rules.md)** — RULES 0–12

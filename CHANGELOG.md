@@ -26,6 +26,21 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `jira_implementation_skill` — one Jira ticket to a reviewed PR: read the ticket, refuse it
+  without testable acceptance criteria, classify (new project, schema change, feature, bug,
+  chore) and route to that class's skills and gates, one named test per criterion written
+  first, PR with the criteria matrix, and Jira write-back confirmed by the user. 43 → 44 skills.
+
+### Fixed
+- `database_skill` v1.2 — the SQL Server example failed (`CREATE TABLE IF NOT EXISTS`), the
+  time-series example declared two primary keys, and MySQL inline `REFERENCES` created no
+  foreign key. Examples rewritten and run on PostgreSQL 17, MySQL 8.4, SQL Server 2022;
+  migrations now follow the project's tool with expand → migrate → contract.
+- `mssql_advanced_skill` v2.2 — the test script's outer transaction was rolled back or doomed
+  by the procedure under test; now teardown-based with an atomicity test (5/5 pass).
+- `maven_skill` — coverage floor comes from the project's `rules.md`.
+
 ---
 
 ## Tagged `v5.0.1` — 2026-09-29

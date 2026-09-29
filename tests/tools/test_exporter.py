@@ -803,3 +803,112 @@ echo "test"
     assert "- name: test_hook" in config_yaml
     assert "type: pre-commit" in config_yaml
     assert "path: " in config_yaml
+
+
+# ── Relative links in exported files ──────────────────────────────────────────
+
+FUNCTION_MD = """\
+---
+name: orchestrator:ideate Function
+prefix: orchestrator:ideate
+---
+
+# orchestrator:ideate
+
+See [NEMESIS skill](../../../skills/nemesis_skill.md#quick-card) and
+[workflow](../../../docs/01-workflows/15-challenge.md).
+"""
+
+LINKING_AGENT_MD = """\
+---
+name: Orchestrator Agent
+version: 3.0
+description: Orchestrates.
+---
+
+# Orchestrator
+
+Call [ideate](orchestrator/functions/ideate.md) · [site](https://example.com/x.md) · [missing](nope/gone.md)
+"""
+
+
+def _export_linked_repo(tmp_path, exporter_cls):
+    """Repo layout: skills/, agents/<role>/functions/, docs/. Exports skill, agent, function."""
+    from tools.exporter import AgentFile, FunctionFile, SkillFile
+    (tmp_path / "skills").mkdir()
+    skill = SkillFile.from_path(write_skill(tmp_path / "skills", "nemesis_skill.md", SKILL_MD))
+    fn_dir = tmp_path / "agents" / "orchestrator" / "functions"
+    fn_dir.mkdir(parents=True)
+    (fn_dir / "ideate.md").write_text(FUNCTION_MD, encoding="utf-8")
+    function = FunctionFile.from_path(fn_dir / "ideate.md")
+    agent_path = tmp_path / "agents" / "orchestrator_agent.md"
+    agent_path.write_text(LINKING_AGENT_MD, encoding="utf-8")
+    agent = AgentFile.from_path(agent_path)
+    (tmp_path / "docs" / "01-workflows").mkdir(parents=True)
+    (tmp_path / "docs" / "01-workflows" / "15-challenge.md").write_text("# w\n", encoding="utf-8")
+    exporter = exporter_cls(repo_root=tmp_path)
+    return exporter.export(skills=[skill], agents=[agent], modules=[], functions=[function],
+                           instructions=[], hooks=[], dry_run=False)
+
+
+def _broken_links(path: Path) -> list[str]:
+    import re
+    broken = []
+    for target in re.findall(r"\]\(([^)#\s]+)(?:#[^)]*)?\)", path.read_text(encoding="utf-8")):
+        if "://" not in target and not (path.parent / target).exists():
+            broken.append(target)
+    return broken
+
+
+@pytest.mark.parametrize("name", ["ClaudeExporter", "WindsurfExporter", "CursorExporter", "GeminiExporter", "CopilotExporter"])
+def test_export_rewrites_links_to_exported_copies(tmp_path, name):
+    import tools.exporter as ex
+    result = _export_linked_repo(tmp_path, getattr(ex, name))
+    agent_out = result.agent_files[0]
+    function_out = result.function_files[0]
+    # agent -> function: points at the exported function, wherever the platform put it
+    assert _broken_links(agent_out) == ["nope/gone.md"]   # an already-broken link is left alone
+    assert function_out.name in agent_out.read_text(encoding="utf-8")
+    # function -> skill (exported) and -> docs (not exported): both resolve
+    assert _broken_links(function_out) == []
+    assert "#quick-card" in function_out.read_text(encoding="utf-8")
+
+
+def test_export_leaves_absolute_urls_untouched(tmp_path):
+    from tools.exporter import ClaudeExporter
+    result = _export_linked_repo(tmp_path, ClaudeExporter)
+    assert "(https://example.com/x.md)" in result.agent_files[0].read_text(encoding="utf-8")
+
+
+def test_openai_exports_functions_without_crashing(tmp_path):
+    from tools.exporter import OpenAIExporter
+    result = _export_linked_repo(tmp_path, OpenAIExporter)
+    assert result.function_files[0].exists()
+
+
+def test_cleanup_never_deletes_outside_the_repo(tmp_path):
+    import json
+    from tools.exporter import ClaudeExporter
+    outside = tmp_path / "elsewhere" / "keep.md"      # e.g. the original repo, when exporting from a copy
+    outside.parent.mkdir()
+    outside.write_text("x", encoding="utf-8")
+    repo = tmp_path / "copy"
+    repo.mkdir()
+    exporter = ClaudeExporter(repo_root=repo)
+    exporter._manifest_path().parent.mkdir(parents=True)
+    exporter._manifest_path().write_text(json.dumps({"skills": [str(outside)]}), encoding="utf-8")
+    result = exporter.export(skills=[], agents=[], modules=[], functions=[], instructions=[], hooks=[])
+    assert outside.exists()
+    assert result.removed_files == []
+
+
+@pytest.mark.parametrize("name", ["CopilotExporter", "CursorExporter", "OpenAIExporter"])
+def test_platforms_using_default_formatters_export_instructions(tmp_path, name):
+    import tools.exporter as ex
+    (tmp_path / "instructions").mkdir()
+    p = tmp_path / "instructions" / "master_instruction_set.md"
+    p.write_text("---\nname: Master Rules\ndescription: Rules.\n---\n\n# Rules\n", encoding="utf-8")
+    instruction = ex.InstructionFile.from_path(p)
+    result = getattr(ex, name)(repo_root=tmp_path).export(
+        skills=[], agents=[], modules=[], functions=[], instructions=[instruction], hooks=[])
+    assert result.instruction_files[0].exists()

@@ -3,7 +3,7 @@
 **Which skills load at each stage — requirement to release.**
 
 The [SDLC playbook](sdlc-playbook.md) answers *which command, and which gate*.
-This page answers the next question: *which of the 43 skills does that command
+This page answers the next question: *which of the 44 skills does that command
 load, and what does it leave behind?* Same 16 stages, same numbering. Every
 command here is one of the [43 real functions](../02-reference/functions.md).
 
@@ -39,7 +39,7 @@ to skip the report or `report=md` for Markdown.
 | 6 | **Planning** — gate | `orchestrator:plan` · `orchestrator:risk` | `spec_driven_development_skill` | `specs/<feature>/requirements.md` — Approved |
 | 7 | **Design** — gate | `architect:design` · `:api` · `:schema` · `:frontend` · `:a11y` · `:refactor` | `spec_driven_development_skill` · `backend_skill` · `database_skill` · `frontend_skill` · `react_advanced_skill` · `oop_skill` · `refactoring_skill` · `mcp_server_skill` (when designing agent tools) | `specs/<feature>/design.md` — Approved |
 | 8 | **Task breakdown** — gate | implementer, seeded by `tools/task_generator.py` (library, no CLI) | `spec_driven_development_skill` · `traceability_skill` (T-10) | `specs/<feature>/tasks.md` — Approved |
-| 9 | Implementation | `implementer:full` (or `:build` · `:test` · `:doc`) | Gate: `spec_driven_development_skill` · `adr_skill` · `traceability_skill` · `project_context_skill` — then by stack, below | `src/` · `tests/` · docs |
+| 9 | Implementation | `implementer:full` (or `:build` · `:test` · `:doc`) | `jira_implementation_skill` (work driven by one Jira ticket) · Gate: `spec_driven_development_skill` · `adr_skill` · `traceability_skill` · `project_context_skill` — then by stack, below | `src/` · `tests/` · docs |
 | 10 | Packaging & infra | `implementer:pipeline` · `:docker` · `:iac` | `maven_skill` · `python_project_skill` (build, image) · `ansible_skill` (hosts) · `opentelemetry_skill` | CI workflow · `Dockerfile` · playbooks · manifests |
 | 11 | Review & conformance | `quality:observe` · `:review` · `:security` · `:perf` · `:batch-review` | `adr_skill` · `current_tech_spec_skill` · `traceability_skill` (observe) · `code_review_skill` · `security_audit_skill` · `code_health_skill` (PERF) · `mssql_dba_skill` (SQL Server) · `multi_review_html_skill` | `docs/observations/<PR>-observations.md` · review reports |
 | 12 | QA | `quality:qa` | `test_skill` · `security_audit_skill` · `project_context_skill` | `docs/project-context/quality/*.md` · suites |
@@ -131,6 +131,7 @@ and which gates passed.
 | Inherited codebase | Stage 0 → 3 | `context_builder_skill` · `code_health_skill` · `project_context_skill` |
 | Slow or blocked SQL Server | Stage 14 | `mssql_dba_skill` |
 | Legacy modernisation | Stage 3 → 15 | `code_health_skill` · `refactoring_skill` · `adr_skill` |
+| One Jira ticket, end to end | Stage 3 (or 0 for a new project) | `jira_implementation_skill` — it routes to the class's skills and gates |
 | Writing a new skill | — | `agent_skill_design_skill` |
 
 ---

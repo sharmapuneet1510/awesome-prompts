@@ -100,6 +100,10 @@ yarn-error.log
 .github/instructions/
 .github/agents/
 .github/copilot/
+.github/prompts/
+.github/hooks/
+.github/copilot.yml
+.github/.copilot-export-manifest.json
 
 # Cursor IDE
 .cursor/

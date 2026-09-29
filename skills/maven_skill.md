@@ -368,6 +368,7 @@ Fixed by managing the version once in the parent — the rule passed:
 
 ## 5. Tests and Coverage
 
+- **The coverage floor is the project's, not this file's.** Set `jacoco.minimum.line.coverage` to the floor in `docs/project-setup/rules.md` (`project_setup_skill` §5 suggests 90%). The example's 0.80 is what that example project used.
 - **Unit tests** end in `Test` → Surefire, `test` phase. **Integration tests** end in `IT` → Failsafe, `integration-test` + `verify`.
 - `jacoco:prepare-agent` sets `argLine`; Surefire **and** Failsafe both use it, so coverage from integration tests counts. On the example, the `app` module has only an `IT` and still met its coverage gate.
 - **If you set your own `argLine`, write `<argLine>@{argLine} -Xmx1g</argLine>`.** Verified on the example: a plain `<argLine>-Xmx512m</argLine>` dropped the JaCoCo agent, JaCoCo logged `Skipping JaCoCo execution due to missing execution data file`, and the build still ended in `BUILD SUCCESS` — the coverage gate never ran. With `@{argLine}` the gate ran and passed.
