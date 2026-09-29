@@ -30,7 +30,8 @@ Interactive Mode:
 
 Supported targets:
     copilot   → .github/instructions/ + .github/agents/
-    claude    → .claude/skills/ + .claude/agents/
+    claude    → plugins/<name>/ + .claude-plugin/marketplace.json (Claude Code plugins;
+                users install with /plugin marketplace add sharmapuneet1510/awesome-prompts)
     cursor    → .cursor/rules/ + .cursor/rules/agents/
     windsurf  → .windsurf/rules/ + .windsurf/rules/agents/
     gemini    → .gemini/skills/ + .gemini/agents/
