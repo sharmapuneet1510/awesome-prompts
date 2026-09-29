@@ -2,7 +2,7 @@
  * Validation Pipeline — Schema validation + custom rules
  */
 
-import { DiagramSchema, ValidationResultSchema, Diagram } from '../schema/schema';
+import { DiagramSchema, ValidationResultSchema, Diagram } from '../schema/schema.js';
 import { ZodError } from 'zod';
 
 export interface ValidationError {

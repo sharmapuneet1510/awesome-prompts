@@ -41,7 +41,7 @@ It works with Claude, Copilot, Cursor, Windsurf, Gemini, Continue, OpenAI, and A
 
 Details, measurements, and what was not done: [docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md](docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md).
 
-**v5.0.0** — stability release: the test suite runs on a fresh clone, six mutable default arguments fixed and guarded by ruff B006, `.claude/` exports regenerated, and a production demo (`docs/04-examples/DEMO.md`). See [CHANGELOG.md](CHANGELOG.md) or the [release notes](https://github.com/sharmapuneet1510/awesome-prompts/releases/tag/v5.0.0).
+**v5.0.0** — stability release: the test suite runs on a fresh clone, six mutable default arguments fixed and guarded by ruff B006, and `.claude/` exports regenerated. See [CHANGELOG.md](CHANGELOG.md) or the [release notes](https://github.com/sharmapuneet1510/awesome-prompts/releases/tag/v5.0.0).
 
 ## How it works
 

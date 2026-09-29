@@ -40,6 +40,14 @@ versioning follows [Semantic Versioning](https://semver.org/).
 - `mssql_advanced_skill` v2.2 — the test script's outer transaction was rolled back or doomed
   by the procedure under test; now teardown-based with an atomicity test (5/5 pass).
 - `maven_skill` — coverage floor comes from the project's `rules.md`.
+- Round-1 leftovers (#55): tests for code that still exists brought back from
+  `.deprecated/` (762 → 1078 passing); `tools/instructions-framework` renamed to
+  `tools/instructions_framework` so it can be imported; `tools/orchestrator` imports
+  again (`git_handler` restored); `pyyaml` is a runtime dependency.
+- archify: tests actually run (vitest; zod 3; fixed schema and CLI validators; all
+  five examples validate); CI no longer ignores test, type-check, or example failures;
+  SARIF upload on `codeql-action` v3.
+- README no longer claims a `DEMO.md` that was never committed.
 
 ---
 
@@ -106,6 +114,7 @@ did not work. Replaces the unverified claims of commit `214803b`.
 
 ### Added
 - **Production Demo** (`docs/04-examples/DEMO.md`) — Comprehensive proof of functionality with 751 passing tests, installation instructions, usage examples, and spec-driven workflow demonstration
+  *(Correction: this file was never committed — see #55.)*
 - **Export Manifest** — Automatic tracking of exported files across all platforms for safe incremental updates
 
 ### Fixed
