@@ -34,11 +34,14 @@ jobs:
 
       - name: Run Python tests
         run: |
-          pytest tests/ -v --tb=short --cov=. --cov-report=term-missing
+          pytest tests/ -v --tb=short --cov=. --cov-report=term-missing --cov-report=xml
 
+      # Reporting only: a Codecov outage must not fail the build or block a merge
       - name: Upload coverage
         uses: codecov/codecov-action@v3
+        continue-on-error: true
         with:
+          fail_ci_if_error: false
           files: ./coverage.xml
           flags: python
           name: python-coverage
