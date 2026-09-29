@@ -30,7 +30,7 @@ python tools/skill_exporter.py
 
 **What it does:**
 - Exports all skills and agents to 8 platforms
-- Updates `.github/instructions/`, `.github/agents/`, `.claude/skills/`, `.claude/agents/`, etc.
+- Updates `.github/instructions/`, `.github/agents/`, `plugins/` (Claude Code), etc.
 - Creates files in `tools/output/openai/` for API use
 
 ### 2. Export for GitHub Copilot Only
@@ -49,9 +49,9 @@ Use this when Copilot in VSCode or GitHub Web needs the latest skills and agents
 python tools/exporter.py --target claude
 ```
 
-**Output:** `.claude/skills/` and `.claude/agents/`
+**Output:** `plugins/` and `.claude-plugin/marketplace.json` — a plugin marketplace.
 
-Claude Code will use these files automatically.
+Install it in Claude Code with `/plugin marketplace add sharmapuneet1510/awesome-prompts`, then `/plugin install <plugin>@awesome-prompts`.
 
 ### 4. Export for Cursor IDE
 
@@ -124,12 +124,9 @@ No additional setup needed. Just run the exporter and Copilot will start applyin
 
 ### Claude Code (Claude.ai + Extensions)
 
-✅ Semi-automatic — Claude reads from `.claude/` folder context.
+✅ Plugins — installed once from the marketplace.
 
-To ensure Claude uses the skills:
-1. Run the exporter: `python tools/exporter.py --target claude`
-2. Reference in conversation: "Apply the skills from `.claude/skills/` and agents from `.claude/agents/`"
-3. Or add a link in CLAUDE.md pointing to the generated folders
+Install the plugins (see above). Commands such as `/architect:adr` then appear in the `/` menu, and Claude loads the reference skills when relevant.
 
 ### Cursor IDE
 
@@ -209,7 +206,7 @@ python tools/exporter.py --skills java,spring --target cursor
 
 **Copilot:** Verify `.github/instructions/` and `.github/agents/` exist and are committed to Git.
 
-**Claude Code:** The files go in `.claude/skills/` and `.claude/agents/` — double-check the paths.
+**Claude Code:** run `/plugin` and check the awesome-prompts plugins are installed and enabled.
 
 **Cursor:** The files go in `.cursor/rules/` — verify this folder exists.
 

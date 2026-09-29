@@ -1,0 +1,37 @@
+---
+name: tradeoff
+description: Complexity vs. simplicity analysis + 3-option comparison
+disable-model-invocation: true
+---
+
+Role and rules: read ${CLAUDE_PLUGIN_ROOT}/reference/agent.md and ${CLAUDE_PLUGIN_ROOT}/reference/rules.md for the sections this function needs.
+
+# orchestrator:tradeoff
+
+**Input:** Proposed architecture + constraints
+
+**Output:**
+- 3-option analysis (simple/moderate/advanced)
+- Explicit tradeoff dimensions
+- Recommendation with rationale
+
+**Steps:**
+1. Identify key decision (DB choice, pattern, tech stack)
+2. Define Option A (simple approach)
+   - ✓ Benefits, ✗ limitations
+   - Effort estimate
+   - Team skill required
+   - Scalability ceiling
+3. Define Option B (moderate approach)
+   - ✓ Benefits, ✗ limitations
+   - Effort estimate
+   - Team skill required
+   - Scalability ceiling
+4. Define Option C (advanced approach)
+   - ✓ Benefits, ✗ limitations
+   - Effort estimate
+   - Team skill required
+   - Scalability ceiling
+5. Analyze tradeoff dimensions for each
+6. Recommend pragmatically
+7. Provide contingency (when to move to next option)

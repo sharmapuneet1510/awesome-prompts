@@ -1,0 +1,40 @@
+---
+name: batch-review
+description: Multi-PR review with unified HTML report and metrics comparison
+argument-hint: from="./reviews.json"
+disable-model-invocation: true
+---
+
+Role and rules: read ${CLAUDE_PLUGIN_ROOT}/reference/agent.md and ${CLAUDE_PLUGIN_ROOT}/reference/rules.md for the sections this function needs.
+
+# quality:batch-review
+
+**Review multiple PRs** with unified HTML report, metrics comparison, and team metrics.
+
+## Inputs
+
+```
+quality:batch-review from="./reviews.json"
+```
+
+- `from` (string, required) — Path to reviews JSON file with PR numbers
+- `format` (string, optional) — Output format (html, json, markdown)
+
+## Outputs
+
+```
+✓ BATCH_REVIEW.html           — Interactive comparison report
+✓ METRICS_COMPARISON.md       — Side-by-side metrics
+✓ TEAM_METRICS.json           — Team performance data
+```
+
+## Example
+
+```bash
+quality:batch-review from=./reviews.json
+```
+
+## Related Functions
+
+- `quality:review` — Single PR review
+- `quality:report` — Individual PR report

@@ -55,6 +55,11 @@ Each gets its own directory convention and file format. Nothing is merged — on
 file per skill, one per agent, so you can delete what you do not want without
 unpicking a bundle.
 
+**Claude Code** is different: `--target claude` writes a plugin marketplace
+(`.claude-plugin/marketplace.json` and `plugins/`), which users install with
+`/plugin marketplace add sharmapuneet1510/awesome-prompts`. The other seven
+targets write instruction files.
+
 ---
 
 ## What gets exported
@@ -63,16 +68,13 @@ unpicking a bundle.
 |---|---|---|
 | Skills | 44 | `skills/*.md` |
 | Agents | 5 | `agents/*_agent.md` |
-| Functions | 35 | `agents/*/functions/*.md` |
+| Functions | 43 | `agents/*/functions/*.md` |
 | Modules | 3 | `agents/orchestrator/modules/` |
 | Instructions | 1 | `instructions/master_instruction_set.md` |
 | Hooks | varies | `hooks/` |
 | Prompts | 18 | `prompts/*/` |
 
-Function *files* number 35 while the dispatch tables declare 43 callable
-functions — several functions are documented inside their parent agent file
-rather than as standalone files. See
-[../02-reference/functions.md](../02-reference/functions.md).
+Each of the 43 callable functions has its own file.
 
 ---
 
@@ -100,7 +102,7 @@ python3 tools/exporter.py              # write it
 ## Artifacts
 
 Written into the target project or this repository, depending on platform
-conventions: `.claude/`, `.cursor/`, `.github/`, `.windsurf/`, `.gemini/`,
+conventions: `plugins/` and `.claude-plugin/` (Claude Code), `.claude/hooks/`, `.cursor/`, `.github/`, `.windsurf/`, `.gemini/`,
 `.continue/`, `.aider/`, and OpenAI-format files.
 
 ---

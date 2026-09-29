@@ -78,7 +78,7 @@ def get_platforms() -> list[str]:
     print("Which platforms should we export to?\n")
 
     platforms = [
-        ("claude", "Claude Code (Default)", "All Claude environments + .claude/"),
+        ("claude", "Claude Code (Default)", "Plugin marketplace — prints the /plugin install commands"),
         ("copilot", "GitHub Copilot", "GitHub Copilot in .github/"),
         ("cursor", "Cursor IDE", "Cursor IDE rules in .cursor/"),
         ("windsurf", "Windsurf IDE", "Windsurf rules in .windsurf/"),
@@ -363,26 +363,17 @@ def print_next_steps(project_root: Path):
     print("╚════════════════════════════════════════════════════════════╝")
     print(f"{Colors.ENDC}\n")
 
-    print(f"{Colors.BOLD}1. Create Your Requirements File:{Colors.ENDC}")
-    print(f"   cat > {project_root}/requirement.txt << 'EOF'")
-    print("   We need a user authentication system with JWT tokens.")
-    print("   Use React for frontend, Python FastAPI for backend, PostgreSQL for database.")
-    print("   Support login, registration, and profile management.")
-    print("   EOF\n")
+    print(f"{Colors.BOLD}1. Claude Code — install the plugins (nothing is copied for Claude):{Colors.ENDC}")
+    print("   /plugin marketplace add sharmapuneet1510/awesome-prompts")
+    print("   /plugin install architect@awesome-prompts")
+    print("   (also: orchestrator, implementer, quality, ba, engineering-skills)\n")
 
-    print(f"{Colors.BOLD}2. Invoke the Autonomous Developer Agent:{Colors.ENDC}")
-    print("   • In Claude Code: Type '/autonomous-developer'")
-    print("   • In GitHub Copilot: '@autonomous-developer'")
-    print("   • In your terminal: 'python3 -m autonomous_dev_agent'\n")
+    print(f"{Colors.BOLD}2. Start from a requirement:{Colors.ENDC}")
+    print("   • Claude Code: /orchestrator:plan, or /architect:analyse jira=PROJ-123")
+    print(f"   • Other assistants: the exported files are in {project_root}\n")
 
-    print(f"{Colors.BOLD}3. Monitor Progress:{Colors.ENDC}")
-    print(f"   cat {project_root}/task-completion.json\n")
-
-    print(f"{Colors.BOLD}4. Review Generated Code:{Colors.ENDC}")
-    print(f"   ls -la {project_root}/tasks/\n")
-
-    print(f"{Colors.BOLD}📚 Full Documentation:{Colors.ENDC}")
-    print("   See AUTONOMOUS_DEVELOPER_README.md\n")
+    print(f"{Colors.BOLD}📚 Workflows for common tasks:{Colors.ENDC}")
+    print("   https://github.com/sharmapuneet1510/awesome-prompts/blob/main/docs/01-workflows/README.md\n")
 
     print(f"{Colors.OKGREEN}🎉 Ready to build! Happy coding!{Colors.ENDC}\n")
 

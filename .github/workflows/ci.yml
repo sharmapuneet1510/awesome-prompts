@@ -34,11 +34,14 @@ jobs:
 
       - name: Run Python tests
         run: |
-          pytest tests/ -v --tb=short --cov=. --cov-report=term-missing
+          pytest tests/ -v --tb=short --cov=. --cov-report=term-missing --cov-report=xml
 
+      # Reporting only: a Codecov outage must not fail the build or block a merge
       - name: Upload coverage
         uses: codecov/codecov-action@v3
+        continue-on-error: true
         with:
+          fail_ci_if_error: false
           files: ./coverage.xml
           flags: python
           name: python-coverage
@@ -123,10 +126,25 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
+  plugin-validation:
+    name: Claude Code Plugin Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate marketplace and plugins
+        run: |
+          claude plugin validate --strict .claude-plugin/marketplace.json
+          for p in plugins/*/; do claude plugin validate --strict "$p"; done
+
   status-check:
     name: All Tests Passed
     runs-on: ubuntu-latest
-    needs: [test-python, test-typescript, schema-validation]
+    needs: [test-python, test-typescript, schema-validation, plugin-validation]
     if: always()
 
     steps:
@@ -134,7 +152,8 @@ jobs:
         run: |
           if [[ "${{ needs.test-python.result }}" == "failure" ]] || \
              [[ "${{ needs.test-typescript.result }}" == "failure" ]] || \
-             [[ "${{ needs.schema-validation.result }}" == "failure" ]]; then
+             [[ "${{ needs.schema-validation.result }}" == "failure" ]] || \
+             [[ "${{ needs.plugin-validation.result }}" == "failure" ]]; then
             echo "❌ One or more test jobs failed"
             exit 1
           fi

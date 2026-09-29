@@ -1,0 +1,10 @@
+{
+  "name": "implementer",
+  "version": "5.0.1+b742ed941cbf",
+  "description": "Implementation & Execution Engineer combining feature development, testing, documentation, and DevOps.",
+  "author": {
+    "name": "Puneet Sharma"
+  },
+  "repository": "https://github.com/sharmapuneet1510/awesome-prompts",
+  "license": "MIT"
+}

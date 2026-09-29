@@ -7,6 +7,8 @@ __pycache__/
 *.so
 .Python
 build/
+# generated /orchestrator:build and /implementer:build commands (#53)
+!plugins/*/skills/build/
 develop-eggs/
 dist/
 downloads/

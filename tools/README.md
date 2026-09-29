@@ -23,7 +23,7 @@
 **Purpose:** Export agents and skills to 8 platforms
 
 **Supported Platforms:**
-- Claude Code — `.claude/`
+- Claude Code — a plugin marketplace (`plugins/`, `.claude-plugin/`); install with `/plugin marketplace add sharmapuneet1510/awesome-prompts`
 - GitHub Copilot — `.github/`
 - Cursor IDE — `.cursor/`
 - Windsurf IDE — `.windsurf/`
@@ -219,15 +219,6 @@ When exporting to a project directory:
 
 ```
 my-project/
-├── .claude/
-│   ├── skills/
-│   │   ├── backend_skill.md
-│   │   ├── database_skill.md
-│   │   └── ...
-│   └── agents/
-│       ├── implementation_agent.md
-│       ├── code_review_agent.md
-│       └── ...
 ├── .github/
 │   ├── instructions/
 │   │   ├── backend_skill.instructions.md
@@ -267,22 +258,23 @@ The exporter automatically tracks exported files and removes old versions when n
 4. Old files NOT in new export are automatically removed
 5. New manifest is saved for next export cycle
 
-**Manifest example** (`.claude-export-manifest.json`):
+**Manifest example** (`.cursor-export-manifest.json`):
 ```json
 {
   "skills": [
-    "/Users/me/my-project/.claude/skills/backend_skill.md",
-    "/Users/me/my-project/.claude/skills/database_skill.md"
+    "/Users/me/my-project/.cursor/rules/backend_skill.mdc",
+    "/Users/me/my-project/.cursor/rules/database_skill.mdc"
   ],
   "agents": [
-    "/Users/me/my-project/.claude/agents/orchestrator_agent.md"
+    "/Users/me/my-project/.cursor/rules/agents/orchestrator_agent.mdc"
   ],
   "hooks": [],
-  "prompts": [
-    "/Users/me/my-project/.claude/prompts/devops-sre/IncidentRunbook.md"
-  ]
+  "prompts": []
 }
 ```
+
+The Claude Code target keeps no manifest: `plugins/` is wholly generated, so every
+export removes any file there that the current sources don't produce.
 
 **Benefits:**
 - ✅ No stale files left from old exports
@@ -712,8 +704,8 @@ python3 /path/to/awesome-prompts/tools/interactive_exporter.py
 # - Confirm summary
 # - Done! Files are installed
 
-# Result: Your project now has .claude/, .github/, .cursor/, etc.
-# with all the agents and skills ready to use
+# Result: your project has .github/, .cursor/, etc. with the agents and skills.
+# For Claude Code, the wizard prints the /plugin install commands instead of copying files.
 ```
 
 **Use cases:**
@@ -731,7 +723,7 @@ cd awesome-prompts/tools
 python exporter.py
 
 # Use in your tools:
-# - Claude Code: Copy from .claude/
+# - Claude Code: /plugin marketplace add sharmapuneet1510/awesome-prompts
 # - Copilot: Copy from .github/
 # - Cursor: Copy from .cursor/
 # - etc.

@@ -27,6 +27,11 @@ versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Claude Code plugins** (#53): `--target claude` now writes a marketplace of six plugins —
+  `orchestrator`, `architect`, `implementer`, `quality`, `ba` (all 43 functions as
+  `/agent:function` commands, user-invoked only) and `engineering-skills` (44 skills Claude loads
+  when relevant). Install: `/plugin marketplace add sharmapuneet1510/awesome-prompts`. The old
+  flat `.claude/skills` and `.claude/agents` exports, which Claude Code never loaded, are removed.
 - `jira_implementation_skill` — one Jira ticket to a reviewed PR: read the ticket, refuse it
   without testable acceptance criteria, classify (new project, schema change, feature, bug,
   chore) and route to that class's skills and gates, one named test per criterion written

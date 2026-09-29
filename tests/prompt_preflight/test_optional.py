@@ -15,7 +15,8 @@ OFFLINE = dict(os.environ, HTTP_PROXY="http://127.0.0.1:9", HTTPS_PROXY="http://
 
 def test_the_default_export_carries_nothing_of_the_feature(tmp_path):
     done = subprocess.run(
-        [sys.executable, str(TOOLS / "exporter.py"), "--target", "claude", "--target-project", str(tmp_path)],
+        # Claude Code installs from the plugin marketplace instead of copying (#53); cursor still copies
+        [sys.executable, str(TOOLS / "exporter.py"), "--target", "cursor", "--target-project", str(tmp_path)],
         cwd=str(REPO),
         capture_output=True,
         text=True,
@@ -29,6 +30,17 @@ def test_the_default_export_carries_nothing_of_the_feature(tmp_path):
     leaking = [p.name for p in files if any(name in p.read_text(encoding="utf-8", errors="ignore") for name in NAMES)]
     assert leaking == []
     assert not list(tmp_path.rglob("settings*.json"))  # the export never edits any settings file
+
+
+def test_the_claude_plugins_carry_nothing_of_the_feature():
+    sys.path.insert(0, str(REPO))
+    from tools.exporter import ClaudeExporter, ExportOrchestrator
+    orch = ExportOrchestrator(REPO)
+    agents = orch.discover_agents()
+    files = ClaudeExporter(REPO).plan_files(orch.discover_skills(), agents, orch.discover_modules(),
+                                            orch.discover_functions(), orch.discover_referenced_instructions(agents))
+    assert files, "the plugin export must produce something, or this test proves nothing"
+    assert [rel for rel, text in files.items() if any(n in rel or n in text for n in NAMES)] == []
 
 
 def test_nothing_in_the_hooks_directory_belongs_to_the_feature():

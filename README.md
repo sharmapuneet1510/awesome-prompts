@@ -80,13 +80,24 @@ python3 tools/exporter.py --list
 
 **3. Install it into your project** — pick your assistant
 
-```bash
-python3 tools/exporter.py --target claude --target-project ~/code/my-app
+Claude Code — in any project, run:
+
+```text
+/plugin marketplace add sharmapuneet1510/awesome-prompts
+/plugin install architect@awesome-prompts
 ```
 
-You should see each file reported as copied, ending in `✓ Files copied to: …/my-app`. For Claude that creates `.claude/skills/`, `.claude/agents/`, `.claude/hooks/` and `.claude/prompts/` in your project.
+Install the others the same way: `orchestrator`, `implementer`, `quality`, `ba`, and
+`engineering-skills` (the 44 reference skills). Commands then appear as `/architect:adr`,
+`/quality:review`, and so on.
 
-<sub>Targets: `claude` · `copilot` · `cursor` · `windsurf` · `gemini` · `continue` · `openai` · `aider` · `all`. Just exploring? Run `python3 tools/exporter.py` inside the clone instead. `--dry-run` previews that in-repo export; it has no effect together with `--target-project`.</sub>
+Other assistants:
+
+```bash
+python3 tools/exporter.py --target cursor --target-project ~/code/my-app
+```
+
+<sub>Targets: `copilot` · `cursor` · `windsurf` · `gemini` · `continue` · `openai` · `aider` · `all`. `--dry-run` previews an in-repo export; it has no effect together with `--target-project`.</sub>
 
 **4. Ask your assistant** — invoke a function by name
 
