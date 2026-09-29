@@ -14,10 +14,12 @@ export type SemanticColor = z.infer<typeof SemanticColor>;
 
 // Node metadata - evidence grounding
 const EvidenceSchema = z.object({
-  file: z.string().describe('File path (relative to repo root)'),
+  file: z.string().optional().describe('File path (relative to repo root)'),
   lines: z.string().optional().describe('Line range, e.g., "42-88" or "42"'),
   commit: z.string().optional().describe('Git commit SHA (first 7+ chars)'),
   url: z.string().url().optional().describe('External URL (GitHub, docs, etc.)'),
+}).refine(e => e.file !== undefined || e.url !== undefined, {
+  message: 'Evidence needs a file (code in this repo) or a url (external source)',
 }).describe('Evidence ties node/edge to authored source');
 
 // Base node - shared across all diagram types
@@ -27,7 +29,7 @@ const BaseNodeSchema = z.object({
   color: SemanticColor.describe('Semantic color (meaning, not aesthetic)'),
   icon: z.string().optional().describe('Icon ID from simple-icons'),
   evidence: EvidenceSchema.optional(),
-  description: z.string().optional().max(256).describe('Brief explanation'),
+  description: z.string().max(256).optional().describe('Brief explanation'),
   metadata: z.record(z.unknown()).optional().describe('Domain-specific properties'),
 }).describe('Core node properties');
 
@@ -36,7 +38,7 @@ const EdgeSchema = z.object({
   id: z.string().min(1).max(64).describe('Stable ID'),
   from: z.string().describe('Source node ID'),
   to: z.string().describe('Target node ID'),
-  label: z.string().optional().max(64).describe('Relationship type'),
+  label: z.string().max(64).optional().describe('Relationship type'),
   evidence: EvidenceSchema.optional(),
   metadata: z.record(z.unknown()).optional(),
 }).describe('Edge connecting two nodes');
@@ -51,7 +53,7 @@ const ArchitectureSchema = z.object({
   type: z.literal('architecture'),
   version: z.string().describe('Spec version (semver)'),
   title: z.string().min(1).max(200).describe('Diagram title'),
-  description: z.string().optional().max(1000),
+  description: z.string().max(1000).optional(),
   nodes: z.array(ArchitectureNodeSchema).min(1).describe('System components'),
   edges: z.array(EdgeSchema).describe('Dependencies and flows'),
   zones: z.array(z.object({
@@ -82,7 +84,7 @@ const WorkflowSchema = z.object({
   type: z.literal('workflow'),
   version: z.string(),
   title: z.string().min(1).max(200),
-  description: z.string().optional().max(1000),
+  description: z.string().max(1000).optional(),
   nodes: z.array(WorkflowNodeSchema).min(1),
   edges: z.array(WorkflowEdgeSchema),
   swimlanes: z.array(z.object({
@@ -116,7 +118,7 @@ const SequenceSchema = z.object({
   type: z.literal('sequence'),
   version: z.string(),
   title: z.string().min(1).max(200),
-  description: z.string().optional().max(1000),
+  description: z.string().max(1000).optional(),
   participants: z.array(SequenceNodeSchema).min(2),
   messages: z.array(SequenceMessageSchema).min(1),
   metadata: z.object({
@@ -134,14 +136,14 @@ const DataFlowNodeSchema = BaseNodeSchema.extend({
 
 const DataFlowEdgeSchema = EdgeSchema.extend({
   dataSchema: z.string().optional().describe('Data schema reference'),
-  format: z.enum(['json', 'xml', 'csv', 'protobuf', 'avro']).optional(),
+  format: z.enum(['json', 'xml', 'csv', 'protobuf', 'avro', 'parquet']).optional(),
 });
 
 const DataFlowSchema = z.object({
   type: z.literal('dataflow'),
   version: z.string(),
   title: z.string().min(1).max(200),
-  description: z.string().optional().max(1000),
+  description: z.string().max(1000).optional(),
   nodes: z.array(DataFlowNodeSchema).min(1),
   edges: z.array(DataFlowEdgeSchema),
   flows: z.array(z.object({
@@ -169,7 +171,7 @@ const LifecycleSchema = z.object({
   type: z.literal('lifecycle'),
   version: z.string(),
   title: z.string().min(1).max(200),
-  description: z.string().optional().max(1000),
+  description: z.string().max(1000).optional(),
   stages: z.array(LifecycleStageSchema).min(1).describe('Ordered lifecycle stages'),
   transitions: z.array(z.object({
     from: z.string().describe('From stage ID'),
@@ -184,8 +186,8 @@ const LifecycleSchema = z.object({
   }).optional(),
 }).describe('Lifecycle diagram IR');
 
-// Union of all diagram types
-export const DiagramSchema = z.union([
+// Union of all diagram types, keyed on `type` so errors point at the failing field
+export const DiagramSchema = z.discriminatedUnion('type', [
   ArchitectureSchema,
   WorkflowSchema,
   SequenceSchema,

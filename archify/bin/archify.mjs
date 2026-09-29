@@ -25,8 +25,11 @@ class SimpleValidator {
       errors.push(`Invalid type: ${data.type}. Must be one of: ${validTypes.join(', ')}`);
     }
 
-    // Check nodes
-    if (!data.nodes || !Array.isArray(data.nodes)) {
+    // Check nodes — sequence diagrams use participants, lifecycle diagrams use stages
+    const usesNodes = !['sequence', 'lifecycle'].includes(data.type);
+    if (!usesNodes) {
+      // checked in the type-specific section below
+    } else if (!data.nodes || !Array.isArray(data.nodes)) {
       errors.push('Missing or invalid nodes array');
     } else if (data.nodes.length === 0) {
       errors.push('Nodes array must not be empty');
@@ -69,6 +72,18 @@ class SimpleValidator {
           if (data.messages[i].order <= data.messages[i - 1].order) {
             errors.push(`Message order not monotonic: ${data.messages[i].order} <= ${data.messages[i - 1].order}`);
           }
+        }
+      }
+    }
+
+    if (data.type === 'lifecycle') {
+      if (!Array.isArray(data.stages) || data.stages.length === 0) {
+        errors.push('Lifecycle diagram must have at least 1 stage');
+      } else {
+        const stageIds = new Set(data.stages.map(s => s.id));
+        for (const t of data.transitions || []) {
+          if (!stageIds.has(t.from)) errors.push(`Transition references unknown stage: ${t.from}`);
+          if (!stageIds.has(t.to)) errors.push(`Transition references unknown stage: ${t.to}`);
         }
       }
     }

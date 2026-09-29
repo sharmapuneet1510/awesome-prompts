@@ -11,9 +11,9 @@
     "validate": "node bin/archify.mjs validate",
     "deliver": "node bin/archify.mjs deliver",
     "preview": "node bin/archify.mjs preview",
-    "test": "node tests/validator.test.ts",
-    "build": "tsc",
-    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "tsc --noEmit",
     "format": "prettier --write .",
     "docs": "cat SKILL.md"
   },
@@ -36,14 +36,14 @@
     "url": "https://github.com/sharmapuneet1510/awesome-prompts"
   },
   "dependencies": {
-    "zod": "^1.0.0",
+    "zod": "^3.25.0",
     "simple-icons": "^16.28.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",
-    "eslint": "^8.0.0",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "vitest": "^3.2.0"
   },
   "engines": {
     "node": ">=20.0.0"

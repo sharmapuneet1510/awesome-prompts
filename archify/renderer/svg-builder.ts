@@ -2,7 +2,7 @@
  * SVG Builder — Generate self-contained SVG from layout
  */
 
-import { NodeLayout, EdgePath, LayoutResult, Point } from './layout-engine';
+import { NodeLayout, EdgePath, LayoutResult, Point } from './layout-engine.js';
 
 export interface SemanticColorScheme {
   frontend: string;
