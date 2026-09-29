@@ -9,7 +9,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from instructions_framework.schema import (
+from tools.instructions_framework.schema import (
     Instruction,
     InstructionMetadata,
     InstructionCategory,
@@ -245,7 +245,7 @@ def create_migration_template(output_path: Path) -> None:
 
 1. Prepare old format files in a directory
 2. Run migration: `python tools/migrate_instructions.py --input <dir> --output <dir>`
-3. Validate migrated files: `python -m instructions_framework.cli validate <output_dir>`
+3. Validate migrated files: `python -m tools.instructions_framework.cli validate <output_dir>`
 4. Review migrated files for accuracy
 5. Test with new framework
 
