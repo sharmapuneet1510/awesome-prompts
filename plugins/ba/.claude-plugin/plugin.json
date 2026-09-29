@@ -1,0 +1,10 @@
+{
+  "name": "ba",
+  "version": "5.0.1",
+  "description": "Backlog analyst for JIRA management.",
+  "author": {
+    "name": "Puneet Sharma"
+  },
+  "repository": "https://github.com/sharmapuneet1510/awesome-prompts",
+  "license": "MIT"
+}

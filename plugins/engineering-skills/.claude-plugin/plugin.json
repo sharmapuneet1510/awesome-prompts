@@ -1,0 +1,10 @@
+{
+  "name": "engineering-skills",
+  "version": "5.0.1",
+  "description": "Reference skills \u2014 language, framework, data, and process standards Claude loads when relevant",
+  "author": {
+    "name": "Puneet Sharma"
+  },
+  "repository": "https://github.com/sharmapuneet1510/awesome-prompts",
+  "license": "MIT"
+}
