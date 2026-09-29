@@ -1,6 +1,6 @@
 # Skill Reference
 
-**43 skills.** Reusable implementation modules that agents dispatch to. A skill
+**44 skills.** Reusable implementation modules that agents dispatch to. A skill
 knows *how*; an [agent](agents.md) decides *what*.
 
 Skills are never invoked directly by users — agents load them. Source:
@@ -103,6 +103,7 @@ See [../01-workflows/05-record-a-decision.md](../01-workflows/05-record-a-decisi
 | `context_builder_skill` | Project architecture and tech-stack analysis |
 | `ba_create_skill` | Plain-text requirements → Jira JSON + BDD HTML cards |
 | `jira_html_report_skill` | Parse Jira exports → HTML backlog |
+| `jira_implementation_skill` | One Jira ticket → classified, gated, test-first implementation → PR with criteria matrix → Jira write-back |
 | `jira_incremental_spec_generator_skill` | Read Jira incrementally → book-format specification |
 
 ---

@@ -8,7 +8,7 @@ Your assistant stops and asks before it builds the wrong thing — then leaves a
 [![CI](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml/badge.svg)](https://github.com/sharmapuneet1510/awesome-prompts/actions/workflows/ci.yml)
 [![5 agents](https://img.shields.io/badge/agents-5-0969da?style=flat-square)](docs/02-reference/agents.md)
 [![43 functions](https://img.shields.io/badge/functions-43-0969da?style=flat-square)](docs/02-reference/functions.md)
-[![43 skills](https://img.shields.io/badge/skills-43-0969da?style=flat-square)](docs/02-reference/skills.md)
+[![44 skills](https://img.shields.io/badge/skills-44-0969da?style=flat-square)](docs/02-reference/skills.md)
 [![8 platforms](https://img.shields.io/badge/platforms-8-0969da?style=flat-square)](docs/01-workflows/14-export-to-platforms.md)
 [![MIT license](https://img.shields.io/badge/license-MIT-0969da?style=flat-square)](LICENSE)
 

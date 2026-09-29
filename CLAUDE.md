@@ -62,7 +62,7 @@ awesome-prompts/
 │
 ├── hooks/                            ← Hook scripts for platform automation
 │
-├── skills/                           ← Reusable implementation skills (43 skills, see skills/README.md)
+├── skills/                           ← Reusable implementation skills (44 skills, see skills/README.md)
 │   ├── code_documentation_skill.md   ← JSDoc/docstrings/Javadoc auto-generation
 │   ├── code_review_skill.md          ← 6-phase PR analysis + scoring
 │   ├── code_health_skill.md          ← Issue taxonomy + severity scoring
@@ -97,6 +97,7 @@ awesome-prompts/
 │   ├── maven_skill.md                ← Maven builds: BOM, pinned plugins, Enforcer, test/coverage gates
 │   ├── python_project_skill.md       ← uv, pyproject.toml, ruff, mypy, pytest gates, Docker
 │   ├── ansible_skill.md              ← Roles, Vault, idempotency, lint/check/apply loop
+│   ├── jira_implementation_skill.md  ← One Jira ticket → classified, gated, test-first → PR → Jira write-back
 │   └── README.md                     ← Skills directory (consolidated v2.0)
 │
 ├── parser/                           ← Python field derivation analysis tool
@@ -156,7 +157,7 @@ Agents are organized by responsibility using a **lean, role-based architecture**
 
 ### Skill-Based Architecture
 
-Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (43 total):
+Instead of tech-specific agents (Jarvis for Java, Pyra for Python, etc.), the system uses **lean role-based agents** (5 total) that delegate to **reusable skills** (44 total):
 
 ```
     (specify: requirements.md → plan: design.md → tasks: tasks.md, each Approved — RULE 11)
@@ -193,7 +194,7 @@ orchestrator:pr (open GitHub PR)
 - ✅ **Fewer agents** (5 vs 13) = lower token cost
 - ✅ **Linear pipeline** = explicit handoffs with full context
 - ✅ **implementer:full** = no state transfer loss between build/test/doc
-- ✅ **43 reusable skills** = no duplication across agents
+- ✅ **44 reusable skills** = no duplication across agents
 - ✅ **43 callable functions** = fine-grained control via `agent:function` syntax
 - ✅ Clear separation: agent = orchestration + dispatch, skill = implementation
 

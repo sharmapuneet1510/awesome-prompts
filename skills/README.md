@@ -1,12 +1,12 @@
 # 🛠️ Skills Directory (v5.1 — Super Skills)
 
-> Reusable, tech-specific implementation modules used by agents. 43 skills, zero orphans.
+> Reusable, tech-specific implementation modules used by agents. 44 skills, zero orphans.
 >
 > Every skill opens with a **Quick Card** — use-when, inputs, outputs, steps, done-when, and which section to load on demand — so an agent reads the card and loads the body only when a step needs it. Runs that change files write one HTML report per [`html_report_skill`](html_report_skill.md).
 >
 > 📖 [The super-skill standard](../docs/02-reference/SUPER_SKILLS_ENHANCEMENT.md) · 🧭 [Skills playbook — which skill loads at each SDLC stage](../docs/01-workflows/skills-playbook.md)
 
-## Quick Navigation (43 Skills)
+## Quick Navigation (44 Skills)
 
 | # | Skill | Purpose | Language | Used By |
 |---|-------|---------|----------|---------|
@@ -53,6 +53,7 @@
 | 41 | [Maven](maven_skill.md) | Parent POM, BOM import, every plugin pinned, Enforcer convergence, Surefire/Failsafe, JaCoCo gate, SBOM, wrapper | Java / Maven | Implementer |
 | 42 | [Python Project](python_project_skill.md) | uv + lockfile, pyproject.toml, src layout, ruff, strict mypy, pytest gates, pip-audit, slim non-root image | Python | Implementer |
 | 43 | [Ansible](ansible_skill.md) | Roles with argument specs, idempotent FQCN tasks, validated templates, Vault secrets, lint/check/apply-twice loop, rolling updates | Ansible | Implementer |
+| 44 | [Jira Implementation](jira_implementation_skill.md) | One Jira ticket end to end: read, refuse without testable AC, classify and route to the right skills and gates, one test per AC written first, PR with criteria matrix, confirmed Jira write-back | Language-agnostic | Implementer, Orchestrator |
 
 ---
 
@@ -198,6 +199,7 @@ Generate complete code
 
 ### Business Analysis
 - `jira_html_report_skill` — JIRA export → HTML backlog
+- `jira_implementation_skill` — one Jira ticket → reviewed PR, with Jira write-back
 
 ---
 
@@ -210,4 +212,4 @@ Generate complete code
 
 ---
 
-**Last Updated:** September 28, 2026 | **Version:** 5.1 (Super Skills) | **Skills:** 43 | **Agents:** 5
+**Last Updated:** September 29, 2026 | **Version:** 5.1 (Super Skills) | **Skills:** 44 | **Agents:** 5

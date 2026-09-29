@@ -61,7 +61,7 @@ all draw from.
 | [../CHANGELOG.md](../CHANGELOG.md) | Version history, v1.0.0 → today |
 | [../CLAUDE.md](../CLAUDE.md) | Instructions Claude Code loads automatically |
 | `../agents/` | The 5 agent definitions and their function files |
-| `../skills/` | The 43 skills |
+| `../skills/` | The 44 skills |
 | `../prompts/` | 18 prompt templates in 12 categories |
 | `../instructions/` | `master_instruction_set.md` — RULES 0–12 |
 | `../tools/` | Python utilities |
@@ -74,7 +74,7 @@ all draw from.
 unless a document says otherwise. `docs/superpowers/` is the exception: it holds
 this repository's own design records.
 
-**Counts are verified.** 5 agents, 43 functions, 43 skills, as of 2026-09-29.
+**Counts are verified.** 5 agents, 43 functions, 44 skills, as of 2026-09-29.
 Documents that disagree are in [99-archive/](99-archive/) and are marked
 superseded.
 
