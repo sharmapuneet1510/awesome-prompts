@@ -86,3 +86,13 @@ def test_claude_plugin_validate_strict(target):
     result = subprocess.run(["claude", "plugin", "validate", "--strict", target], cwd=ROOT,
                             capture_output=True, text=True, timeout=120)
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_no_generated_plugin_file_is_gitignored():
+    # A generated file that .gitignore hides is on disk locally but missing from every clone.
+    if shutil.which("git") is None or not (ROOT / ".git").exists():
+        pytest.skip("not a git checkout")
+    files = [str(p.relative_to(ROOT)) for p in PLUGINS.rglob("*") if p.is_file()]
+    ignored = subprocess.run(["git", "check-ignore", "--no-index", *files], cwd=ROOT,
+                             capture_output=True, text=True).stdout.split()
+    assert ignored == []
