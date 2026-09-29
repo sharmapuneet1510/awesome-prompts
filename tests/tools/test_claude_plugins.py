@@ -194,7 +194,7 @@ def test_links_are_rewritten_for_the_plugin_layout(tmp_path):
 def test_manifests(tmp_path):
     files = _repo(tmp_path)
     plugin = json.loads(files["plugins/architect/.claude-plugin/plugin.json"])
-    assert plugin["name"] == "architect" and plugin["version"] == "9.9.9"
+    assert plugin["name"] == "architect" and plugin["version"].startswith("9.9.9+")
     assert plugin["description"] == "Systems architect."
     market = json.loads(files[MARKETPLACE])
     assert market["name"] == "awesome-prompts" and market["owner"]["name"]
@@ -208,3 +208,16 @@ def test_rules_ship_in_every_role_plugin(tmp_path):
     assert "plugins/architect/reference/rules.md" in files
     assert "plugins/quality/reference/rules.md" in files
     assert "plugins/engineering-skills/reference/rules.md" not in files
+
+
+def test_plugin_version_tracks_its_own_content(tmp_path, monkeypatch):
+    # Claude Code pins installs to `version`, so it must change whenever a plugin's content does.
+    import tests.tools.test_claude_plugins as fixtures
+    version = lambda files, p: json.loads(files[f"plugins/{p}/.claude-plugin/plugin.json"])["version"]
+    first = _repo(tmp_path / "a")
+    assert version(first, "architect").startswith("9.9.9+")
+    assert version(_repo(tmp_path / "b"), "architect") == version(first, "architect")    # deterministic
+    monkeypatch.setattr(fixtures, "FUNCTION", FUNCTION + "\nOne more line.\n")
+    changed = _repo(tmp_path / "c")
+    assert version(changed, "architect") != version(first, "architect")
+    assert version(changed, "quality") == version(first, "quality")                    # other plugins untouched

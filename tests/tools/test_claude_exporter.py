@@ -29,7 +29,7 @@ def test_export_writes_plugins_and_marketplace(tmp_path):
     assert (tmp_path / "plugins/architect/skills/adr/SKILL.md").exists()
     assert (tmp_path / "plugins/engineering-skills/skills/a/SKILL.md").exists()
     assert (tmp_path / ".claude-plugin/marketplace.json").exists()
-    assert '"version": "1.2.3"' in (tmp_path / "plugins/architect/.claude-plugin/plugin.json").read_text()
+    assert '"version": "1.2.3+' in (tmp_path / "plugins/architect/.claude-plugin/plugin.json").read_text()
     assert [p.name for p in result.function_files] == ["SKILL.md"]
     assert not (tmp_path / ".claude/skills").exists()
 

@@ -6,6 +6,7 @@ Spec: docs/superpowers/specs/2026-09-29-claude-plugins-design.md
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import posixpath
 import re
@@ -165,7 +166,14 @@ def build_plugins(repo_root: Path, skills, agents, modules, functions, instructi
             descriptions[plugin] = first_sentence(a.description)
     all_plugins = role_plugins + ([SKILLS_PLUGIN] if skills else [])
     for plugin in all_plugins:
-        manifest = {"name": plugin, "version": version, "description": descriptions.get(plugin, plugin),
+        # Claude Code pins installs to `version`, so it carries a hash of the plugin's content:
+        # any change reaches existing installs without a manual version bump.
+        prefix = f"{PLUGIN_ROOT}/{plugin}/"
+        digest = hashlib.sha256()
+        for rel in sorted(r for r in files if r.startswith(prefix)):
+            digest.update(rel.encode() + b"\0" + files[rel].encode() + b"\0")
+        manifest = {"name": plugin, "version": f"{version}+{digest.hexdigest()[:12]}",
+                    "description": descriptions.get(plugin, plugin),
                     "author": {"name": OWNER}, "repository": REPO_URL, "license": "MIT"}
         files[f"{PLUGIN_ROOT}/{plugin}/.claude-plugin/plugin.json"] = json.dumps(manifest, indent=2) + "\n"
     market = {"name": MARKETPLACE_NAME, "owner": {"name": OWNER},

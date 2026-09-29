@@ -1,6 +1,6 @@
 {
   "name": "ba",
-  "version": "5.0.1",
+  "version": "5.0.1+59f9d09531ed",
   "description": "Backlog analyst for JIRA management.",
   "author": {
     "name": "Puneet Sharma"
