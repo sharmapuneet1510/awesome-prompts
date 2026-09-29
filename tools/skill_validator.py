@@ -476,9 +476,9 @@ class ValidationOrchestrator:
         if not self._skills_dir.exists():
             raise FileNotFoundError(f"Skills directory not found: {self._skills_dir}")
 
-        skill_files = sorted(self._skills_dir.glob("*.md"))
+        skill_files = sorted(self._skills_dir.glob("*_skill.md"))  # not README.md
         if not skill_files:
-            raise FileNotFoundError(f"No .md files found in {self._skills_dir}")
+            raise FileNotFoundError(f"No *_skill.md files found in {self._skills_dir}")
 
         # Filter if requested
         if skill_filter:
