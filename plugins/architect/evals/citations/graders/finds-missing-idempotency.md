@@ -1,6 +1,6 @@
 ---
 type: regex
-target: trace
+target: last_message
 pattern: idempoten
 flags: i
 ---

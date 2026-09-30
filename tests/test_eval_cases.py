@@ -82,3 +82,25 @@ def test_readme_and_contributing_point_to_the_results():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "## Behavioural evals" in readme and "evals/RESULTS.md" in readme
     assert "run-evals" in (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+
+def test_trace_graders_cannot_match_the_plugins_own_text():
+    # In the with-plugin arm the trace contains the plugin's skills and reference docs, so a trace regex
+    # that matches those files passes without Claude doing anything (found in the first baseline).
+    import re
+    for case in _cases():
+        plugin = case.parent.parent
+        shipped = "\n".join(p.read_text(encoding="utf-8", errors="ignore") for p in plugin.rglob("*")
+                            if p.is_file() and "evals" not in p.relative_to(plugin).parts)
+        for grader in (case / "graders").glob("*.md"):
+            fm = _front(grader)
+            if fm["type"] == "regex" and fm.get("target") == "trace":
+                flags = re.I if "i" in str(fm.get("flags", "")) else 0
+                assert not re.search(fm["pattern"], shipped, flags), grader
+
+
+def test_the_citation_judge_is_given_the_real_source():
+    judge = (ROOT / "plugins/architect/evals/citations/graders/facts-match-code.md").read_text(encoding="utf-8")
+    source = (ROOT / "evals/fixtures/orders-service/src/orders.py").read_text(encoding="utf-8").splitlines()
+    assert all(f"{n:>2}: {line}".rstrip() in judge for n, line in enumerate(source, 1))
+    assert "focus: trace" not in judge

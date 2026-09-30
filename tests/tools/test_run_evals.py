@@ -31,7 +31,7 @@ def test_the_command_grants_what_the_cases_need_and_caps_cost(tmp_path):
 
 def test_summarise_reads_documented_fields_only():
     rows = summarise("spec-gate", SAMPLE)
-    assert rows[0] == {"case": "gate", "plugin": "spec-gate", "with": 1.0, "delta": 1.0, "without": 0.0, "errors": []}
+    assert rows[0] == {"case": "gate", "plugin": "spec-gate", "with": 1.0, "delta": 1.0, "without": 0.0, "errors": [], "not_run": False}
     assert rows[1]["without"] is None and rows[1]["errors"] == ["timed out after 600s"]
 
 
@@ -79,3 +79,13 @@ def test_a_missing_result_marks_the_run_partial(tmp_path, monkeypatch):
     monkeypatch.setattr(run_evals, "REPORTS", tmp_path / ".reports")
     assert run_evals.main(["--plugins", "spec-gate"]) == 2
     assert "Partial run: spec-gate" in (tmp_path / "RESULTS.md").read_text()
+
+
+def test_a_case_whose_runs_all_errored_is_reported_as_not_run():
+    doc = {"cases": [{"name": "verification", "aggregates": {"score": 0.0, "delta": 0.0},
+                      "arms": {"with": [{"error": "sandbox unavailable"}] * 3, "without": [{"error": "x"}] * 3}}]}
+    rows = summarise("implementer", doc)
+    assert rows[0]["with"] is None and rows[0]["not_run"] is True
+    md = render_results(rows, {"date": "2026-09-30", "cost_usd": 0, "partial": []})
+    assert "| verification | implementer | not run | not run | n/a |" in md
+    assert exit_status(rows, []) == 1

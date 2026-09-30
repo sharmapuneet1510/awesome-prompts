@@ -55,11 +55,15 @@ def summarise(plugin: str, doc: dict) -> list[dict]:
         agg = case.get("aggregates", {})
         score = agg.get("score")
         delta = agg.get("delta")
-        errors = [r.get("error") for r in case.get("arms", {}).get("with", []) if r.get("error")]
+        runs = case.get("arms", {}).get("with", [])
+        errors = [r.get("error") for r in runs if r.get("error")]
+        not_run = bool(runs) and len(errors) == len(runs)      # every run failed to start or finish
+        if not_run:
+            score = delta = None
         rows.append({
             "case": case.get("name"), "plugin": plugin, "with": score, "delta": delta,
             "without": None if score is None or delta is None else round(score - delta, 4),
-            "errors": errors,
+            "errors": errors, "not_run": not_run,
         })
     return rows
 
@@ -84,9 +88,12 @@ def render_results(rows: list[dict], meta: dict) -> str:
         "| Case | Plugin | With plugin | Without | Δ |",
         "|---|---|---|---|---|",
     ]
-    lines += [f"| {r['case']} | {r['plugin']} | {_fmt(r['with'])} | {_fmt(r['without'])} | {_fmt(r['delta'], True)} |"
-              for r in rows]
-    notes = [f"- `{r['case']}`: {e}" for r in rows for e in r["errors"]]
+    for r in rows:
+        if r.get("not_run"):
+            lines.append(f"| {r['case']} | {r['plugin']} | not run | not run | n/a |")
+        else:
+            lines.append(f"| {r['case']} | {r['plugin']} | {_fmt(r['with'])} | {_fmt(r['without'])} | {_fmt(r['delta'], True)} |")
+    notes = [f"- `{r['case']}`: {e}" for r in rows for e in dict.fromkeys(r["errors"])]   # each distinct error once
     if meta.get("partial"):
         notes.append(f"- Partial run: {', '.join(meta['partial'])} stopped early (cost ceiling or interruption).")
     if notes:
