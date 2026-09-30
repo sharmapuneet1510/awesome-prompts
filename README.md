@@ -217,6 +217,8 @@ Jira content, and test results reported as they ran. Latest results:
 [evals/RESULTS.md](evals/RESULTS.md). Run them yourself with
 `python3 tools/run_evals.py` (it spends model credits; the default ceiling is $20).
 
+**Baseline 2026-09-30:** 5 of 6 scenarios at 1.00 with the plugin — the spec gate holds under pressure (Δ +0.17 to +1.00), analyses cite `path:line` (Δ +0.67), and no ticket is invented (1.00 with and without). `verification` needs Linux CI and hasn't run yet.
+
 ## What is in here
 
 | | What it is | Where |
