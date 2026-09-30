@@ -48,7 +48,8 @@ def test_committed_plugins_are_fresh():
     # Files git ignores (e.g. a Finder .DS_Store) are never committed, so they don't count as stale.
     owned = {rel.split("/")[1] for rel in expected
              if rel.startswith("plugins/") and not rel.endswith("/.claude-plugin/plugin.json")}
-    paths = [p for p in PLUGINS.rglob("*") if p.is_file() and p.relative_to(PLUGINS).parts[0] in owned]
+    paths = [p for p in PLUGINS.rglob("*") if p.is_file() and p.relative_to(PLUGINS).parts[0] in owned
+             and p.relative_to(PLUGINS).parts[1:2] != ("evals",)]
     paths += [ROOT / rel for rel in expected if (ROOT / rel).is_file() and ROOT / rel not in paths]
     rels = [p.relative_to(ROOT).as_posix() for p in paths]
     ignored = _gitignored(rels)

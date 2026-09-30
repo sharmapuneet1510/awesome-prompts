@@ -241,6 +241,13 @@ git push origin feat/your-feature-name
 
 ---
 
+### Behavioural evals for content changes
+
+A change to a skill, an agent, a function or the rulebook changes behaviour, so show
+its effect: run `python3 tools/run_evals.py` before and after and include the
+`evals/RESULTS.md` diff in the PR, or add the `run-evals` label and let CI post the
+results (maintainers need an `ANTHROPIC_API_KEY` repository secret for that).
+
 ## Code Style
 
 ### Python

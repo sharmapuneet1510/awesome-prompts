@@ -255,3 +255,12 @@ def test_junk_files_do_not_change_a_handwritten_version(tmp_path):
     (tmp_path / "plugins/spec-gate/scripts/__pycache__").mkdir()
     (tmp_path / "plugins/spec-gate/scripts/__pycache__/gate.pyc").write_bytes(b"\x00")
     assert json.loads(_repo(tmp_path)["plugins/spec-gate/.claude-plugin/plugin.json"])["version"] == first
+
+
+def test_evals_do_not_change_a_handwritten_version(tmp_path):
+    _handwritten(tmp_path)
+    first = json.loads(_repo(tmp_path)["plugins/spec-gate/.claude-plugin/plugin.json"])["version"]
+    case = tmp_path / "plugins/spec-gate/evals/gate/prompt.md"
+    case.parent.mkdir(parents=True)
+    case.write_text("hi\n", encoding="utf-8")
+    assert json.loads(_repo(tmp_path)["plugins/spec-gate/.claude-plugin/plugin.json"])["version"] == first
