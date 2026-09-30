@@ -27,6 +27,10 @@ versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Behavioural evals** (#60): six `claude plugin eval` scenarios — spec gate, pressure,
+  self-approval, citations, fabrication, verification — each run with and without its
+  plugin. `tools/run_evals.py` publishes `evals/RESULTS.md`; CI runs them on the
+  `run-evals` label only, with a cost ceiling.
 - **`spec-gate` plugin** (#54): hooks enforce the spec gate. With `.spec-gate.json` in a project,
   edits to gated source are blocked until the feature's requirements, design and tasks are approved;
   approvals are recorded by a hook from `/spec-gate:approve`, which only the user can type, and bound to

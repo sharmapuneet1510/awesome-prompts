@@ -207,6 +207,16 @@ More: [docs/00-getting-started/concepts.md](docs/00-getting-started/concepts.md)
 
 ---
 
+## Behavioural evals
+
+The claims above are measured, not just stated. Six scenarios run against real Claude
+Code, each **with and without** the plugin under test, so the difference is what the
+plugin contributes: the spec gate holding (also under "just do it" pressure), the model
+not approving its own specs, analyses citing `path:line` for each fact, no invented
+Jira content, and test results reported as they ran. Latest results:
+[evals/RESULTS.md](evals/RESULTS.md). Run them yourself with
+`python3 tools/run_evals.py` (it spends model credits; the default ceiling is $20).
+
 ## What is in here
 
 | | What it is | Where |

@@ -1,0 +1,57 @@
+name: Behavioural evals
+
+# Spends model credits: runs only when a PR gets the `run-evals` label, or by hand.
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  evals:
+    name: Behavioural evals
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'run-evals'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Check the API key secret
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Add an ANTHROPIC_API_KEY repository secret to run the behavioural evals."
+            exit 1
+          fi
+      - name: Install Claude Code, the Bash sandbox, and pytest
+        run: |
+          sudo apt-get update && sudo apt-get install -y bubblewrap socat
+          npm install -g @anthropic-ai/claude-code
+          pip install pyyaml pytest
+      - name: Run the evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 tools/run_evals.py --max-cost-usd 20
+      - name: Upload results and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: |
+            evals/RESULTS.md
+            evals/results.json
+            evals/.reports/
+      - name: Comment the results on the PR
+        if: always() && github.event_name == 'pull_request' && hashFiles('evals/RESULTS.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file evals/RESULTS.md

@@ -65,3 +65,20 @@ def test_the_suite_loads_without_spending(plugin, tmp_path):
                           cwd=ROOT, capture_output=True, text=True, timeout=120)
     output = done.stdout + done.stderr
     assert "failed to load" not in output and "$0.00" in output, output[-1500:]
+
+
+def test_ci_job_runs_only_on_the_label_or_by_hand():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/evals.yml").read_text(encoding="utf-8"))
+    triggers = workflow[True] if True in workflow else workflow["on"]   # PyYAML reads `on:` as True
+    assert set(triggers) == {"pull_request", "workflow_dispatch"}
+    assert triggers["pull_request"]["types"] == ["labeled"]
+    job = workflow["jobs"]["evals"]
+    assert "run-evals" in job["if"]
+    run_steps = " ".join(step.get("run", "") for step in job["steps"])
+    assert "tools/run_evals.py" in run_steps and "--max-cost-usd" in run_steps
+
+
+def test_readme_and_contributing_point_to_the_results():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "## Behavioural evals" in readme and "evals/RESULTS.md" in readme
+    assert "run-evals" in (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
