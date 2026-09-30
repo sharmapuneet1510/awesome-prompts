@@ -15,16 +15,19 @@ import os
 import re
 import shlex
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 CONFIG = ".spec-gate.json"
 STATE_DIR = ".spec-gate"
 DEFAULT_EXEMPT = ["specs/**", "docs/**", "tests/**"]
 CHAIN = ["requirements.md", "design.md", "tasks.md"]
 ADR_DIR = "docs/adr"
-MARKER = re.compile(r"^\s*\**Status:\**\s*(Approved|Accepted)\b", re.M | re.I)
-MARKER_TEXT = re.compile(r"Status:\**\s*(Approved|Accepted)\b", re.I)
-DRAFT_LINE = re.compile(r"^(\s*\**Status:\**\s*)(Draft|Proposed)\b[^\n]*$", re.M | re.I)
+# "Status: X", "**Status:** X", "**Status**: X", "- Status: X", "> Status: X", "| Status | X |"
+_STATUS = r"[\s>|*-]*\**Status\**\s*:?\s*\**\s*\|?\s*"
+MARKER = re.compile(r"^" + _STATUS + r"(Approved|Accepted)\b", re.M | re.I)
+MARKER_TEXT = re.compile(r"Status\**\s*:?\s*\**\s*\|?\s*(Approved|Accepted)\b", re.I)
+DRAFT_LINE = re.compile(r"^(" + _STATUS + r")(Draft|Proposed)\b", re.M | re.I)
+SHELL_WRAPPERS = {"env", "command", "sudo", "xargs", "nohup", "time", "exec", "builtin"}
 FILE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 
 
@@ -43,10 +46,20 @@ def load_config(root: Path) -> dict | None:
         cfg = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as err:
         raise ConfigError(f"{CONFIG} does not parse: {err}") from err
-    if not isinstance(cfg, dict) or not isinstance(cfg.get("source"), list) or not cfg["source"]:
+    def globs(key: str) -> bool:
+        value = cfg.get(key)
+        return isinstance(value, list) and all(isinstance(g, str) and g for g in value)
+
+    if not isinstance(cfg, dict) or not globs("source") or not cfg["source"]:
         raise ConfigError(f'{CONFIG} needs a non-empty "source" list of globs')
+    if "exempt" in cfg and not globs("exempt"):
+        raise ConfigError(f'{CONFIG}: "exempt" must be a list of globs')
     cfg.setdefault("exempt", DEFAULT_EXEMPT)
-    cfg.setdefault("spec_dir", "specs")
+    spec_dir = cfg.get("spec_dir", "specs")
+    folder = PurePosixPath(spec_dir) if isinstance(spec_dir, str) else None
+    if folder is None or folder.is_absolute() or ".." in folder.parts or folder.as_posix() in ("", "."):
+        raise ConfigError(f'{CONFIG}: "spec_dir" must be a folder inside the project')
+    cfg["spec_dir"] = folder.as_posix()
     return cfg
 
 
@@ -80,27 +93,37 @@ def sha256(path: Path) -> str:
 
 # ── paths ─────────────────────────────────────────────────────────────────────
 
-def rel(root: Path, path: str) -> str | None:
-    """Project-relative POSIX path, or None when it lies outside the project."""
+def rel(root: Path, path: str, base: Path | None = None) -> str | None:
+    """Project-relative POSIX path, or None when it lies outside the project.
+
+    Relative paths resolve against `base` (a shell's working directory), else the project root.
+    """
     p = Path(path)
-    p = (p if p.is_absolute() else root / p).resolve()
+    p = (p if p.is_absolute() else (base or root) / p).resolve()
     try:
         return p.relative_to(root.resolve()).as_posix()
     except ValueError:
         return None
 
 
+# Comparisons ignore case: on case-insensitive filesystems (macOS, Windows) SRC/ is src/.
 def matches(path: str, globs: list[str]) -> bool:
-    return any(fnmatch.fnmatchcase(path, g) or fnmatch.fnmatchcase(path, g.rstrip("/*")) for g in globs)
+    p = path.casefold()
+    return any(fnmatch.fnmatchcase(p, g.casefold()) or fnmatch.fnmatchcase(p, g.casefold().rstrip("/*")) for g in globs)
+
+
+def under(path: str, folder: str) -> bool:
+    return path.casefold().startswith(folder.casefold().rstrip("/") + "/")
 
 
 def is_state_path(path: str) -> bool:
-    return path == CONFIG or path == STATE_DIR or path.startswith(STATE_DIR + "/")
+    p = path.casefold()
+    return p == CONFIG or p == STATE_DIR or under(p, STATE_DIR)
 
 
 def is_marked_path(path: str, cfg: dict) -> bool:
     """Spec files and ADRs: the files whose approval markers only the hook may write."""
-    return path.startswith(cfg["spec_dir"].rstrip("/") + "/") or path.startswith(ADR_DIR + "/")
+    return under(path, cfg["spec_dir"]) or under(path, ADR_DIR)
 
 
 # ── the gate ──────────────────────────────────────────────────────────────────
@@ -144,15 +167,15 @@ def approve(root: Path, cfg: dict, state: dict, arg: str, prompt: str) -> str:
     if not path or not (root / path).is_file():
         return f"spec-gate: not approved — {arg.strip() or '(no file given)'} is not a file in this project."
     spec_prefix = cfg["spec_dir"].rstrip("/") + "/"
-    parts = path[len(spec_prefix):].split("/") if path.startswith(spec_prefix) else []
-    if len(parts) == 2 and parts[1] in CHAIN:
-        feature, name = parts
+    parts = path[len(spec_prefix):].split("/") if under(path, cfg["spec_dir"]) else []
+    if len(parts) == 2 and parts[1].casefold() in CHAIN:
+        feature, name = parts[0], parts[1].casefold()
         earlier = [f"{spec_prefix}{feature}/{n}" for n in CHAIN[: CHAIN.index(name)]]
         waiting = [p for p in earlier if not approved(root, state, p)]
         if waiting:
             return f"spec-gate: not approved — approve {waiting[0]} first (the chain is requirements → design → tasks)."
         status = "Approved"
-    elif path.startswith(ADR_DIR + "/") and path.endswith(".md"):
+    elif under(path, ADR_DIR) and path.casefold().endswith(".md"):
         feature, name, status = None, None, "Accepted"
     else:
         return (f"spec-gate: not approved — {path} is neither a spec file "
@@ -194,6 +217,9 @@ def on_prompt(event: dict, root: Path) -> dict | None:
     prompt = event.get("prompt", "").strip()
     session_id = event.get("session_id", "")
     command, _, arg = prompt.partition(" ")
+    closed = bool(state["bypass"]) and command != "/spec-gate:trivial"
+    if closed:                       # a bypass lasts until the user's next message, whatever it is
+        state["bypass"] = None
     if command == "/spec-gate:approve":
         message = approve(root, cfg, state, arg, prompt)
     elif command == "/spec-gate:trivial":
@@ -204,8 +230,7 @@ def on_prompt(event: dict, root: Path) -> dict | None:
     elif command == "/spec-gate:status":
         message = status_report(root, cfg, state, session_id)
     else:
-        if state["bypass"]:
-            state["bypass"] = None
+        if closed:
             save_state(root, state)
         return None
     save_state(root, state)
@@ -244,14 +269,19 @@ def adds_marker(root: Path, path: str, after: str) -> bool:
 
 def bash_targets(command: str) -> list[str]:
     """Paths a shell command would write, for the common write forms (best effort)."""
-    targets = [m.group(1) for m in re.finditer(r"(?<![0-9&])>>?\s*([^\s;&|<>]+)", command)]
-    for segment in re.split(r"[;&|]+", command):
+    # >, >>, 1>, &>, >| — but not 2>&1
+    targets = [m.group(1) for m in re.finditer(r"(?:[0-9]*|&)>{1,2}\|?\s*([^\s;&|<>()]+)", command)]
+    for segment in re.split(r"[;&|\n]+", command):
         try:
             words = shlex.split(segment)
         except ValueError:
             words = segment.split()
+        while words and (words[0].lstrip("({") in SHELL_WRAPPERS or re.match(r"^[A-Za-z_]\w*=", words[0])
+                         or words[0].lstrip("({") == ""):
+            words.pop(0)
         if not words:
             continue
+        words[0] = words[0].lstrip("({")
         name = os.path.basename(words[0])
         flags = [w for w in words[1:] if w.startswith("-")]
         args = [w for w in words[1:] if not w.startswith("-")]
@@ -261,9 +291,11 @@ def bash_targets(command: str) -> list[str]:
             targets += args[1:]
         elif name == "perl" and any("i" in f[1:] for f in flags if not f.startswith("--")):
             targets += args
-        elif name in ("cp", "mv", "install") and args:
+        elif name in ("ln", "mv") or (name == "cp" and any(f in ("-l", "--link") or (f.startswith("-") and not f.startswith("--") and "l" in f) for f in flags)):
+            targets += args            # every operand: a link or a move changes the source too
+        elif name in ("cp", "install") and args:
             targets.append(args[-1])
-    return [t.strip("'\"") for t in targets]
+    return [t.strip("'\"(){}") for t in targets]
 
 
 def on_tool(event: dict, root: Path) -> dict | None:
@@ -282,10 +314,11 @@ def on_tool(event: dict, root: Path) -> dict | None:
 
     if tool == "Bash":
         command = tool_input.get("command", "")
-        if ".spec-gate" in command:
-            return _deny("Blocked by spec-gate: the approval record and its config are managed by the hook; "
-                         "use /spec-gate:status to see them.")
-        targets = [p for p in (rel(root, t) for t in bash_targets(command)) if p]
+        if re.search(r"spec-gate", command, re.I):
+            return _deny("Blocked by spec-gate: shell commands may not touch the approval record, its config, "
+                         "or spec-gate commands; only the user types /spec-gate:approve.")
+        base = Path(event.get("cwd") or root)
+        targets = [p for p in (rel(root, t, base) for t in bash_targets(command)) if p]
         if MARKER_TEXT.search(command) and targets:
             return _deny("Blocked by spec-gate: only the user approves (type /spec-gate:approve <file>).")
         gated = [p for p in targets if matches(p, cfg["source"]) and not matches(p, cfg["exempt"])]
@@ -299,9 +332,15 @@ def on_tool(event: dict, root: Path) -> dict | None:
         return None
     if is_state_path(path):
         return _deny("Blocked by spec-gate: the approval record and its config are managed by the hook.")
-    if is_marked_path(path, cfg) and adds_marker(root, path, resulting_text(root, path, tool, tool_input)):
+    target = root / path
+    linked = target.is_file() and target.stat().st_nlink > 1      # a hard link edits another path too
+    if (is_marked_path(path, cfg) or linked) and adds_marker(root, path, resulting_text(root, path, tool, tool_input)):
         return _deny(f"Blocked by spec-gate: only the user approves. When they have reviewed {path}, "
                      f"they type: /spec-gate:approve {path}")
+    if linked:
+        reason = closed_reason(root, cfg, state, session_id)
+        if reason:
+            return _deny(f"{reason} ({path} is hard-linked to another file.)")
     if matches(path, cfg["exempt"]) or not matches(path, cfg["source"]):
         return None
     reason = closed_reason(root, cfg, state, session_id)
@@ -315,13 +354,21 @@ def _deny(reason: str) -> dict:
 
 # ── entry point ───────────────────────────────────────────────────────────────
 
+def project_root(event: dict) -> Path:
+    """CLAUDE_PROJECT_DIR when Claude Code sets it; otherwise the nearest folder above cwd with a config."""
+    if os.environ.get("CLAUDE_PROJECT_DIR"):
+        return Path(os.environ["CLAUDE_PROJECT_DIR"])
+    start = Path(event.get("cwd") or os.getcwd()).resolve()
+    return next((d for d in [start, *start.parents] if (d / CONFIG).exists()), start)
+
+
 def main() -> int:
     raw = sys.stdin.read()
     try:
         event = json.loads(raw)
     except ValueError:
         return 0
-    root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd())
+    root = project_root(event)
     name = event.get("hook_event_name")
     try:
         result = on_prompt(event, root) if name == "UserPromptSubmit" else on_tool(event, root)

@@ -33,8 +33,13 @@ Install the plugin (`/plugin install spec-gate@awesome-prompts`), then add
 
 ## What it doesn't
 
-Shell commands are checked for the common write forms (`>`, `>>`, `tee`,
-`sed -i`, `perl -i`, `cp`, `mv`, `rm`, `truncate`). A write disguised in a
-script — for example a Python one-liner that builds the path at run time —
-is not detected. The gate stops Claude approving its own work and editing
-gated code through its file tools; it is not a sandbox.
+Shell commands are checked for the common write forms — `>`, `>>`, `1>`, `&>`,
+`>|`, `tee`, `sed -i`, `perl -i`, `cp`, `mv`, `ln`, `rm`, `truncate`, also behind
+`env`, `sudo`, `xargs` or a subshell — resolved from the shell's current
+directory, and any shell command that mentions `spec-gate` is refused (so a
+nested `claude -p "/spec-gate:approve …"` can't approve). Paths are compared
+ignoring case, as macOS and Windows filesystems do. Not detected: a write
+disguised in a script (for example a Python one-liner that builds the path at
+run time), and other rewriting commands such as `git checkout -- <file>`,
+`git restore`, `git apply` or `patch`. The gate stops Claude approving its own
+work and editing gated code through its file tools; it is not a sandbox.

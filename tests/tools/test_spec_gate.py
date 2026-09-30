@@ -188,3 +188,88 @@ def test_a_broken_config_denies_instead_of_opening_the_gate(tmp_path):
 def test_an_internal_error_denies(project):
     write(project, ".spec-gate/approvals.json", "{broken")
     assert "internal error" in edit_src(project)
+
+
+# ── review fixes (#54 final review) ───────────────────────────────────────────
+
+def test_case_variant_paths_are_treated_as_the_real_ones(project):
+    # macOS and Windows filesystems are case-insensitive: SRC/ is src/, .SPEC-GATE/ is .spec-gate/
+    assert tool(project, "Write", {"file_path": str(project / "SRC/app.py"), "content": "x"})
+    assert tool(project, "Write", {"file_path": str(project / ".Spec-Gate.json"), "content": '{"source": ["nothing/**"]}'})
+    assert tool(project, "Write", {"file_path": str(project / ".SPEC-GATE/approvals.json"), "content": "{}"})
+    assert tool(project, "Write", {"file_path": str(project / "Specs/checkout/requirements.md"),
+                                   "content": "# r\n\nStatus: Approved\n"})
+    assert tool(project, "Bash", {"command": "cat > .SPEC-GATE/approvals.json <<'E'\n{}\nE"})
+
+
+def test_a_nested_claude_session_cannot_approve_or_open_a_bypass(project):
+    assert tool(project, "Bash", {"command": "claude -p '/spec-gate:approve specs/checkout/requirements.md'"})
+    assert tool(project, "Bash", {"command": 'claude -p "/SPEC-GATE:trivial x"'})
+
+
+def test_shell_writes_resolve_against_the_shells_directory(project):
+    out = run(project, {"hook_event_name": "PreToolUse", "tool_name": "Bash", "cwd": str(project / "src"),
+                        "tool_input": {"command": "echo y > app.py"}})
+    assert out and out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_hard_links_cannot_carry_gated_edits_or_markers(project):
+    import os
+    write(project, "src/app.py", "print(0)\n")
+    os.link(project / "src/app.py", project / "scratch.py")
+    assert tool(project, "Write", {"file_path": str(project / "scratch.py"), "content": "HACK"})
+    assert tool(project, "Bash", {"command": "ln src/app.py other.py"})
+    (project / "notes").mkdir()
+    os.link(project / "specs/checkout/requirements.md", project / "notes/r.md")
+    assert tool(project, "Write", {"file_path": str(project / "notes/r.md"), "content": "# r\n\nStatus: Approved\n"})
+
+
+@pytest.mark.parametrize("command", [
+    "echo hi\nrm src/app.py", "echo y 1> src/app.py", "echo y &> src/app.py", "echo y >| src/app.py",
+    "(rm src/app.py)", "env rm src/app.py", "mv src/app.py /tmp/x.py", "cp -l src/app.py /tmp/x.py",
+])
+def test_more_shell_write_forms_to_source_are_denied(project, command):
+    assert tool(project, "Bash", {"command": command})
+
+
+@pytest.mark.parametrize("config", [
+    '{"source": ["src/**"], "exempt": "tests/**"}', '{"source": "src/**"}', '{"source": ["src/**"], "spec_dir": "../x"}',
+    '{"source": ["src/**", 3]}',
+])
+def test_a_malformed_config_denies(tmp_path, config):
+    write(tmp_path, ".spec-gate.json", config)
+    reason = tool(tmp_path, "Write", {"file_path": str(tmp_path / "src/app.py"), "content": "x"})
+    assert reason and ".spec-gate.json" in reason       # denied because of the config, not by accident
+
+
+def test_spec_dir_is_normalised(tmp_path):
+    write(tmp_path, ".spec-gate.json", '{"source": ["src/**"], "spec_dir": "./specs"}')
+    write(tmp_path, "specs/f/requirements.md", "# r\n\nStatus: Draft\n")
+    assert "is Approved" in prompt(tmp_path, "/spec-gate:approve specs/f/requirements.md")
+
+
+@pytest.mark.parametrize("marker", ["**Status**: Approved", "| Status | Approved |", "- Status: Approved", "> Status: Accepted"])
+def test_approval_markers_in_other_layouts_are_blocked(project, marker):
+    path = str(project / "specs/checkout/requirements.md")
+    assert tool(project, "Write", {"file_path": path, "content": f"# r\n\n{marker}\n"})
+
+
+def test_approve_replaces_a_bold_status_line(project):
+    write(project, "specs/checkout/requirements.md", "# r\n\n**Status:** Draft\n")
+    prompt(project, "/spec-gate:approve specs/checkout/requirements.md")
+    text = (project / "specs/checkout/requirements.md").read_text()
+    assert "**Status:** Approved" in text and "Draft" not in text and text.count("Status") == 1
+
+
+def test_any_next_message_closes_the_bypass(project):
+    prompt(project, "/spec-gate:trivial fix typo")
+    prompt(project, "/spec-gate:status")
+    assert edit_src(project) is not None
+
+
+def test_shell_directory_is_used_when_claude_sets_the_project_dir(project):
+    event = {"session_id": "s1", "cwd": str(project / "src"), "hook_event_name": "PreToolUse",
+             "tool_name": "Bash", "tool_input": {"command": "echo y > app.py"}}
+    done = subprocess.run([sys.executable, str(GATE)], input=json.dumps(event), capture_output=True, text=True,
+                          env={"PATH": "/usr/bin:/bin", "CLAUDE_PROJECT_DIR": str(project)}, timeout=30)
+    assert json.loads(done.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
