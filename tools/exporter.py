@@ -1102,8 +1102,12 @@ class ClaudeExporter(PlatformExporter):
         # Only plugins this exporter generates are pruned; hand-written ones get just their plugin.json.
         owned = {rel.split("/")[1] for rel in files
                  if rel.startswith("plugins/") and not rel.endswith("/.claude-plugin/plugin.json")}
-        stale = ([p for p in plugins_dir.rglob("*")
-                  if p.is_file() and p not in paths and p.relative_to(plugins_dir).parts[0] in owned]
+        def generated(p: Path) -> bool:
+            """Inside a generated plugin, and not its hand-written evals/ suite."""
+            parts = p.relative_to(plugins_dir).parts
+            return parts[0] in owned and parts[1:2] != ("evals",)
+
+        stale = ([p for p in plugins_dir.rglob("*") if p.is_file() and p not in paths and generated(p)]
                  if plugins_dir.exists() else [])
         if not dry_run:
             for path, text in paths.items():
@@ -1111,7 +1115,7 @@ class ClaudeExporter(PlatformExporter):
                 path.write_text(text, encoding="utf-8")
             for path in stale:
                 path.unlink()
-            for folder in sorted((d for d in plugins_dir.rglob("*") if d.is_dir() and d.relative_to(plugins_dir).parts[0] in owned), reverse=True):
+            for folder in sorted((d for d in plugins_dir.rglob("*") if d.is_dir() and generated(d)), reverse=True):
                 if not any(folder.iterdir()):
                     folder.rmdir()
         written = list(paths)
@@ -1802,9 +1806,18 @@ class ExportOrchestrator:
     def clean(self) -> None:
         for rel in self._CLEAN_DIRS:
             target = self._repo_root / rel
-            if target.exists():
+            if not target.exists():
+                continue
+            if rel.startswith("plugins/"):
+                # A generated plugin: remove everything except its hand-written evals/ suite.
+                for child in target.iterdir():
+                    if child.name != "evals":
+                        shutil.rmtree(child) if child.is_dir() else child.unlink()
+                if not any(target.iterdir()):
+                    target.rmdir()
+            else:
                 shutil.rmtree(target)
-                print(f"  Removed: {rel}")
+            print(f"  Removed: {rel}")
 
     def run(
         self,

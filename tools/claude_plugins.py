@@ -138,7 +138,7 @@ def handwritten_plugins(repo_root: Path, generated: set[str]) -> dict[str, tuple
         content = []
         for path in sorted(p for p in folder.rglob("*") if p.is_file()):
             parts = path.relative_to(folder).parts
-            if parts == (".claude-plugin", "plugin.json"):
+            if parts == (".claude-plugin", "plugin.json") or parts[0] == "evals":
                 continue
             if any(part == "__pycache__" or (part.startswith(".") and part != ".claude-plugin") for part in parts):
                 continue

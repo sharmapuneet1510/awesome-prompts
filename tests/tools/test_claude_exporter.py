@@ -96,3 +96,23 @@ def test_clean_keeps_handwritten_plugins(tmp_path):
     orch.clean()
     assert script.exists()
     assert not (tmp_path / "plugins/engineering-skills").exists()
+
+
+def test_export_keeps_evals_in_generated_plugins(tmp_path):
+    skills, functions = _sources(tmp_path)
+    case = _write(tmp_path, "plugins/architect/evals/citations/prompt.md", "hi\n")
+    ClaudeExporter(tmp_path).export(skills=skills, agents=[], modules=[], functions=functions,
+                                    instructions=[], hooks=[])
+    assert case.exists()
+
+
+def test_clean_keeps_evals_in_generated_plugins(tmp_path):
+    _sources(tmp_path)
+    (tmp_path / "instructions").mkdir()
+    orch = ExportOrchestrator(tmp_path)
+    orch.run(targets=["claude"], skill_filter=[], agent_filter=[])
+    case = _write(tmp_path, "plugins/architect/evals/citations/prompt.md", "hi\n")
+    orch.clean()
+    assert case.exists()
+    assert not (tmp_path / "plugins/architect/skills").exists()
+    assert not (tmp_path / "plugins/engineering-skills").exists()
