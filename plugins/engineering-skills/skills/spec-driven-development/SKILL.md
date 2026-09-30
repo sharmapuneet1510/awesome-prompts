@@ -49,6 +49,44 @@ Governed by **RULE 11 — Spec-Driven Gate** in
 `quality:review` additionally runs the Traceability Rule (below) against
 delivered code.
 
+
+## The Gate
+
+This section is the gate's only full definition. RULE 11 and 11a, the agents
+and the functions link here instead of restating it.
+
+**The chain.** Feature code needs `specs/<feature>/requirements.md`, then
+`design.md`, then `tasks.md`, each approved in that order. `architect:design`
+needs approved requirements; task generation needs an approved design;
+`implementer:build` and `implementer:full` need all three.
+
+**What counts as approval.** Only the user approves, never the model's
+inference that they would.
+- With the `spec-gate` plugin active (installed, and `.spec-gate.json` in the
+  project): the user types `/spec-gate:approve <file>`. The hook writes
+  `Status: Approved` and records the file's hash; editing the file afterwards
+  voids the approval.
+- Without it: the user's explicit approval in the conversation. Only then may
+  the agent write `Status: Approved` into the file.
+
+**ADRs (RULE 11a).** A change to a contract, data shape, dependency or
+failure mode needs an ADR at `Status: Accepted`, approved the same way:
+`/spec-gate:approve docs/adr/ADR-NNNN-….md` with spec-gate, the user's
+explicit approval without it. Whether a change is decision-bearing is a
+judgement the agent must surface, not decide away.
+
+**Trivial work** — a one-line fix, a config tweak, a small doc edit — skips
+the chain only when the user says so: `/spec-gate:trivial <reason>` with
+spec-gate (valid until their next message, and logged), their explicit
+say-so without it. Substantive changes to agent, skill or instruction files
+are never trivial.
+
+**What spec-gate enforces, and its limit.** Gated source edits through
+Claude's file tools and the common shell write forms are blocked until the
+chain is approved; approval markers in spec files and ADRs can only be
+written by the hook. A write disguised in a script is not detected — see
+the plugin's README.
+
 ---
 
 ## Artifact Location

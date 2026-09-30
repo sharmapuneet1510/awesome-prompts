@@ -90,8 +90,8 @@ governed by RULE 11 in `instructions/master_instruction_set.md`):
 
 1. Produce `specs/<feature-name>/requirements.md` using the skill's EARS
    template — one `REQ-N` per acceptance criterion.
-2. Present it to the user and stop. Do not proceed to `architect:design`
-   or `implementer:build` until the user sets `Status: Approved`.
+2. Present it to the user and stop until they approve it — see
+   [spec_driven_development_skill.md#the-gate](../skills/spec_driven_development_skill.md#the-gate).
 3. Trivial work (typos, config tweaks, small documentation edits) skips
    this stage entirely — RULE 11's exemption applies. Substantive changes
    to agent, skill, or instruction files are feature work and are not

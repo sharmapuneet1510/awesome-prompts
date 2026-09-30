@@ -52,11 +52,10 @@ quality:review             ← Validate, score, generate report
 orchestrator:pr            ← Package and open GitHub PR
 ```
 
-**Spec-driven gate (RULE 11):** `orchestrator:plan` = specify
-(`requirements.md`), `architect:design` = plan (`design.md`),
-`implementer` task generation = tasks (`tasks.md`) — each must be
-`Status: Approved` before the next stage runs. See
-`skills/spec_driven_development_skill.md`.
+**Spec gate (RULE 11):** `orchestrator:plan` writes `requirements.md`,
+`architect:design` writes `design.md`, task generation writes `tasks.md`;
+each needs the user's approval before the next stage — see
+[the gate](../skills/spec_driven_development_skill.md#the-gate).
 
 ---
 
