@@ -1099,14 +1099,19 @@ class ClaudeExporter(PlatformExporter):
         files = self.plan_files(skills, agents, modules, functions, instructions)
         paths = {self._repo_root / rel: text for rel, text in files.items()}
         plugins_dir = self._repo_root / "plugins"
-        stale = [p for p in plugins_dir.rglob("*") if p.is_file() and p not in paths] if plugins_dir.exists() else []
+        # Only plugins this exporter generates are pruned; hand-written ones get just their plugin.json.
+        owned = {rel.split("/")[1] for rel in files
+                 if rel.startswith("plugins/") and not rel.endswith("/.claude-plugin/plugin.json")}
+        stale = ([p for p in plugins_dir.rglob("*")
+                  if p.is_file() and p not in paths and p.relative_to(plugins_dir).parts[0] in owned]
+                 if plugins_dir.exists() else [])
         if not dry_run:
             for path, text in paths.items():
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(text, encoding="utf-8")
             for path in stale:
                 path.unlink()
-            for folder in sorted((d for d in plugins_dir.rglob("*") if d.is_dir()), reverse=True):
+            for folder in sorted((d for d in plugins_dir.rglob("*") if d.is_dir() and d.relative_to(plugins_dir).parts[0] in owned), reverse=True):
                 if not any(folder.iterdir()):
                     folder.rmdir()
         written = list(paths)
@@ -1413,7 +1418,12 @@ class ExportOrchestrator:
     _CLEAN_DIRS: ClassVar[list[str]] = [
         ".github/instructions",
         ".github/agents",
-        "plugins",
+        "plugins/orchestrator",
+        "plugins/architect",
+        "plugins/implementer",
+        "plugins/quality",
+        "plugins/ba",
+        "plugins/engineering-skills",
         ".claude-plugin",
         ".cursor/rules",
         ".windsurf/rules",

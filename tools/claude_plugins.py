@@ -122,6 +122,31 @@ def _rewrite(text: str, source: Path, here: _Shipped, shipped: dict[Path, _Shipp
     return _LINK.sub(repoint, text)
 
 
+def handwritten_plugins(repo_root: Path, generated: set[str]) -> dict[str, tuple[dict, list[tuple[str, str]]]]:
+    """Plugins maintained by hand under plugins/: {name: (their plugin.json, [(repo-relative path, text)])}.
+
+    Their content, minus plugin.json and junk (dotfiles, __pycache__), feeds the version hash.
+    """
+    base = repo_root / PLUGIN_ROOT
+    found: dict[str, tuple[dict, list[tuple[str, str]]]] = {}
+    if not base.is_dir():
+        return found
+    for folder in sorted(p for p in base.iterdir() if p.is_dir() and p.name not in generated):
+        manifest = folder / ".claude-plugin" / "plugin.json"
+        if not manifest.is_file():
+            continue
+        content = []
+        for path in sorted(p for p in folder.rglob("*") if p.is_file()):
+            parts = path.relative_to(folder).parts
+            if parts == (".claude-plugin", "plugin.json"):
+                continue
+            if any(part == "__pycache__" or (part.startswith(".") and part != ".claude-plugin") for part in parts):
+                continue
+            content.append((path.relative_to(repo_root).as_posix(), path.read_bytes().decode("utf-8", "replace")))
+        found[folder.name] = (json.loads(manifest.read_text(encoding="utf-8")), content)
+    return found
+
+
 def build_plugins(repo_root: Path, skills, agents, modules, functions, instructions, version: str) -> dict[str, str]:
     """All plugin and marketplace files, keyed by path relative to repo_root."""
     plugins, rules, shipped = _plan(repo_root, skills, agents, modules, functions, instructions)
@@ -165,20 +190,26 @@ def build_plugins(repo_root: Path, skills, agents, modules, functions, instructi
         if plugin:
             descriptions[plugin] = first_sentence(a.description)
     all_plugins = role_plugins + ([SKILLS_PLUGIN] if skills else [])
-    for plugin in all_plugins:
+    handwritten = handwritten_plugins(repo_root, set(all_plugins))
+    for plugin in all_plugins + list(handwritten):
+        if plugin in handwritten:
+            own, content = handwritten[plugin]
+            fields = {k: v for k, v in own.items() if k not in ("name", "version")}
+            descriptions[plugin] = own.get("description", plugin)
+        else:
+            content = [(rel, files[rel]) for rel in sorted(files) if rel.startswith(f"{PLUGIN_ROOT}/{plugin}/")]
+            fields = {"description": descriptions.get(plugin, plugin), "author": {"name": OWNER},
+                      "repository": REPO_URL, "license": "MIT"}
         # Claude Code pins installs to `version`, so it carries a hash of the plugin's content:
         # any change reaches existing installs without a manual version bump.
-        prefix = f"{PLUGIN_ROOT}/{plugin}/"
         digest = hashlib.sha256()
-        for rel in sorted(r for r in files if r.startswith(prefix)):
-            digest.update(rel.encode() + b"\0" + files[rel].encode() + b"\0")
-        manifest = {"name": plugin, "version": f"{version}+{digest.hexdigest()[:12]}",
-                    "description": descriptions.get(plugin, plugin),
-                    "author": {"name": OWNER}, "repository": REPO_URL, "license": "MIT"}
+        for rel, text in content:
+            digest.update(rel.encode() + b"\0" + text.encode() + b"\0")
+        manifest = {"name": plugin, "version": f"{version}+{digest.hexdigest()[:12]}", **fields}
         files[f"{PLUGIN_ROOT}/{plugin}/.claude-plugin/plugin.json"] = json.dumps(manifest, indent=2) + "\n"
     market = {"name": MARKETPLACE_NAME, "owner": {"name": OWNER},
               "description": "Spec-driven engineering for Claude Code: role plugins with /agent:function commands, and reference skills",
               "plugins": [{"name": p, "source": f"./{PLUGIN_ROOT}/{p}", "description": descriptions.get(p, p)}
-                          for p in all_plugins]}
+                          for p in all_plugins + list(handwritten)]}
     files[MARKETPLACE] = json.dumps(market, indent=2) + "\n"
     return dict(sorted(files.items()))

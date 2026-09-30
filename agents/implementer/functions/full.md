@@ -47,6 +47,11 @@ implementer:full path=./design/system-architecture.md [tech_stack="Python, FastA
 - Dockerfile and docker-compose
 - Setup and deployment guides
 
+## Gate
+
+No phase starts until the spec chain is approved — see
+[spec_driven_development_skill.md#the-gate](../../../skills/spec_driven_development_skill.md#the-gate).
+
 ## Workflow (Single Context, No Loss)
 
 1. **[Phase 1]** Parse design/spec

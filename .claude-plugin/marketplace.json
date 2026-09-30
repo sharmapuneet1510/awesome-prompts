@@ -34,6 +34,11 @@
       "name": "engineering-skills",
       "source": "./plugins/engineering-skills",
       "description": "Reference skills \u2014 language, framework, data, and process standards Claude loads when relevant"
+    },
+    {
+      "name": "spec-gate",
+      "source": "./plugins/spec-gate",
+      "description": "Enforces the spec-driven gate with hooks: gated source edits need approved specs, and only the user can approve"
     }
   ]
 }

@@ -597,21 +597,10 @@ Output: [code]
 
 ## RULE 11 — Spec-Driven Gate
 
-**No agent may generate implementation code for a feature until
-`specs/<feature-name>/requirements.md`, `design.md`, and `tasks.md` exist and
-each carries an explicit `Status: Approved` marker, set by the user (not by
-an agent) — the agent may write the marker into the file, but only after
-the user has explicitly approved — never on its own inference.**
-
-- `architect:design` refuses to run without an approved `requirements.md`.
-- `implementer:build`/`implementer:full` refuses to run without an approved
-  `tasks.md`.
-- This gate applies to feature work only — trivial work (one-line fixes,
-  config tweaks, and small documentation edits) is exempt. Substantive
-  changes to agent, skill, or instruction files are feature work and are
-  not exempt.
-- See `skills/spec_driven_development_skill.md` for artifact templates and
-  the approval-checkpoint workflow.
+**No feature code before the spec chain is approved by the user.** The gate —
+what must be approved, what counts as approval, trivial work, and what the
+`spec-gate` plugin enforces — is defined in
+[spec_driven_development_skill.md#the-gate](../skills/spec_driven_development_skill.md#the-gate).
 
 ### 11a — ADR Gate
 
@@ -621,8 +610,8 @@ written.**
 
 - `architect:adr` is the only function that mints an ADR. `quality:observe`
   may propose one; it may not write one.
-- Proposed → Accepted is a human-only transition. An agent writes the status
-  into the file only after the user explicitly approves.
+- Proposed → Accepted is a human-only transition — see
+  [the gate](../skills/spec_driven_development_skill.md#the-gate).
 - `implementer:build`/`implementer:full` refuses to implement a
   decision-bearing change with no Accepted ADR citing its Parent Jira.
 - Accepting an ADR triggers `architect:spec` to regenerate the Current

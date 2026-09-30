@@ -673,7 +673,7 @@ def test_orchestrator_clean_removes_export_dirs(tmp_path):
     orch.run(targets=["claude"], skill_filter=[], agent_filter=[], dry_run=False)
     assert (tmp_path / "plugins").exists()
     orch.clean()
-    assert not (tmp_path / "plugins").exists()
+    assert not (tmp_path / "plugins" / "engineering-skills").exists()
     assert not (tmp_path / ".claude-plugin").exists()
 
 

@@ -48,7 +48,7 @@ with a named next step, not a warning to proceed past.
 
 | Check | Refuse when | Next step |
 |---|---|---|
-| Spec chain | `specs/<feature>/tasks.md` is missing or not `Status: Approved` | `orchestrator:plan` → `architect:design` |
+| Spec chain | The chain is not approved (the gate (`engineering-skills:spec-driven-development` skill)) | `orchestrator:plan` → `architect:design` |
 | ADR gate | The change alters a contract, data shape, dependency, or failure mode and no Accepted ADR cites its Parent Jira | `architect:adr` |
 | Traceability | `ba:trace` reports a High finding on T-1, T-2, T-10, or T-13 | Resolve the finding |
 | Scope | A task has no `REQ-n` citation | `orchestrator:plan` |

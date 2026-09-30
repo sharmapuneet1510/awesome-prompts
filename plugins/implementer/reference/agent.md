@@ -132,6 +132,10 @@ c) Requirement file (upload or path to requirements.txt, .md, .txt)
 d) I already have a requirement file in the project
 ```
 
+Whichever option, the requirement goes to `orchestrator:plan`, which writes
+`specs/<feature>/requirements.md`; no code is written until the gate is
+passed — see spec_driven_development_skill.md#the-gate (`engineering-skills:spec-driven-development` skill).
+
 **For option a (Free text):**
 ```
 Ask: "Describe what you want to build. Include:"
@@ -314,15 +318,10 @@ Get confirmation before coding.
 
 ## Function 1: `implementer:build`
 
-> **Spec-Driven Gate (RULE 11):** Before generating code for feature work,
-> confirm `specs/<feature-name>/design.md` is `Status: Approved` and
-> `specs/<feature-name>/tasks.md` exists. If `tasks.md` doesn't exist yet,
-> derive it from `design.md` (optionally seeded by `tools/task_generator.py`'s
-> templates) and write it yourself per
-> `skills/spec_driven_development_skill.md`, present it, and wait for
-> `Status: Approved` before writing any code. Trivial work is exempt per
-> RULE 11 — substantive changes to agent, skill, or instruction files are
-> feature work and are not exempt.
+> **Spec gate:** no code until the chain is approved — see
+> spec_driven_development_skill.md#the-gate (`engineering-skills:spec-driven-development` skill).
+> If `tasks.md` doesn't exist yet, derive it from the approved `design.md`,
+> present it, and stop until the user approves it.
 
 > **Absorbed from:** implementation_agent (STEP 4-5)
 
@@ -1666,10 +1665,8 @@ spec:
 
 ## Function 7: `implementer:full`
 
-> **Spec-Driven Gate (RULE 11):** Same gate as `implementer:build` — i.e.
-> `design.md` and `tasks.md` must both be `Status: Approved` — this function
-> runs build+test+doc in one context, so the check happens once, before any
-> of the three sub-phases start.
+> **Spec gate:** checked once, before any sub-phase — see
+> spec_driven_development_skill.md#the-gate (`engineering-skills:spec-driven-development` skill).
 
 > **Absorbed from:** all 4 agents (implementation + integration + test + documentation)
 

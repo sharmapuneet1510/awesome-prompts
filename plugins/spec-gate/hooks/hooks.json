@@ -1,0 +1,12 @@
+{
+  "description": "spec-gate: record user approvals and block gated writes until the specs are approved",
+  "hooks": {
+    "UserPromptSubmit": [
+      {"hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/gate.py\"", "timeout": 10}]}
+    ],
+    "PreToolUse": [
+      {"matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+       "hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/gate.py\"", "timeout": 10}]}
+    ]
+  }
+}

@@ -72,3 +72,27 @@ def test_target_project_claude_points_to_marketplace(tmp_path, capsys):
     copy_to_target_project([], [], [], [], [], [], tmp_path / "app", ["claude"])
     assert not (tmp_path / "app/.claude/skills").exists()
     assert "/plugin marketplace add sharmapuneet1510/awesome-prompts" in capsys.readouterr().out
+
+
+def test_export_never_prunes_handwritten_plugins(tmp_path):
+    skills, functions = _sources(tmp_path)
+    hand = _write(tmp_path, "plugins/spec-gate/.claude-plugin/plugin.json",
+                  '{"name": "spec-gate", "version": "1", "description": "d", "author": {"name": "x"}}')
+    script = _write(tmp_path, "plugins/spec-gate/scripts/gate.py", "print(1)\n")
+    ClaudeExporter(tmp_path).export(skills=skills, agents=[], modules=[], functions=functions,
+                                    instructions=[], hooks=[])
+    assert script.exists() and hand.exists()
+    assert '"version": "1.2.3+' in hand.read_text()
+
+
+def test_clean_keeps_handwritten_plugins(tmp_path):
+    _sources(tmp_path)
+    (tmp_path / "instructions").mkdir()
+    script = _write(tmp_path, "plugins/spec-gate/scripts/gate.py", "print(1)\n")
+    _write(tmp_path, "plugins/spec-gate/.claude-plugin/plugin.json",
+           '{"name": "spec-gate", "version": "1", "description": "d", "author": {"name": "x"}}')
+    orch = ExportOrchestrator(tmp_path)
+    orch.run(targets=["claude"], skill_filter=[], agent_filter=[])
+    orch.clean()
+    assert script.exists()
+    assert not (tmp_path / "plugins/engineering-skills").exists()
