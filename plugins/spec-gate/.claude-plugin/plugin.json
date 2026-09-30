@@ -1,0 +1,8 @@
+{
+  "name": "spec-gate",
+  "version": "1.0.0",
+  "description": "Enforces the spec-driven gate with hooks: gated source edits need approved specs, and only the user can approve",
+  "author": {"name": "Puneet Sharma"},
+  "repository": "https://github.com/sharmapuneet1510/awesome-prompts",
+  "license": "MIT"
+}
