@@ -163,3 +163,7 @@ context_builder/
 !docs/superpowers/plans/
 .cursorrules          # Auto-generated Cursor IDE rules (run: python tools/exporter.py --target cursor)
 .worktrees/
+
+# Behavioural eval run output (#60)
+**/evals/results/
+evals/.reports/
