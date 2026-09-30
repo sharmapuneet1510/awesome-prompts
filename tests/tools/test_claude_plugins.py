@@ -221,3 +221,37 @@ def test_plugin_version_tracks_its_own_content(tmp_path, monkeypatch):
     changed = _repo(tmp_path / "c")
     assert version(changed, "architect") != version(first, "architect")
     assert version(changed, "quality") == version(first, "quality")                    # other plugins untouched
+
+
+def _handwritten(tmp_path, body="print(1)\n"):
+    base = tmp_path / "plugins" / "spec-gate"
+    (base / ".claude-plugin").mkdir(parents=True, exist_ok=True)
+    (base / ".claude-plugin" / "plugin.json").write_text(json.dumps(
+        {"name": "spec-gate", "version": "1.0.0", "description": "Gate. Hooks.", "author": {"name": "X"}}), encoding="utf-8")
+    (base / "scripts").mkdir(exist_ok=True)
+    (base / "scripts" / "gate.py").write_text(body, encoding="utf-8")
+    (base / ".DS_Store").write_text("junk", encoding="utf-8")
+
+
+def test_handwritten_plugins_are_listed_and_versioned_by_content(tmp_path):
+    _handwritten(tmp_path)
+    files = _repo(tmp_path)
+    market = {p["name"]: p for p in json.loads(files[MARKETPLACE])["plugins"]}
+    assert market["spec-gate"]["source"] == "./plugins/spec-gate"
+    assert market["spec-gate"]["description"] == "Gate. Hooks."
+    manifest = json.loads(files["plugins/spec-gate/.claude-plugin/plugin.json"])
+    assert manifest["name"] == "spec-gate" and manifest["version"].startswith("9.9.9+")
+    assert manifest["author"] == {"name": "X"}
+    assert not [k for k in files if k.startswith("plugins/spec-gate/") and not k.endswith("plugin.json")]
+    _handwritten(tmp_path, body="print(2)\n")
+    changed = json.loads(_repo(tmp_path)["plugins/spec-gate/.claude-plugin/plugin.json"])["version"]
+    assert changed != manifest["version"]
+
+
+def test_junk_files_do_not_change_a_handwritten_version(tmp_path):
+    _handwritten(tmp_path)
+    first = json.loads(_repo(tmp_path)["plugins/spec-gate/.claude-plugin/plugin.json"])["version"]
+    (tmp_path / "plugins/spec-gate/.DS_Store").write_text("other junk", encoding="utf-8")
+    (tmp_path / "plugins/spec-gate/scripts/__pycache__").mkdir()
+    (tmp_path / "plugins/spec-gate/scripts/__pycache__/gate.pyc").write_bytes(b"\x00")
+    assert json.loads(_repo(tmp_path)["plugins/spec-gate/.claude-plugin/plugin.json"])["version"] == first

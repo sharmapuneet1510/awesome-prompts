@@ -46,7 +46,10 @@ def _skills(plugin: str) -> list[Path]:
 def test_committed_plugins_are_fresh():
     expected = _expected()
     # Files git ignores (e.g. a Finder .DS_Store) are never committed, so they don't count as stale.
-    paths = [p for p in list(PLUGINS.rglob("*")) + [ROOT / ".claude-plugin/marketplace.json"] if p.is_file()]
+    owned = {rel.split("/")[1] for rel in expected
+             if rel.startswith("plugins/") and not rel.endswith("/.claude-plugin/plugin.json")}
+    paths = [p for p in PLUGINS.rglob("*") if p.is_file() and p.relative_to(PLUGINS).parts[0] in owned]
+    paths += [ROOT / rel for rel in expected if (ROOT / rel).is_file() and ROOT / rel not in paths]
     rels = [p.relative_to(ROOT).as_posix() for p in paths]
     ignored = _gitignored(rels)
     on_disk = {rel: p.read_text(encoding="utf-8") for rel, p in zip(rels, paths) if rel not in ignored}
@@ -97,7 +100,7 @@ def test_no_broken_relative_links_in_plugins():
 
 
 @pytest.mark.skipif(shutil.which("claude") is None, reason="Claude Code CLI not installed")
-@pytest.mark.parametrize("target", [".claude-plugin/marketplace.json"] + [f"plugins/{p}" for p in ROLES + ["engineering-skills"]])
+@pytest.mark.parametrize("target", [".claude-plugin/marketplace.json"] + [f"plugins/{p}" for p in ROLES + ["engineering-skills", "spec-gate"]])
 def test_claude_plugin_validate_strict(target):
     result = subprocess.run(["claude", "plugin", "validate", "--strict", target], cwd=ROOT,
                             capture_output=True, text=True, timeout=120)
