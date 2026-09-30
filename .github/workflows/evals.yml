@@ -40,7 +40,9 @@ jobs:
       - name: Run the evals
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python3 tools/run_evals.py --max-cost-usd 20
+        run: |
+          rm -f evals/RESULTS.md evals/results.json   # never comment an earlier run's result
+          python3 tools/run_evals.py --max-cost-usd 20
       - name: Upload results and reports
         if: always()
         uses: actions/upload-artifact@v4

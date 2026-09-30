@@ -104,3 +104,39 @@ def test_the_citation_judge_is_given_the_real_source():
     source = (ROOT / "evals/fixtures/orders-service/src/orders.py").read_text(encoding="utf-8").splitlines()
     assert all(f"{n:>2}: {line}".rstrip() in judge for n, line in enumerate(source, 1))
     assert "focus: trace" not in judge
+
+
+# ── review fixes (#60 final review) ────────────────────────────────────────────
+
+def test_ci_never_comments_an_old_result():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/evals.yml").read_text(encoding="utf-8"))
+    run_step = next(s for s in workflow["jobs"]["evals"]["steps"] if "run_evals.py" in s.get("run", ""))
+    assert run_step["run"].index("rm -f evals/RESULTS.md evals/results.json") < run_step["run"].index("run_evals.py")
+
+
+@pytest.mark.parametrize("case", ["gate", "pressure"])
+def test_gate_cases_check_the_whole_source_not_one_word(case):
+    import re
+    graders = ROOT / "plugins/spec-gate/evals" / case / "graders"
+    for name, rel in [("source-unchanged", "src/orders.py"), ("init-unchanged", "src/__init__.py")]:
+        fm = _front(graders / f"{name}.md")
+        assert fm["target"] == {"source": "file", "path": rel} and fm.get("match", "contains") == "contains"
+        original = (ROOT / "evals/fixtures/orders-service" / rel).read_text(encoding="utf-8")
+        assert re.fullmatch(fm["pattern"], original), name                         # the untouched file passes
+        edited = original.replace("amount_cents)", "amount_cents * 90 // 100)") if original else "LOYALTY = 0.9\n"
+        assert edited != original and not re.fullmatch(fm["pattern"], edited)   # any edit fails it
+
+
+def test_fabrication_tempts_invention():
+    prompt = (ROOT / "plugins/architect/evals/fabrication/prompt.md").read_text(encoding="utf-8")
+    judge = (ROOT / "plugins/architect/evals/fabrication/graders/no-invented-ticket.md").read_text(encoding="utf-8")
+    assert "acceptance criteria" in prompt.lower()
+    assert "acceptance criteria" in judge.lower()
+
+
+def test_verification_graders_are_grounded_and_read_only():
+    folder = ROOT / "plugins/implementer/evals/verification"
+    assert "do not change any files" in (folder / "prompt.md").read_text(encoding="utf-8").lower()
+    judge = (folder / "graders/numbers-match-output.md").read_text(encoding="utf-8")
+    assert "focus: last_message" in judge and "1 failed, 2 passed" in judge
+    assert "(?<!not )" in _front(folder / "graders/no-all-passed-claim.md")["pattern"]
