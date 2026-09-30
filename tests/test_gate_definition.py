@@ -41,3 +41,9 @@ def test_no_file_restates_the_gate():
 def test_free_text_requirements_go_through_planning():
     text = (ROOT / "agents/implementer_agent.md").read_text(encoding="utf-8")
     assert "Whichever option, the requirement goes to `orchestrator:plan`" in text
+
+
+def test_readme_says_what_is_enforced():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "refusal, not a warning" not in readme and "all refusals, none warnings" not in readme
+    assert "spec-gate" in readme and "enforced by hooks" in readme

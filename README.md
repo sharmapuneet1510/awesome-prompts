@@ -58,7 +58,7 @@ flowchart LR
     class G1,G2,G3,G5,ADR gate
 ```
 
-<sub>Simplified. Every hexagon is a **refusal, not a warning** — the assistant stops until you approve. Six gates in all; the sixth guards the specification itself ([below](#the-idea)).</sub>
+<sub>Simplified. Six gates in all; the sixth guards the specification itself ([below](#the-idea)). With the `spec-gate` plugin, the first three and ADR acceptance are **enforced by hooks**; the rest are rules the assistant follows.</sub>
 
 ## Quick start
 
@@ -87,9 +87,10 @@ Claude Code — in any project, run:
 /plugin install architect@awesome-prompts
 ```
 
-Install the others the same way: `orchestrator`, `implementer`, `quality`, `ba`, and
-`engineering-skills` (the 44 reference skills). Commands then appear as `/architect:adr`,
-`/quality:review`, and so on.
+Install the others the same way: `orchestrator`, `implementer`, `quality`, `ba`,
+`engineering-skills` (the 44 reference skills), and `spec-gate` (enforces the spec
+gate with hooks — add `.spec-gate.json` to turn it on). Commands then appear as
+`/architect:adr`, `/quality:review`, and so on.
 
 Other assistants:
 
@@ -185,20 +186,20 @@ DECISION: approved 2026-08-18 — see ADR-0012.
 This stops a plausible guess becoming the foundation for three more.
 
 <details>
-<summary><b>The six gates</b> — all refusals, none warnings</summary>
+<summary><b>The six gates</b> — which are enforced, which are rules</summary>
 
 <br/>
 
-| Gate | Blocks | You release it by |
-|---|---|---|
-| Requirements approved | `architect:design` | Approving `requirements.md` |
-| Design approved | Task generation | Approving `design.md` |
-| Tasks approved | `implementer:build` | Approving `tasks.md` |
-| ADR accepted | Decision-bearing code | Approving the ADR |
-| Traceability clean | Build, release | Resolving High findings |
-| Label discipline | Specification changes | Only `DECISION` qualifies |
+| Gate | Blocks | You release it by | With `spec-gate` |
+|---|---|---|---|
+| Requirements approved | `architect:design` | Approving `requirements.md` | Enforced by hooks |
+| Design approved | Task generation | Approving `design.md` | Enforced by hooks |
+| Tasks approved | `implementer:build` | Approving `tasks.md` | Enforced by hooks — gated source edits are blocked |
+| ADR accepted | Decision-bearing code | Approving the ADR | Acceptance enforced; "decision-bearing" is the assistant's judgement |
+| Traceability clean | Build, release | Resolving High findings | Rule |
+| Label discipline | Specification changes | Only `DECISION` qualifies | Rule |
 
-Trivial work — one-line fixes, config tweaks, small doc edits — is exempt from the spec gates.
+Trivial work — a one-line fix, a config tweak — skips the spec gates only when you say so (`/spec-gate:trivial <reason>`). Without the plugin, every gate is a rule the assistant follows, not a hook. The hooks block Claude's file tools and common shell writes; they are not a sandbox — see the [plugin README](plugins/spec-gate/README.md).
 
 </details>
 

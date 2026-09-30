@@ -27,6 +27,11 @@ versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **`spec-gate` plugin** (#54): hooks enforce the spec gate. With `.spec-gate.json` in a project,
+  edits to gated source are blocked until the feature's requirements, design and tasks are approved;
+  approvals are recorded by a hook from `/spec-gate:approve`, which only the user can type, and bound to
+  the file's hash; the model can't write `Status: Approved`/`Accepted` itself. `/spec-gate:trivial` lets
+  a small change through, logged. The gate is now defined once, in `spec_driven_development_skill.md`.
 - **Claude Code plugins** (#53): `--target claude` now writes a marketplace of six plugins —
   `orchestrator`, `architect`, `implementer`, `quality`, `ba` (all 43 functions as
   `/agent:function` commands, user-invoked only) and `engineering-skills` (44 skills Claude loads
